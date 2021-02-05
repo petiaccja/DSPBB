@@ -2,7 +2,6 @@
 
 #include <Catch2/catch.hpp>
 #include <cmath>
-#include <numbers>
 
 using namespace dspbb;
 

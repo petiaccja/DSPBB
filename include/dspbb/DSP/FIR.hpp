@@ -25,7 +25,7 @@ auto WindowedFirFilter(const Spectrum<T>& frequencyResponse, size_t numTaps = 0)
 
 
 	auto impulse = FourierTransform<remove_complex_t<T>>(symmetricResponse);
-	auto realImpulse = real(impulse);
+	auto realImpulse = Real(impulse);
 
 	const size_t numCoeffs = realImpulse.Size();
 	if (numTaps == 0) {
@@ -83,7 +83,7 @@ auto FilterAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredRespo
 	const size_t numBins = desiredResponse.Length() * 2;
 	TimeSignal<T> extendedFilter = filter;
 	extendedFilter.Resize(numBins, T(0));
-	auto actualResponse = abs(FourierTransform(extendedFilter));
+	auto actualResponse = Abs(FourierTransform(extendedFilter));
 
 	auto magActual = DotProduct(AsConstSpan(actualResponse), AsConstSpan(actualResponse), desiredResponse.Size());
 	auto magDesired = DotProduct(AsConstSpan(desiredResponse), AsConstSpan(desiredResponse), desiredResponse.Size());

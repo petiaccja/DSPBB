@@ -46,6 +46,7 @@ public:
 	decltype(auto) operator[](typename SignalT::size_type index) const { return first[index]; }
 
 	size_type Size() const { return size_type(last - first); }
+	size_type Length() const { return Size(); }
 	bool Empty() const { return first == last; }
 
 	SignalView Subspan(size_type offset) const {

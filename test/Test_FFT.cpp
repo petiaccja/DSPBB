@@ -21,7 +21,7 @@ TEST_CASE("FFT - Real spectral peak", "[AudioFramework:FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 
 	Spectrum<std::complex<float>> complexSpectrum = FourierTransform(signal);
-	Spectrum<float> powerSpectrum = abs(complexSpectrum);
+	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
 
 	REQUIRE(complexSpectrum.Length() == fftSize);
 
@@ -35,7 +35,7 @@ TEST_CASE("FFT - Complex spectral peak", "[AudioFramework:FFT]") {
 	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 
 	Spectrum<std::complex<float>> complexSpectrum = FourierTransform(signal);
-	Spectrum<float> powerSpectrum = abs(complexSpectrum);
+	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
 
 	REQUIRE(complexSpectrum.Length() == fftSize);
 
@@ -76,7 +76,7 @@ TEST_CASE("Parseval's relation", "[AudioFramework:FFT]") {
 	Spectrum<std::complex<float>> spectrum = FourierTransform(signal);
 
 	const float signalSum = SumSquare(signal);
-	const float spectrumSum = SumSquare(abs(spectrum));
+	const float spectrumSum = SumSquare(Abs(spectrum));
 	
 	REQUIRE(signalSum == Approx(spectrumSum / fftSize));
 }
