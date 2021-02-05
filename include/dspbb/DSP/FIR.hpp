@@ -40,15 +40,16 @@ auto WindowedFirFilter(const Spectrum<T>& frequencyResponse, size_t numTaps = 0)
 }
 
 /// <summary>
-/// Creates a low-pass FIR filter by windowing the ideal low-pass filter
+/// Creates a low-pass FIR filter by windowing the ideal low-pass filter.
 /// </summary>
 /// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
 /// <param name="sampleRate"> The sampling rate of the signal you want to apply the filter to. </param>
 /// <param name="cutoffFrequency"> Frequencies below the cutoff are left as is, ones above are silenced. </param>
-/// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
-/// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
+/// <param name="window"></param>
+/// <returns></returns>
 template <class T>
-auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, size_t numTaps) {
+auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, const TimeSignal<T>& window) {
+	const auto numTaps = window.Size();
 	const T xOffset = T(numTaps - 1) / T(2);
 	const T xScale = T(cutoffFrequency) / T(sampleRate) * T(2) * pi_v<T>;
 
@@ -63,9 +64,22 @@ auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, size_t numTaps) {
 	}
 
 	auto norm = std::accumulate(impulse.begin(), impulse.end(), T(0));
-	auto window = HammingWindow<T>(numTaps);
 	return impulse * window / norm;
 }
+
+
+/// <summary>
+/// Creates a low-pass FIR filter by windowing the ideal low-pass filter.
+/// </summary>
+/// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
+/// <param name="sampleRate"> The sampling rate of the signal you want to apply the filter to. </param>
+/// <param name="cutoffFrequency"> Frequencies below the cutoff are left as is, ones above are silenced. </param>
+/// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
+/// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
+template <class T> auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, size_t numTaps, std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+	return WindowedLowPass(sampleRate, cutoffFrequency, windowFunc(numTaps));
+}
+
 
 
 /// <summary>

@@ -420,5 +420,8 @@ using TimeSignalCF = TimeSignal<std::complex<float>>;
 using SpectrumCF = Signal<std::complex<float>, eSignalDomain::FREQUENCY>;
 using SpectrumF = Signal<float, eSignalDomain::FREQUENCY>;
 
+using CepstrumCF = Signal<std::complex<float>, eSignalDomain::QUEFRENCY>;
+using CepstrumF = Signal<float, eSignalDomain::QUEFRENCY>;
+
 
 } // namespace dspbb

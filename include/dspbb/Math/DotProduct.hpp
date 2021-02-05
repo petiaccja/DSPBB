@@ -52,6 +52,8 @@ std::complex<ProductT<T, U>> DotProduct(SignalView<const std::complex<T>, Domain
 	return sum;
 }
 
+// Wrappers.
+
 template <class T, class U, eSignalDomain Domain>
 auto DotProduct(const Signal<T, Domain>& s1, SignalView<const U, Domain> s2, size_t length) {
 	return DotProduct(AsConstView(s1), s2, length);

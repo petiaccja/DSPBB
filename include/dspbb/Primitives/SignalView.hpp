@@ -181,5 +181,21 @@ SignalView<const T, Domain> AsConstView(const Signal<T, Domain>& signal) {
 }
 
 
+template <class T>
+using TimeSignalView = SignalView<T, eSignalDomain::TIME>;
+template <class T>
+using SpectrumView = SignalView<T, eSignalDomain::FREQUENCY>;
+template <class T>
+using CepstrumView = SignalView<T, eSignalDomain::QUEFRENCY>;
+
+using TimeSignalViewF = TimeSignalView<float>;
+using TimeSignalViewCF = TimeSignalView<std::complex<float>>;
+
+using SpectrumViewCF = SignalView<std::complex<float>, eSignalDomain::FREQUENCY>;
+using SpectrumViewF = SignalView<float, eSignalDomain::FREQUENCY>;
+
+using CepstrumViewCF = SignalView<std::complex<float>, eSignalDomain::QUEFRENCY>;
+using CepstrumViewF = SignalView<float, eSignalDomain::QUEFRENCY>;
+
 
 } // namespace dspbb

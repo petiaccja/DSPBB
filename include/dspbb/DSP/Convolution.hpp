@@ -112,7 +112,9 @@ auto ConvolutionFast(const Signal<T, Domain>& u, const Signal<U, Domain>& v, Pad
 	return ConvolutionFast(SignalView<const T, Domain>{ u }, SignalView<const U, Domain>{ v }, PaddingMode{});
 }
 
-
+/// <summary> Calculates the length of the result of the convolution U*V. </summary>
+/// <param name="lengthU"> Length of U. </param>
+/// <param name="lengthV"> Length of V. </param>
 inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Central) {
 	assert(lengthU > 0);
 	assert(lengthV > 0);
@@ -120,6 +122,9 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 	return longer - shorter + 1;
 }
 
+/// <summary> Calculates the length of the result of the convolution U*V. </summary>
+/// <param name="lengthU"> Length of U. </param>
+/// <param name="lengthV"> Length of V. </param>
 inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Full) {
 	assert(lengthU > 0);
 	assert(lengthV > 0);

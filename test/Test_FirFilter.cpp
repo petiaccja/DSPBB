@@ -29,7 +29,7 @@ TimeSignal<float> GenTestSignal(size_t sampleRate, float frequency, float length
 
 TEST_CASE("Low pass filter", "[AudioFramework:FirFilter]") {
 	constexpr size_t numTaps = 255;
-	const auto impulse = WindowedLowPass<float>(sampleRate, cutoff, numTaps);
+	const auto impulse = WindowedLowPass<float>(sampleRate, cutoff, numTaps, &HammingWindow<float, TIME_DOMAIN>);
 	REQUIRE(impulse.Size() == numTaps);
 
 	// Generate two signals just above and just below the cutoff and see their attenuation.
