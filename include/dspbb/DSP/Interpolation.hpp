@@ -5,7 +5,7 @@
 #include "PolyphaseFilter.hpp"
 
 
-namespace enl {
+namespace dspbb {
 
 
 /// <summary> Interpolates a signal using cubic polynomials. </summary>
@@ -92,4 +92,4 @@ TimeSignal<T> InterpolatePolyphase(Span<const T, TIME_DOMAIN> input,
 }
 
 
-} // namespace enl
+} // namespace dspbb

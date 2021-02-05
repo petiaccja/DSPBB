@@ -7,7 +7,7 @@
 #include "../Primitives/Span.hpp"
 
 
-namespace enl {
+namespace dspbb {
 
 template <class T>
 class PolyphaseFilter {
@@ -93,4 +93,4 @@ TimeSignal<T> PolyphaseFilter<T>::operator()(Span<const T, eSignalDomain::TIME> 
 }
 
 
-} // namespace enl
+} // namespace dspbb

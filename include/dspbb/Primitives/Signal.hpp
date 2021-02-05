@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 
-namespace enl {
+namespace dspbb {
 
 
 enum class eSignalDomain {
@@ -421,4 +421,4 @@ using SpectrumCF = Signal<std::complex<float>, eSignalDomain::FREQUENCY>;
 using SpectrumF = Signal<float, eSignalDomain::FREQUENCY>;
 
 
-} // namespace enl
+} // namespace dspbb

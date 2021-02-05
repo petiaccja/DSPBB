@@ -6,7 +6,7 @@
 #include <type_traits>
 
 
-namespace enl {
+namespace dspbb {
 
 
 template <class T, class U>
@@ -68,4 +68,4 @@ auto DotProduct(const Signal<T, Domain>& s1, const Signal<U, Domain>& s2, size_t
 }
 
 
-} // namespace enl
+} // namespace dspbb

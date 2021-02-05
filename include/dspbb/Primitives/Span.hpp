@@ -6,7 +6,7 @@
 #include "../Utility/TemplateUtil.hpp"
 
 
-namespace enl {
+namespace dspbb {
 
 
 template <class T, eSignalDomain Domain>
@@ -87,4 +87,4 @@ Span<const T, Domain> AsConstSpan(const Signal<T, Domain>& signal) {
 
 
 
-} // namespace enl
+} // namespace dspbb

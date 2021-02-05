@@ -4,7 +4,7 @@
 #include <type_traits>
 #include "TemplateUtil.hpp"
 
-namespace enl {
+namespace dspbb {
 
 namespace impl {
 	template <class T>
@@ -40,4 +40,4 @@ template <class T>
 using remove_complex_t = typename remove_complex<T>::type;
 
 
-} // namespace enl
+} // namespace dspbb

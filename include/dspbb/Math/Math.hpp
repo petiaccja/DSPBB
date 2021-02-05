@@ -5,7 +5,7 @@
 #include <complex>
 
 
-namespace enl {
+namespace dspbb {
 
 template <class T, eSignalDomain Domain>
 Signal<T, Domain> abs(const Signal<T, Domain>& signal) {
@@ -60,4 +60,4 @@ Signal<T, Domain> imag(const Signal<std::complex<T>, Domain>& signal) {
 
 
 
-} // namespace enl
+} // namespace dspbb

@@ -3,7 +3,7 @@
 #include <Catch2/catch.hpp>
 #include <cmath>
 
-using namespace enl;
+using namespace dspbb;
 
 
 TEST_CASE("Polyphase resample", "[AudioFramework:Interpolation]") {

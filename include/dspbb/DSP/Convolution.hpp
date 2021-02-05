@@ -9,7 +9,7 @@
 #include <complex>
 #include <type_traits>
 
-namespace enl {
+namespace dspbb {
 
 
 namespace convolution {
@@ -85,7 +85,7 @@ namespace impl {
 /// </summary>
 /// <typeparam name="T"> Any float or complex. </typeparam>
 /// <typeparam name="U"> Any float or complex, operations should work with <typeparamref name="T"/>. </typeparam>
-/// <typeparam name="PaddingMode"> One of <see cref="enl::convolution::full"/> or <see cref="enl::convolution::central"/>. </typeparam>
+/// <typeparam name="PaddingMode"> One of <see cref="dspbb::convolution::full"/> or <see cref="dspbb::convolution::central"/>. </typeparam>
 /// <param name="u"> The first argument of the convolution. </param>
 /// <param name="v"> The second argument of the convolution. </param>
 /// <returns> The result of the convolution. </returns>
@@ -103,7 +103,7 @@ auto ConvolutionFast(Span<const T, Domain> u, Span<const U, Domain> v, PaddingMo
 /// </summary>
 /// <typeparam name="T"> Any float or complex. </typeparam>
 /// <typeparam name="U"> Any float or complex, operations should work with <typeparamref name="T"/>. </typeparam>
-/// <typeparam name="PaddingMode"> One of <see cref="enl::convolution::full"/> or <see cref="enl::convolution::central"/>. </typeparam>
+/// <typeparam name="PaddingMode"> One of <see cref="dspbb::convolution::full"/> or <see cref="dspbb::convolution::central"/>. </typeparam>
 /// <param name="u"> The first argument of the convolution. </param>
 /// <param name="v"> The second argument of the convolution. </param>
 /// <returns> The result of the convolution. </returns>
@@ -128,4 +128,4 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 }
 
 
-} // namespace enl
+} // namespace dspbb

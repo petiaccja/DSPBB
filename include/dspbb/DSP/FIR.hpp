@@ -6,7 +6,7 @@
 
 #include <numeric>
 
-namespace enl {
+namespace dspbb {
 
 /// <summary>
 /// Creates an arbitrary FIR filter by windowing the impulse response acquired by the IFFT of the frequency response.
@@ -93,4 +93,4 @@ auto FilterAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredRespo
 }
 
 
-} // namespace enl
+} // namespace dspbb

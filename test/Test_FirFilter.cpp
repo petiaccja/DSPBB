@@ -6,7 +6,7 @@
 #include <Catch2/catch.hpp>
 #include <array>
 
-using namespace enl;
+using namespace dspbb;
 
 
 static constexpr size_t sampleRate = 44100;

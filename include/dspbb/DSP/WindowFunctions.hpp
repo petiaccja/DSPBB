@@ -6,7 +6,7 @@
 #include <cmath>
 
 
-namespace enl {
+namespace dspbb {
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> HammingWindow(size_t length) {
@@ -39,4 +39,4 @@ Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(0.5)) {
 
 
 
-} // namespace enl
+} // namespace dspbb

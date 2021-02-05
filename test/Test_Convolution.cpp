@@ -2,7 +2,7 @@
 
 #include <Catch2/catch.hpp>
 
-using namespace enl;
+using namespace dspbb;
 using namespace std::complex_literals;
 
 TEST_CASE("Real central", "[AudioFramework:Convolution]") {

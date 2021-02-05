@@ -3,7 +3,7 @@
 #include <Catch2/catch.hpp>
 #include <complex>
 
-using namespace enl;
+using namespace dspbb;
 using namespace std::complex_literals;
 
 TEST_CASE("Default construct", "[AudioFramework:Span]") {

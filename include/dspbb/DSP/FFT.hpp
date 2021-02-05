@@ -6,7 +6,7 @@
 #include <pocketfft/pocketfft_hdronly.h>
 
 
-namespace enl {
+namespace dspbb {
 
 
 template <class T, class Complex = std::enable_if_t<!is_complex_v<T>, std::complex<T>>>
@@ -60,4 +60,4 @@ inline size_t FourierFrequency2Bin(double frequency, size_t numBins, uint64_t sa
 }
 
 
-} // namespace enl
+} // namespace dspbb

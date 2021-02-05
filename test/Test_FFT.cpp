@@ -9,7 +9,7 @@
 #include <dspbb/Math/Math.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 
-using namespace enl;
+using namespace dspbb;
 
 constexpr uint64_t sampleRate = 16000;
 constexpr float frequency = 2000;

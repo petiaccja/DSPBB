@@ -5,7 +5,7 @@
 #include <cmath>
 #include <numeric>
 
-namespace enl {
+namespace dspbb {
 
 template <class T, eSignalDomain Domain>
 T Sum(Span<const T, Domain> signal) {
@@ -66,4 +66,4 @@ T StandardDeviation(const Signal<T, Domain>& signal) { return StandardDeviation(
 template <class T, eSignalDomain Domain>
 T Norm(const Signal<T, Domain>& signal) { return Norm(AsConstSpan(signal)); }
 
-} // namespace enl
+} // namespace dspbb

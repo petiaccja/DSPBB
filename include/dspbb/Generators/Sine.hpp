@@ -6,7 +6,7 @@
 #include <cstdint>
 
 
-namespace enl {
+namespace dspbb {
 
 template <class T, eSignalDomain Domain>
 Signal<T, Domain> SineWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0) {

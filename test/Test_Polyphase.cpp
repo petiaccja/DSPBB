@@ -4,7 +4,7 @@
 #include <cmath>
 #include <numbers>
 
-using namespace enl;
+using namespace dspbb;
 
 
 TEST_CASE("Polyphase upsample", "[AudioFramework:Polyphase]") {

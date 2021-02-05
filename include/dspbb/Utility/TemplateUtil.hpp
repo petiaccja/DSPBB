@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-namespace enl {
+namespace dspbb {
 
 template <class T, bool Pred>
 struct add_const_conditional {

@@ -4,7 +4,7 @@
 #include <Catch2/catch.hpp>
 #include <algorithm>
 
-using namespace enl;
+using namespace dspbb;
 
 
 TEST_CASE("Hamming window", "[AudioFramework:WindowFunctions]") {
