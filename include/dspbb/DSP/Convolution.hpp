@@ -1,0 +1,131 @@
+#pragma once
+
+#include "../Utility/TypeTraits.hpp"
+#include "../Math/DotProduct.hpp"
+
+#include "../Primitives/Signal.hpp"
+#include "../Primitives/Span.hpp"
+
+#include <complex>
+#include <type_traits>
+
+namespace enl {
+
+
+namespace convolution {
+	namespace impl {
+		class Central {};
+		class Full {};
+	} // namespace impl
+	constexpr impl::Central central;
+	constexpr impl::Full full;
+} // namespace convolution
+
+
+
+namespace impl {
+
+	template <class T, class U>
+	using ResultT = std::conditional_t<std::disjunction_v<is_complex<T>, is_complex<U>>,
+									   std::complex<ProductT<remove_complex_t<T>, remove_complex_t<U>>>,
+									   ProductT<remove_complex_t<T>, remove_complex_t<U>>>;
+
+	template <class T, class U, eSignalDomain Domain>
+	auto ConvolutionOrdered(Span<const T, Domain> base, Span<const U, Domain> running, convolution::impl::Full) {
+		using R = ResultT<T, U>;
+
+		assert(!base.Empty());
+		assert(!running.Empty());
+		assert(base.Size() > running.Size());
+
+		const size_t paddingLength = running.Size() - 1;
+
+		Signal<R, Domain> out;
+		
+		size_t outLength = base.Size() + paddingLength;
+		out.Reserve(base.Size() + 2 * paddingLength);
+		out.Append(Signal<R, Domain>(paddingLength, R(0)));
+		out.Insert(out.end(), base.begin(), base.end());
+		out.Append(Signal<R, Domain>(paddingLength, R(0)));
+		// In-place convolution
+		for (size_t offset = 0; offset < outLength; ++offset) {
+			out[offset] = DotProduct(Span<const R, Domain>{ out.begin() + offset, out.end() }, running, running.Size());
+		}
+		out.Resize(outLength);
+
+		return out;
+	}
+
+	template <class T, class U, eSignalDomain Domain>
+	auto ConvolutionOrdered(Span<const T, Domain> base, Span<const U, Domain> running, convolution::impl::Central) {
+		using R = ResultT<T, U>;
+
+		assert(!base.Empty());
+		assert(!running.Empty());
+		assert(base.Size() > running.Size());
+
+		const size_t paddingLength = running.Size() - 1;
+		const size_t centralLength = base.Size() - paddingLength;
+
+		Signal<R, Domain> out;
+
+		out.Resize(centralLength);
+		for (size_t offset = 0; offset < centralLength; ++offset) {
+			out[offset] = DotProduct(base.Subspan(offset), running, running.Size());
+		}
+
+		return out;
+	}
+	
+} // namespace impl
+
+
+/// <summary>
+/// Ordinary convolution, EXCEPT it does not flip <paramref name="v"/> on the X axis.
+/// </summary>
+/// <typeparam name="T"> Any float or complex. </typeparam>
+/// <typeparam name="U"> Any float or complex, operations should work with <typeparamref name="T"/>. </typeparam>
+/// <typeparam name="PaddingMode"> One of <see cref="enl::convolution::full"/> or <see cref="enl::convolution::central"/>. </typeparam>
+/// <param name="u"> The first argument of the convolution. </param>
+/// <param name="v"> The second argument of the convolution. </param>
+/// <returns> The result of the convolution. </returns>
+template <class T, class U, eSignalDomain Domain, class PaddingMode>
+auto ConvolutionFast(Span<const T, Domain> u, Span<const U, Domain> v, PaddingMode) {
+	assert(!u.Empty());
+	assert(!v.Empty());
+
+	return u.Size() >= v.Size() ? impl::ConvolutionOrdered(u, v, PaddingMode{}) : impl::ConvolutionOrdered(v, u, PaddingMode{});
+}
+
+
+/// <summary>
+/// Ordinary convolution, EXCEPT it does not flip <paramref name="v"/> on the X axis.
+/// </summary>
+/// <typeparam name="T"> Any float or complex. </typeparam>
+/// <typeparam name="U"> Any float or complex, operations should work with <typeparamref name="T"/>. </typeparam>
+/// <typeparam name="PaddingMode"> One of <see cref="enl::convolution::full"/> or <see cref="enl::convolution::central"/>. </typeparam>
+/// <param name="u"> The first argument of the convolution. </param>
+/// <param name="v"> The second argument of the convolution. </param>
+/// <returns> The result of the convolution. </returns>
+template <class T, class U, eSignalDomain Domain, class PaddingMode>
+auto ConvolutionFast(const Signal<T, Domain>& u, const Signal<U, Domain>& v, PaddingMode) {
+	return ConvolutionFast(Span<const T, Domain>{ u }, Span<const U, Domain>{ v }, PaddingMode{});
+}
+
+
+inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Central) {
+	assert(lengthU > 0);
+	assert(lengthV > 0);
+	auto [shorter, longer] = std::minmax(lengthU, lengthV);
+	return longer - shorter + 1;
+}
+
+inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Full) {
+	assert(lengthU > 0);
+	assert(lengthV > 0);
+	auto [shorter, longer] = std::minmax(lengthU, lengthV);
+	return longer + shorter - 1;
+}
+
+
+} // namespace enl
