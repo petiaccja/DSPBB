@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Utility/TemplateUtil.hpp"
+#include "../Utility/TypeTraits.hpp"
 #include "../Utility/TypeTraits.hpp"
 #include "Signal.hpp"
 

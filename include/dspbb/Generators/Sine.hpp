@@ -2,6 +2,7 @@
 
 #include <dspbb/Primitives/Signal.hpp>
 #include <dspbb/Utility/Numbers.hpp>
+#include <dspbb/Utility/TypeTraits.hpp>
 
 #include <cstdint>
 
@@ -14,7 +15,7 @@ Signal<T, Domain> SineWave(size_t length, uint64_t sampleRate, double frequency,
 	for (size_t i=0; i<length; ++i) {
 		double time = double(i) / double(sampleRate);
 		double totalPhase = 2 * pi_v<double> * time * frequency + phase;
-		signal[i] = T(std::sin(totalPhase));
+		signal[i] = T(remove_complex_t<T>(std::sin(totalPhase)));
 	}
 	return signal;
 }
