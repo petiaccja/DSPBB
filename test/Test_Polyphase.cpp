@@ -15,6 +15,6 @@ TEST_CASE("Polyphase upsample", "[AudioFramework:Polyphase]") {
 		signal[i] = std::sin(2.0f * pi_v<float> * float(i) / 44100.f * 100.f);
 	}
 
-	auto filtered = polyphase(Span<const float, TIME_DOMAIN>{ signal.begin(), signal.end() }, convolution::full);
+	auto filtered = polyphase(SignalView<const float, TIME_DOMAIN>{ signal.begin(), signal.end() }, convolution::full);
 	REQUIRE(filtered.Size() > signal.Size());
 }

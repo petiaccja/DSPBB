@@ -50,7 +50,7 @@ TimeSignal<T> InterpolateCubic(const TimeSignal<T>& input, const uint64_t sample
 ///		must be at most the lower of the Nyquist frequencies of either the input or output
 ///		sample rates. </remarks>
 template <class T>
-TimeSignal<T> InterpolatePolyphase(Span<const T, TIME_DOMAIN> input,
+TimeSignal<T> InterpolatePolyphase(SignalView<const T, TIME_DOMAIN> input,
 								   const PolyphaseFilter<T>& filter,
 								   const uint64_t sampleRateIn,
 								   const uint64_t sampleRateOut,

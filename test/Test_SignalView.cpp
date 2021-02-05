@@ -1,4 +1,4 @@
-#include <dspbb/Primitives/Span.hpp>
+#include <dspbb/Primitives/SignalView.hpp>
 
 #include <Catch2/catch.hpp>
 #include <complex>
@@ -6,57 +6,57 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
-TEST_CASE("Default construct", "[AudioFramework:Span]") {
-	Span<float, TIME_DOMAIN> span;
+TEST_CASE("Default construct", "[AudioFramework:SignalView]") {
+	SignalView<float, TIME_DOMAIN> span;
 	REQUIRE(span.Empty());
 	REQUIRE(span.Size() == 0);
 
-	Span<std::complex<float>, TIME_DOMAIN> cspan;
+	SignalView<std::complex<float>, TIME_DOMAIN> cspan;
 	REQUIRE(cspan.Empty());
 	REQUIRE(cspan.Size() == 0);
 }
 
 
-TEST_CASE("Whole span", "[AudioFramework:Span]") {
+TEST_CASE("Whole span", "[AudioFramework:SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
-	Span<float, TIME_DOMAIN> span{ signal };
+	SignalView<float, TIME_DOMAIN> span{ signal };
 	REQUIRE(span.Size() == signal.Size());
 	REQUIRE(span[0] == 1);
 	REQUIRE(span[5] == 6);
 }
 
 
-TEST_CASE("Partial span size", "[AudioFramework:Span]") {
+TEST_CASE("Partial span size", "[AudioFramework:SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
-	Span<float, TIME_DOMAIN> span{ signal.begin() + 3, 2 };
+	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 3, 2 };
 	REQUIRE(span.Size() == 2);
 	REQUIRE(span[0] == 4);
 	REQUIRE(span[1] == 5);
 }
 
 
-TEST_CASE("Partial span iterators", "[AudioFramework:Span]") {
+TEST_CASE("Partial span iterators", "[AudioFramework:SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
-	Span<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
+	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(span.Size() == 2);
 	REQUIRE(span[0] == 3);
 	REQUIRE(span[1] == 4);
 }
 
 
-TEST_CASE("Data pointer", "[AudioFramework:Span]") {
+TEST_CASE("Data pointer", "[AudioFramework:SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
-	Span<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
+	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	auto* v = span.Data();
 	REQUIRE(*span.Data() == 3);
 }
 
 
-TEST_CASE("Real/Imag pointer", "[AudioFramework:Span]") {
+TEST_CASE("Real/Imag pointer", "[AudioFramework:SignalView]") {
 	using namespace std::complex_literals;
 	TimeSignalCF signal = { 1.f + 2.if,
 							2.f + 3.if,
@@ -65,16 +65,16 @@ TEST_CASE("Real/Imag pointer", "[AudioFramework:Span]") {
 							5.f + 8.if,
 							6.f + 9.if };
 
-	Span<std::complex<float>, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
+	SignalView<std::complex<float>, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(span.Data()->real() == 3);
 	REQUIRE(span.Data()->imag() == 6);
 }
 
 
-TEST_CASE("Constant span", "[AudioFramework:Span]") {
+TEST_CASE("Constant span", "[AudioFramework:SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
-	Span<const float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
+	SignalView<const float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(*span.Data() == 3);
 
 	TimeSignalCF csignal = { 1.f + 2.if,
@@ -84,7 +84,7 @@ TEST_CASE("Constant span", "[AudioFramework:Span]") {
 							5.f + 8.if,
 							6.f + 9.if };
 
-	Span<const std::complex<float>, TIME_DOMAIN> cspan{ csignal.begin() + 2, csignal.begin() + 4 };
+	SignalView<const std::complex<float>, TIME_DOMAIN> cspan{ csignal.begin() + 2, csignal.begin() + 4 };
 	REQUIRE(cspan.Data()->real() == 3);
 }
 

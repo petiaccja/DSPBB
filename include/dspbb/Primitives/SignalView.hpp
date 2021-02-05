@@ -10,7 +10,7 @@ namespace dspbb {
 
 
 template <class T, eSignalDomain Domain>
-class Span {
+class SignalView {
 public:
 	using SignalT = Signal<std::remove_const_t<T>, Domain>;
 		
@@ -21,13 +21,13 @@ public:
 	using size_type = typename SignalT::size_type;
 
 public:
-	Span() = default;
+	SignalView() = default;
 	template <class Q = std::enable_if_t<!std::is_const<T>::value, int>>
-	Span(SignalT& signal, Q = 0) : Span(signal.begin(), signal.end()) {}
+	SignalView(SignalT& signal, Q = 0) : SignalView(signal.begin(), signal.end()) {}
 	template <class Q = std::enable_if_t<std::is_const<T>::value, int>>
-	Span(const SignalT& signal, Q = 0) : Span(signal.begin(), signal.end()) {}
-	Span(iterator first, iterator last) : first(first), last(last) {}
-	Span(iterator first, size_t size) : first(first), last(first + size) {}
+	SignalView(const SignalT& signal, Q = 0) : SignalView(signal.begin(), signal.end()) {}
+	SignalView(iterator first, iterator last) : first(first), last(last) {}
+	SignalView(iterator first, size_t size) : first(first), last(first + size) {}
 
 	iterator begin() { return first; }
 	const_iterator begin() const { return first; }
@@ -48,19 +48,19 @@ public:
 	size_type Size() const { return size_type(last - first); }
 	bool Empty() const { return first == last; }
 
-	Span Subspan(size_type offset) const {
+	SignalView Subspan(size_type offset) const {
 		assert(offset <= this->Size());
 		return { this->first + offset, this->last };
 	}
-	Span Subspan(size_type offset, size_type count) const {
+	SignalView Subspan(size_type offset, size_type count) const {
 		assert(offset <= this->Size());
 		assert(offset + count <= this->Size());
 		return { this->first + offset, this->first + offset + count };
 	}
 
 	template <class U = std::enable_if_t<!std::is_const_v<T>, const T>>
-	operator Span<U, Domain>() const {
-		return Span<U, Domain>{ this->begin(), this->end() };
+	operator SignalView<U, Domain>() const {
+		return SignalView<U, Domain>{ this->begin(), this->end() };
 	}
 	
 	T* Data() { return std::addressof(*this->first); }
@@ -71,17 +71,17 @@ protected:
 };
 
 template <class T, eSignalDomain Domain>
-Span<T, Domain> AsSpan(Signal<T, Domain>& signal) {
+SignalView<T, Domain> AsSpan(Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
 
 template <class T, eSignalDomain Domain>
-Span<const T, Domain> AsSpan(const Signal<T, Domain>& signal) {
+SignalView<const T, Domain> AsSpan(const Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
 
 template <class T, eSignalDomain Domain>
-Span<const T, Domain> AsConstSpan(const Signal<T, Domain>& signal) {
+SignalView<const T, Domain> AsConstSpan(const Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
 

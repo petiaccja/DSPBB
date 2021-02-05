@@ -4,7 +4,7 @@
 #include "../Math/DotProduct.hpp"
 
 #include "../Primitives/Signal.hpp"
-#include "../Primitives/Span.hpp"
+#include "../Primitives/SignalView.hpp"
 
 #include <complex>
 #include <type_traits>
@@ -31,7 +31,7 @@ namespace impl {
 									   ProductT<remove_complex_t<T>, remove_complex_t<U>>>;
 
 	template <class T, class U, eSignalDomain Domain>
-	auto ConvolutionOrdered(Span<const T, Domain> base, Span<const U, Domain> running, convolution::impl::Full) {
+	auto ConvolutionOrdered(SignalView<const T, Domain> base, SignalView<const U, Domain> running, convolution::impl::Full) {
 		using R = ResultT<T, U>;
 
 		assert(!base.Empty());
@@ -49,7 +49,7 @@ namespace impl {
 		out.Append(Signal<R, Domain>(paddingLength, R(0)));
 		// In-place convolution
 		for (size_t offset = 0; offset < outLength; ++offset) {
-			out[offset] = DotProduct(Span<const R, Domain>{ out.begin() + offset, out.end() }, running, running.Size());
+			out[offset] = DotProduct(SignalView<const R, Domain>{ out.begin() + offset, out.end() }, running, running.Size());
 		}
 		out.Resize(outLength);
 
@@ -57,7 +57,7 @@ namespace impl {
 	}
 
 	template <class T, class U, eSignalDomain Domain>
-	auto ConvolutionOrdered(Span<const T, Domain> base, Span<const U, Domain> running, convolution::impl::Central) {
+	auto ConvolutionOrdered(SignalView<const T, Domain> base, SignalView<const U, Domain> running, convolution::impl::Central) {
 		using R = ResultT<T, U>;
 
 		assert(!base.Empty());
@@ -90,7 +90,7 @@ namespace impl {
 /// <param name="v"> The second argument of the convolution. </param>
 /// <returns> The result of the convolution. </returns>
 template <class T, class U, eSignalDomain Domain, class PaddingMode>
-auto ConvolutionFast(Span<const T, Domain> u, Span<const U, Domain> v, PaddingMode) {
+auto ConvolutionFast(SignalView<const T, Domain> u, SignalView<const U, Domain> v, PaddingMode) {
 	assert(!u.Empty());
 	assert(!v.Empty());
 
@@ -109,7 +109,7 @@ auto ConvolutionFast(Span<const T, Domain> u, Span<const U, Domain> v, PaddingMo
 /// <returns> The result of the convolution. </returns>
 template <class T, class U, eSignalDomain Domain, class PaddingMode>
 auto ConvolutionFast(const Signal<T, Domain>& u, const Signal<U, Domain>& v, PaddingMode) {
-	return ConvolutionFast(Span<const T, Domain>{ u }, Span<const U, Domain>{ v }, PaddingMode{});
+	return ConvolutionFast(SignalView<const T, Domain>{ u }, SignalView<const U, Domain>{ v }, PaddingMode{});
 }
 
 

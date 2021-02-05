@@ -1,6 +1,6 @@
 #include "dspbb/Math/DotProduct.hpp"
 #include "dspbb/Primitives/Signal.hpp"
-#include "dspbb/Primitives/Span.hpp"
+#include "dspbb/Primitives/SignalView.hpp"
 
 #include <cmath>
 #include <numeric>
@@ -8,31 +8,31 @@
 namespace dspbb {
 
 template <class T, eSignalDomain Domain>
-T Sum(Span<const T, Domain> signal) {
+T Sum(SignalView<const T, Domain> signal) {
 	return std::accumulate(signal.begin(), signal.end(), T(0));
 }
 
 
 template <class T, eSignalDomain Domain>
-T Mean(Span<const T, Domain> signal) {
+T Mean(SignalView<const T, Domain> signal) {
 	return !signal.Empty() ? Sum(signal) / T(signal.Size()) : T(0);
 }
 
 
 template <class T, eSignalDomain Domain>
-T SumSquare(Span<const T, Domain> signal) {
+T SumSquare(SignalView<const T, Domain> signal) {
 	return DotProduct(signal, signal, signal.Size());
 }
 
 
 template <class T, eSignalDomain Domain>
-T RootMeanSquare(Span<const T, Domain> signal) {
+T RootMeanSquare(SignalView<const T, Domain> signal) {
 	return !signal.Empty() ? std::sqrt(Sum(signal) / T(signal.Size())) : T(0);
 }
 
 
 template <class T, eSignalDomain Domain>
-T StandardDeviation(Span<const T, Domain> signal) {
+T StandardDeviation(SignalView<const T, Domain> signal) {
 	const T mean = Mean(signal);
 	const Signal<T, Domain> diff = Signal<T, Domain>{ signal.begin(), signal.end() } - mean;
 	T sum = SumSquare(diff);
@@ -41,7 +41,7 @@ T StandardDeviation(Span<const T, Domain> signal) {
 
 
 template <class T, eSignalDomain Domain>
-T Norm(Span<const T, Domain> signal) {
+T Norm(SignalView<const T, Domain> signal) {
 	return std::sqrt(SumSquare(signal));
 }
 
