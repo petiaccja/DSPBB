@@ -54,17 +54,17 @@ std::complex<ProductT<T, U>> DotProduct(SignalView<const std::complex<T>, Domain
 
 template <class T, class U, eSignalDomain Domain>
 auto DotProduct(const Signal<T, Domain>& s1, SignalView<const U, Domain> s2, size_t length) {
-	return DotProduct(AsConstSpan(s1), s2, length);
+	return DotProduct(AsConstView(s1), s2, length);
 }
 
 template <class T, class U, eSignalDomain Domain>
 auto DotProduct(SignalView<const T, Domain> s1, const Signal<U, Domain>& s2, size_t length) {
-	return DotProduct(s1, AsConstSpan(s2), length);
+	return DotProduct(s1, AsConstView(s2), length);
 }
 
 template <class T, class U, eSignalDomain Domain>
 auto DotProduct(const Signal<T, Domain>& s1, const Signal<U, Domain>& s2, size_t length) {
-	return DotProduct(AsConstSpan(s1), AsConstSpan(s2), length);
+	return DotProduct(AsConstView(s1), AsConstView(s2), length);
 }
 
 

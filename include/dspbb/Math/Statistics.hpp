@@ -49,21 +49,21 @@ T Norm(SignalView<const T, Domain> signal) {
 // Wrappers.
 
 template <class T, eSignalDomain Domain>
-T Sum(const Signal<T, Domain>& signal) { return Sum(AsConstSpan(signal)); }
+T Sum(const Signal<T, Domain>& signal) { return Sum(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-T Mean(const Signal<T, Domain>& signal) { return Mean(AsConstSpan(signal)); }
+T Mean(const Signal<T, Domain>& signal) { return Mean(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-T SumSquare(const Signal<T, Domain>& signal) { return SumSquare(AsConstSpan(signal)); }
+T SumSquare(const Signal<T, Domain>& signal) { return SumSquare(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-T RootMeanSquare(const Signal<T, Domain>& signal) { return RootMeanSquare(AsConstSpan(signal)); }
+T RootMeanSquare(const Signal<T, Domain>& signal) { return RootMeanSquare(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-T StandardDeviation(const Signal<T, Domain>& signal) { return StandardDeviation(AsConstSpan(signal)); }
+T StandardDeviation(const Signal<T, Domain>& signal) { return StandardDeviation(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-T Norm(const Signal<T, Domain>& signal) { return Norm(AsConstSpan(signal)); }
+T Norm(const Signal<T, Domain>& signal) { return Norm(AsConstView(signal)); }
 
 } // namespace dspbb

@@ -50,7 +50,7 @@ auto WindowedFirFilter(const Spectrum<T>& frequencyResponse, size_t numTaps = 0)
 template <class T>
 auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, size_t numTaps) {
 	const T xOffset = T(numTaps - 1) / T(2);
-	const T xScale = T(cutoffFrequency) / T(sampleRate) * 2 * pi_v<float>;
+	const T xScale = T(cutoffFrequency) / T(sampleRate) * T(2) * pi_v<T>;
 
 	TimeSignal<T> impulse(numTaps);
 	for (size_t x = 0; x < numTaps; ++x) {
@@ -85,9 +85,9 @@ auto FilterAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredRespo
 	extendedFilter.Resize(numBins, T(0));
 	auto actualResponse = Abs(FourierTransform(extendedFilter));
 
-	auto magActual = DotProduct(AsConstSpan(actualResponse), AsConstSpan(actualResponse), desiredResponse.Size());
-	auto magDesired = DotProduct(AsConstSpan(desiredResponse), AsConstSpan(desiredResponse), desiredResponse.Size());
-	auto similarity = DotProduct(AsConstSpan(desiredResponse), AsConstSpan(actualResponse), desiredResponse.Size());
+	auto magActual = DotProduct(AsConstView(actualResponse), AsConstView(actualResponse), desiredResponse.Size());
+	auto magDesired = DotProduct(AsConstView(desiredResponse), AsConstView(desiredResponse), desiredResponse.Size());
+	auto similarity = DotProduct(AsConstView(desiredResponse), AsConstView(actualResponse), desiredResponse.Size());
 
 	return similarity / std::max(magActual, magDesired);
 }

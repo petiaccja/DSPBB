@@ -71,7 +71,7 @@ namespace impl {
 
 		out.Resize(centralLength);
 		for (size_t offset = 0; offset < centralLength; ++offset) {
-			out[offset] = DotProduct(base.Subspan(offset), running, running.Size());
+			out[offset] = DotProduct(base.SubSignal(offset), running, running.Size());
 		}
 
 		return out;

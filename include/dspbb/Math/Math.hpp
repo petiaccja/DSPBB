@@ -58,16 +58,16 @@ Signal<T, Domain> Imag(SignalView<const std::complex<T>, Domain> signal) {
 // Wrappers
 
 template <class T, eSignalDomain Domain>
-auto Abs(const Signal<std::complex<T>, Domain>& signal) { return Abs(AsConstSpan(signal)); }
+auto Abs(const Signal<std::complex<T>, Domain>& signal) { return Abs(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-auto Log(const Signal<std::complex<T>, Domain>& signal) { return Log(AsConstSpan(signal)); }
+auto Log(const Signal<std::complex<T>, Domain>& signal) { return Log(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-auto Real(const Signal<T, Domain>& signal) { return Real(AsConstSpan(signal)); }
+auto Real(const Signal<T, Domain>& signal) { return Real(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-auto Imag(const Signal<std::complex<T>, Domain>& signal) { return Imag(AsConstSpan(signal)); }
+auto Imag(const Signal<std::complex<T>, Domain>& signal) { return Imag(AsConstView(signal)); }
 
 
 

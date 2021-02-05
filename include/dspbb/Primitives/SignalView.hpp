@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Signal.hpp"
-
-#include "../Utility/TypeTraits.hpp"
 #include "../Utility/TemplateUtil.hpp"
+#include "../Utility/TypeTraits.hpp"
+#include "Signal.hpp"
 
 
 namespace dspbb {
@@ -13,7 +12,7 @@ template <class T, eSignalDomain Domain>
 class SignalView {
 public:
 	using SignalT = Signal<std::remove_const_t<T>, Domain>;
-		
+
 	using iterator = std::conditional_t<!std::is_const_v<T>, typename SignalT::iterator, typename SignalT::const_iterator>;
 	using const_iterator = typename SignalT::const_iterator;
 	using reverse_iterator = std::conditional_t<!std::is_const_v<T>, typename SignalT::reverse_iterator, typename SignalT::const_reverse_iterator>;
@@ -22,12 +21,14 @@ public:
 
 public:
 	SignalView() = default;
+
 	template <class Q = std::enable_if_t<!std::is_const<T>::value, int>>
-	SignalView(SignalT& signal, Q = 0) : SignalView(signal.begin(), signal.end()) {}
+	SignalView(SignalT& signal, Q = 0);
+
 	template <class Q = std::enable_if_t<std::is_const<T>::value, int>>
-	SignalView(const SignalT& signal, Q = 0) : SignalView(signal.begin(), signal.end()) {}
-	SignalView(iterator first, iterator last) : first(first), last(last) {}
-	SignalView(iterator first, size_t size) : first(first), last(first + size) {}
+	SignalView(const SignalT& signal, Q = 0);
+	SignalView(iterator first, iterator last);
+	SignalView(iterator first, size_t size);
 
 	iterator begin() { return first; }
 	const_iterator begin() const { return first; }
@@ -42,47 +43,140 @@ public:
 	const_reverse_iterator rend() const { return const_reverse_iterator{ last }; }
 	const_reverse_iterator crend() const { return const_reverse_iterator{ last }; }
 
-	decltype(auto) operator[](typename SignalT::size_type index) { return first[index]; }
-	decltype(auto) operator[](typename SignalT::size_type index) const { return first[index]; }
+	T& Front();
+	const T& Front() const;
+	T& Back();
+	const T& Back() const;
+	T& operator[](typename SignalT::size_type index);
+	const T& operator[](typename SignalT::size_type index) const;
+	T* Data();
+	const T* Data() const;
 
-	size_type Size() const { return size_type(last - first); }
-	size_type Length() const { return Size(); }
-	bool Empty() const { return first == last; }
 
-	SignalView Subspan(size_type offset) const {
-		assert(offset <= this->Size());
-		return { this->first + offset, this->last };
-	}
-	SignalView Subspan(size_type offset, size_type count) const {
-		assert(offset <= this->Size());
-		assert(offset + count <= this->Size());
-		return { this->first + offset, this->first + offset + count };
-	}
+	size_type Size() const;
+	size_type Length() const;
+	size_type SizeBytes() const;
+	bool Empty() const;
+
+	SignalView First(size_type n);
+	SignalView Last(size_type n);
+	SignalView SubSignal(size_type offset) const;
+	SignalView SubSignal(size_type offset, size_type count) const;
 
 	template <class U = std::enable_if_t<!std::is_const_v<T>, const T>>
-	operator SignalView<U, Domain>() const {
-		return SignalView<U, Domain>{ this->begin(), this->end() };
-	}
-	
-	T* Data() { return std::addressof(*this->first); }
-	const T* Data() const { return std::addressof(*this->first); }
+	operator SignalView<U, Domain>() const;
+
 
 protected:
 	iterator first, last;
 };
 
+
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain> AsSpan(Signal<T, Domain>& signal) {
+template <class Q>
+SignalView<T, Domain>::SignalView(SignalT& signal, Q)
+	: SignalView(signal.begin(), signal.end()) {
+}
+
+template <class T, eSignalDomain Domain>
+template <class Q>
+SignalView<T, Domain>::SignalView(const SignalT& signal, Q)
+	: SignalView(signal.begin(), signal.end()) {
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain>::SignalView(iterator first, iterator last)
+	: first(first),
+	  last(last) {
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain>::SignalView(iterator first, size_t size)
+	: first(first),
+	  last(first + size) {
+}
+
+template <class T, eSignalDomain Domain>
+T& SignalView<T, Domain>::Front() { return *first; }
+
+template <class T, eSignalDomain Domain>
+const T& SignalView<T, Domain>::Front() const { return *first; }
+
+template <class T, eSignalDomain Domain>
+T& SignalView<T, Domain>::Back() { return *(last - 1); }
+
+template <class T, eSignalDomain Domain>
+const T& SignalView<T, Domain>::Back() const { return *(last - 1); }
+
+template <class T, eSignalDomain Domain>
+T& SignalView<T, Domain>::operator[](typename SignalT::size_type index) { return first[index]; }
+
+template <class T, eSignalDomain Domain>
+const T& SignalView<T, Domain>::operator[](typename SignalT::size_type index) const { return first[index]; }
+
+template <class T, eSignalDomain Domain>
+T* SignalView<T, Domain>::Data() { return std::addressof(*first); }
+
+template <class T, eSignalDomain Domain>
+const T* SignalView<T, Domain>::Data() const { return std::addressof(*first); }
+
+template <class T, eSignalDomain Domain>
+typename SignalView<T, Domain>::size_type SignalView<T, Domain>::Size() const { return size_type(last - first); }
+
+template <class T, eSignalDomain Domain>
+typename SignalView<T, Domain>::size_type SignalView<T, Domain>::Length() const { return Size(); }
+
+template <class T, eSignalDomain Domain>
+typename SignalView<T, Domain>::size_type SignalView<T, Domain>::SizeBytes() const { return sizeof(T) * Size(); }
+
+template <class T, eSignalDomain Domain>
+bool SignalView<T, Domain>::Empty() const { return first == last; }
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain> SignalView<T, Domain>::First(size_type n) {
+	assert(n < Size());
+	return { first, first + n };
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain> SignalView<T, Domain>::Last(size_type n) {
+	assert(n < Size());
+	return { last - n, last };
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset) const {
+	assert(offset <= this->Size());
+	return { this->first + offset, this->last };
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_type count) const {
+	assert(offset <= this->Size());
+	assert(offset + count <= this->Size());
+	return { this->first + offset, this->first + offset + count };
+}
+
+template <class T, eSignalDomain Domain>
+template <class U>
+SignalView<T, Domain>::operator SignalView<U, Domain>() const {
+	return SignalView<U, Domain>{ this->begin(), this->end() };
+}
+
+// Helpers
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain> AsView(Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsSpan(const Signal<T, Domain>& signal) {
+SignalView<const T, Domain> AsView(const Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsConstSpan(const Signal<T, Domain>& signal) {
+SignalView<const T, Domain> AsConstView(const Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
 

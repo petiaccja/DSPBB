@@ -80,8 +80,8 @@ TimeSignal<T> InterpolatePolyphase(SignalView<const T, TIME_DOMAIN> input,
 			break;
 		}
 
-		const T sampleLeft = DotProduct(input.Subspan(inputIdx), filter.Filter(leftPolyphaseIdx), polyphaseTaps);
-		const T sampleRight = DotProduct(input.Subspan(rightInputIdx), filter.Filter(rightPolyphaseIdx), polyphaseTaps);
+		const T sampleLeft = DotProduct(input.SubSignal(inputIdx), filter.Filter(leftPolyphaseIdx), polyphaseTaps);
+		const T sampleRight = DotProduct(input.SubSignal(rightInputIdx), filter.Filter(rightPolyphaseIdx), polyphaseTaps);
 		const T lerpParam = T(polyphaseFractionHiRate) / T(sampleRateOut);
 		const T sample = sampleLeft * (T(1) - lerpParam) + sampleRight * lerpParam;
 
