@@ -55,7 +55,7 @@ size_t PolyphaseFilter<T>::NumTaps() const {
 
 template <class T>
 TimeSignal<T> PolyphaseFilter<T>::CreateLowPass(uint64_t sampleRate, float cutoffFrequency, unsigned numFilters, unsigned numTaps) {
-	return WindowedLowPass<T>(sampleRate * numFilters, cutoffFrequency, numTaps);
+	return FirLowPassWindowed<T>(sampleRate * numFilters, cutoffFrequency, numTaps);
 }
 
 template <class T>

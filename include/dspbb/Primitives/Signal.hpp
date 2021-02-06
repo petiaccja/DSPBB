@@ -113,15 +113,26 @@ public:
 	Signal operator*(const T& scalar) const { return Signal(*this) *= scalar; }
 	Signal operator/(const T& scalar) const { return Signal(*this) /= scalar; }
 
-	friend Signal operator+(const T& scalar, const Signal& signal) { return signal * scalar; }
-	friend Signal operator-(const T& scalar, const Signal& signal) { return signal * scalar; }
+	friend Signal operator+(const T& scalar, const Signal& signal) { return signal + scalar; }
+	friend Signal operator-(const T& scalar, const Signal& signal) {
+		Signal result(signal.Size());
+		for (size_t i = 0; i < signal.Size(); ++i) {
+			result[i] = scalar - signal[i];
+		}
+		return result;
+	}
 	friend Signal operator*(const T& scalar, const Signal& signal) { return signal * scalar; }
-	friend Signal operator/(const T& scalar, const Signal& signal) { return signal * scalar; }
+	friend Signal operator/(const T& scalar, const Signal& signal) {
+		Signal result(signal.Size());
+		for (size_t i = 0; i < signal.Size(); ++i) {
+			result[i] = scalar / signal[i];
+		}
+		return result;
+	}
 
 private:
 	std::vector<T> m_samples;
 };
-
 
 
 //------------------------------------------------------------------------------

@@ -29,7 +29,7 @@ TimeSignal<float> GenTestSignal(size_t sampleRate, float frequency, float length
 
 TEST_CASE("Low pass filter", "[AudioFramework:FirFilter]") {
 	constexpr size_t numTaps = 255;
-	const auto impulse = WindowedLowPass<float>(sampleRate, cutoff, numTaps, &HammingWindow<float, TIME_DOMAIN>);
+	const auto impulse = FirLowPassWindowed<float>(sampleRate, cutoff, numTaps, &HammingWindow<float, TIME_DOMAIN>);
 	REQUIRE(impulse.Size() == numTaps);
 
 	// Generate two signals just above and just below the cutoff and see their attenuation.
@@ -60,9 +60,12 @@ TEST_CASE("Arbitrary filter", "[AudioFramework:FirFilter]") {
 	std::fill(frequencyResponse.begin() + 2048, frequencyResponse.begin() + 4096, amplitudes[2]);
 	std::fill(frequencyResponse.begin() + 4096, frequencyResponse.end(), amplitudes[3]);
 
-	const auto impulse = WindowedFirFilter(frequencyResponse, numTaps);
+	const auto impulse = FirGeneralWindowed(frequencyResponse, numTaps);
 	REQUIRE(impulse.Size() == numTaps);
 
+	const float quality = FirAccuracy(impulse, frequencyResponse);
+	REQUIRE(quality > 0.9f);
+	
 	for (size_t i = 0; i < amplitudes.size(); ++i) {
 		const auto signal = GenTestSignal(sampleRate, frequencies[i]*nyquistLimit);
 		const auto filtered = ConvolutionFast(signal, impulse, convolution::full);
@@ -71,6 +74,4 @@ TEST_CASE("Arbitrary filter", "[AudioFramework:FirFilter]") {
 		REQUIRE(std::abs(amplitudes[i]*energy - filteredEnergy)/energy < 0.1);
 	}
 
-	const float quality = FilterAccuracy(impulse, frequencyResponse);
-	REQUIRE(quality > 0.9f);
 }

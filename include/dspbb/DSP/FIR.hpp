@@ -8,6 +8,49 @@
 
 namespace dspbb {
 
+
+/// <summary>
+/// Creates an arbitrary FIR filter by windowing the impulse response acquired by the IFFT of the frequency response.
+/// </summary>
+/// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
+/// <param name="frequencyResponse"> Amplification of frequencies from 0 to sample rate/2. </param>
+/// <param name="window"> The window function to apply to the impulse response. Also defines number of taps,
+///		which must be less-equal than twice the number of coefficients in the frequency response. </param>
+/// <returns> The coefficients of the impulse response of the FIR filter. </returns>
+template <class T>
+auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSignalView<const T> window) {
+	const size_t numTaps = window.Size();
+	assert(numTaps <= frequencyResponse.Size() * 2);
+	assert(numTaps != 0);
+	Spectrum<T> symmetricResponse(frequencyResponse.Size() * 2);
+	std::copy(frequencyResponse.begin(), frequencyResponse.end(), symmetricResponse.begin());
+	std::copy(frequencyResponse.rbegin(), frequencyResponse.rend(), symmetricResponse.begin() + frequencyResponse.Size());
+
+	auto impulse = FourierTransform<remove_complex_t<T>>(symmetricResponse);
+	auto realImpulse = Real(impulse);
+
+	TimeSignal<T> shortImpulse(numTaps);
+	std::copy(realImpulse.begin(), realImpulse.begin() + numTaps - numTaps / 2, shortImpulse.begin() + numTaps / 2);
+	std::copy(realImpulse.end() - numTaps / 2, realImpulse.end(), shortImpulse.begin());
+
+	return std::sqrt(T(2)) * shortImpulse * window;
+}
+
+
+/// <summary>
+/// Creates an arbitrary FIR filter by windowing the impulse response acquired by the IFFT of the frequency response.
+/// </summary>
+/// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
+/// <param name="frequencyResponse"> Amplification of frequencies from 0 to sample rate/2. </param>
+/// <param name="window"> The window function to apply to the impulse response. Also defines number of taps,
+///		which must be less-equal than twice the number of coefficients in the frequency response. </param>
+/// <returns> The coefficients of the impulse response of the FIR filter. </returns>
+template <class T>
+auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const TimeSignal<T>& window) {
+	return FirGeneralWindowed(frequencyResponse, AsConstView(window));
+}
+
+
 /// <summary>
 /// Creates an arbitrary FIR filter by windowing the impulse response acquired by the IFFT of the frequency response.
 /// </summary>
@@ -17,27 +60,12 @@ namespace dspbb {
 ///		Must be less-equal than twice the number of coefficients in the frequency response. </param>
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
 template <class T>
-auto WindowedFirFilter(const Spectrum<T>& frequencyResponse, size_t numTaps = 0) {
-	assert(numTaps <= frequencyResponse.Size() * 2);
-	Spectrum<T> symmetricResponse(frequencyResponse.Size() * 2);
-	std::copy(frequencyResponse.begin(), frequencyResponse.end(), symmetricResponse.begin());
-	std::copy(frequencyResponse.rbegin(), frequencyResponse.rend(), symmetricResponse.begin() + frequencyResponse.Size());
-
-
-	auto impulse = FourierTransform<remove_complex_t<T>>(symmetricResponse);
-	auto realImpulse = Real(impulse);
-
-	const size_t numCoeffs = realImpulse.Size();
-	if (numTaps == 0) {
-		numTaps = realImpulse.Size();
-	}
-
-	TimeSignal<T> shortImpulse(numTaps);
-	std::copy(realImpulse.begin(), realImpulse.begin() + numTaps - numTaps / 2, shortImpulse.begin() + numTaps / 2);
-	std::copy(realImpulse.end() - numTaps / 2, realImpulse.end(), shortImpulse.begin());
-
-	return shortImpulse * HammingWindow<T>(numTaps);
+auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
+						size_t numTaps,
+						std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+	return FirGeneralWindowed(frequencyResponse, windowFunc(numTaps));
 }
+
 
 /// <summary>
 /// Creates a low-pass FIR filter by windowing the ideal low-pass filter.
@@ -45,10 +73,10 @@ auto WindowedFirFilter(const Spectrum<T>& frequencyResponse, size_t numTaps = 0)
 /// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
 /// <param name="sampleRate"> The sampling rate of the signal you want to apply the filter to. </param>
 /// <param name="cutoffFrequency"> Frequencies below the cutoff are left as is, ones above are silenced. </param>
-/// <param name="window"></param>
+/// <param name="window"> The window to apply to the ideal filter to reduce ringing. Also defines the number of taps. </param>
 /// <returns></returns>
 template <class T>
-auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, const TimeSignal<T>& window) {
+auto FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, TimeSignalView<const T> window) {
 	const auto numTaps = window.Size();
 	const T xOffset = T(numTaps - 1) / T(2);
 	const T xScale = T(cutoffFrequency) / T(sampleRate) * T(2) * pi_v<T>;
@@ -74,12 +102,29 @@ auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, const TimeSignal<
 /// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
 /// <param name="sampleRate"> The sampling rate of the signal you want to apply the filter to. </param>
 /// <param name="cutoffFrequency"> Frequencies below the cutoff are left as is, ones above are silenced. </param>
-/// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
-/// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
-template <class T> auto WindowedLowPass(size_t sampleRate, float cutoffFrequency, size_t numTaps, std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
-	return WindowedLowPass(sampleRate, cutoffFrequency, windowFunc(numTaps));
+/// <param name="window"> The window to apply to the ideal filter to reduce ringing. Also defines the number of taps. </param>
+/// <returns></returns>
+template <class T>
+auto FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const TimeSignal<T>& window) {
+	return FirLowPassWindowed(cutoffFrequency, sampleRate, AsConstView(window));
 }
 
+
+/// <summary>
+/// Creates a low-pass FIR filter by windowing the ideal low-pass filter.
+/// </summary>
+/// <typeparam name="T"> Type of the samples of the returned impulse response. </typeparam>
+/// <param name="sampleRate"> The sampling rate of the signal you want to apply the filter to. </param>
+/// <param name="cutoffFrequency"> Frequencies below the cutoff are left as is, ones above are silenced. </param>
+/// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
+/// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
+template <class T>
+auto FirLowPassWindowed(size_t sampleRate,
+						float cutoffFrequency,
+						size_t numTaps,
+						std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+	return FirLowPassWindowed(cutoffFrequency, sampleRate, windowFunc(numTaps));
+}
 
 
 /// <summary>
@@ -90,14 +135,14 @@ template <class T> auto WindowedLowPass(size_t sampleRate, float cutoffFrequency
 ///		Bins range from 0Hz to sampleRate/2, and the number of bins must be at least half of the number of filter taps. </param>
 /// <returns> A number between 0 (extremely bad match) and 1 (perfect match). </returns>
 template <class T>
-auto FilterAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
+auto FirAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
 	if (filter.Size() > 2 * desiredResponse.Size()) {
 		throw std::logic_error("You must specify the desired response more accurately with such a large filter.");
 	}
 	const size_t numBins = desiredResponse.Length() * 2;
 	TimeSignal<T> extendedFilter = filter;
 	extendedFilter.Resize(numBins, T(0));
-	auto actualResponse = Abs(FourierTransform(extendedFilter));
+	auto actualResponse = std::sqrt(T(0.5)) * Abs(FourierTransform(extendedFilter));
 
 	auto magActual = DotProduct(AsConstView(actualResponse), AsConstView(actualResponse), desiredResponse.Size());
 	auto magDesired = DotProduct(AsConstView(desiredResponse), AsConstView(desiredResponse), desiredResponse.Size());
