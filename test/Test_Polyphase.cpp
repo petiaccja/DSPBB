@@ -1,6 +1,6 @@
 #include "dspbb/Generators/Sine.hpp"
 
-#include <dspbb/DSP/PolyphaseFilter.hpp>
+#include <dspbb/Filtering/PolyphaseFilter.hpp>
 
 #include <Catch2/catch.hpp>
 #include <cmath>

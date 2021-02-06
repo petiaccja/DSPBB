@@ -5,7 +5,7 @@
 
 #include <Catch2/catch.hpp>
 #include <algorithm>
-#include <dspbb/DSP/FFT.hpp>
+#include <dspbb/Filtering/FFT.hpp>
 #include <dspbb/Math/Math.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 

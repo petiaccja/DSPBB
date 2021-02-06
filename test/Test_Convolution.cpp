@@ -1,4 +1,4 @@
-#include <dspbb/DSP/Convolution.hpp>
+#include <dspbb/Filtering/Convolution.hpp>
 
 #include <Catch2/catch.hpp>
 

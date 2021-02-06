@@ -7,10 +7,8 @@
 #include "../Primitives/SignalView.hpp"
 
 #include <complex>
-#include <type_traits>
 
 namespace dspbb {
-
 
 namespace convolution {
 	namespace impl {
@@ -20,7 +18,6 @@ namespace convolution {
 	constexpr impl::Central central;
 	constexpr impl::Full full;
 } // namespace convolution
-
 
 
 namespace impl {
@@ -97,20 +94,20 @@ auto ConvolutionFast(SignalView<const T, Domain> u, SignalView<const U, Domain> 
 	return u.Size() >= v.Size() ? impl::ConvolutionOrdered(u, v, PaddingMode{}) : impl::ConvolutionOrdered(v, u, PaddingMode{});
 }
 
-
 /// <summary>
 /// Ordinary convolution, EXCEPT it does not flip <paramref name="v"/> on the X axis.
 /// </summary>
-/// <typeparam name="T"> Any float or complex. </typeparam>
-/// <typeparam name="U"> Any float or complex, operations should work with <typeparamref name="T"/>. </typeparam>
+/// <typeparam name="SignalT"> Either a Signal or SignalView. </typeparam>
+/// <typeparam name="SignalU"> Either a Signal or SignalView, same domain as SignalT. </typeparam>
 /// <typeparam name="PaddingMode"> One of <see cref="dspbb::convolution::full"/> or <see cref="dspbb::convolution::central"/>. </typeparam>
 /// <param name="u"> The first argument of the convolution. </param>
 /// <param name="v"> The second argument of the convolution. </param>
 /// <returns> The result of the convolution. </returns>
-template <class T, class U, eSignalDomain Domain, class PaddingMode>
-auto ConvolutionFast(const Signal<T, Domain>& u, const Signal<U, Domain>& v, PaddingMode) {
-	return ConvolutionFast(SignalView<const T, Domain>{ u }, SignalView<const U, Domain>{ v }, PaddingMode{});
+template <class SignalT, class SignalU, class PaddingMode>
+auto ConvolutionFast(const SignalT& u, const SignalU& v, PaddingMode) {
+	return ConvolutionFast(AsConstView(u), AsConstView(v), PaddingMode{});
 }
+
 
 /// <summary> Calculates the length of the result of the convolution U*V. </summary>
 /// <param name="lengthU"> Length of U. </param>

@@ -17,7 +17,7 @@ namespace dspbb {
 ///		which must be less-equal than twice the number of coefficients in the frequency response. </param>
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
 template <class T>
-auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSignalView<const T> window) {
+TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSignalView<const T> window) {
 	const size_t numTaps = window.Size();
 	assert(numTaps <= frequencyResponse.Size() * 2);
 	assert(numTaps != 0);
@@ -45,7 +45,7 @@ auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSignalView<con
 ///		which must be less-equal than twice the number of coefficients in the frequency response. </param>
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
 template <class T>
-auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const TimeSignal<T>& window) {
+TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const TimeSignal<T>& window) {
 	return FirGeneralWindowed(frequencyResponse, AsConstView(window));
 }
 
@@ -59,7 +59,7 @@ auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const TimeSignal<T
 ///		Must be less-equal than twice the number of coefficients in the frequency response. </param>
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
 template <class T>
-auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
+TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
 						size_t numTaps,
 						std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
 	return FirGeneralWindowed(frequencyResponse, windowFunc(numTaps));
@@ -75,7 +75,7 @@ auto FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
 /// <param name="window"> The window to apply to the ideal filter to reduce ringing. Also defines the number of taps. </param>
 /// <returns></returns>
 template <class T>
-auto FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, TimeSignalView<const T> window) {
+TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, TimeSignalView<const T> window) {
 	const auto numTaps = window.Size();
 	const T xOffset = T(numTaps - 1) / T(2);
 	const T xScale = T(cutoffFrequency) / T(sampleRate) * T(2) * pi_v<T>;
@@ -104,7 +104,7 @@ auto FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, TimeSignalView
 /// <param name="window"> The window to apply to the ideal filter to reduce ringing. Also defines the number of taps. </param>
 /// <returns></returns>
 template <class T>
-auto FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const TimeSignal<T>& window) {
+TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const TimeSignal<T>& window) {
 	return FirLowPassWindowed(cutoffFrequency, sampleRate, AsConstView(window));
 }
 
@@ -118,7 +118,7 @@ auto FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const TimeSign
 /// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
 /// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
 template <class T>
-auto FirLowPassWindowed(size_t sampleRate,
+TimeSignal<T> FirLowPassWindowed(size_t sampleRate,
 						float cutoffFrequency,
 						size_t numTaps,
 						std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
@@ -134,7 +134,7 @@ auto FirLowPassWindowed(size_t sampleRate,
 ///		Bins range from 0Hz to sampleRate/2, and the number of bins must be at least half of the number of filter taps. </param>
 /// <returns> A number between 0 (extremely bad match) and 1 (perfect match). </returns>
 template <class T>
-auto FirAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
+T FirAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
 	if (filter.Size() > 2 * desiredResponse.Size()) {
 		throw std::logic_error("You must specify the desired response more accurately with such a large filter.");
 	}

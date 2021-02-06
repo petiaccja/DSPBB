@@ -296,7 +296,6 @@ SignalView<T, Domain>& SignalView<T, Domain>::operator/=(const T& scalar) {
 }
 
 // Helpers
-
 template <class T, eSignalDomain Domain>
 SignalView<T, Domain> AsView(Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
@@ -311,6 +310,27 @@ template <class T, eSignalDomain Domain>
 SignalView<const T, Domain> AsConstView(const Signal<T, Domain>& signal) {
 	return { signal.begin(), signal.end() };
 }
+
+template <class T, eSignalDomain Domain>
+SignalView<T, Domain> AsView(SignalView<T, Domain> view) {
+	return view;
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<const T, Domain> AsView(SignalView<const T, Domain> view) {
+	return view;
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<const T, Domain> AsConstView(SignalView<T, Domain> view) {
+	return view;
+}
+
+template <class T, eSignalDomain Domain>
+SignalView<const T, Domain> AsConstView(SignalView<const T, Domain> view) {
+	return view;
+}
+
 
 
 template <class T>

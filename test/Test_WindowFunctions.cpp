@@ -1,5 +1,5 @@
 #include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/DSP/WindowFunctions.hpp>
+#include <dspbb/Filtering/WindowFunctions.hpp>
 
 #include <Catch2/catch.hpp>
 #include <algorithm>

@@ -1,4 +1,4 @@
-#include <dspbb/DSP/Interpolation.hpp>
+#include <dspbb/Filtering/Interpolation.hpp>
 
 #include <Catch2/catch.hpp>
 #include <cmath>

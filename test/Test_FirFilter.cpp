@@ -1,7 +1,7 @@
 #include "dspbb/Math/Statistics.hpp"
 
-#include <dspbb/Dsp/Convolution.hpp>
-#include <dspbb/Dsp/FIR.hpp>
+#include <dspbb/Filtering/Convolution.hpp>
+#include <dspbb/Filtering/FIR.hpp>
 
 #include <Catch2/catch.hpp>
 #include <array>
