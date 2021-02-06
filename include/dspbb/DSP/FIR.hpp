@@ -8,7 +8,6 @@
 
 namespace dspbb {
 
-
 /// <summary>
 /// Creates an arbitrary FIR filter by windowing the impulse response acquired by the IFFT of the frequency response.
 /// </summary>
