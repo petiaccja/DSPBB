@@ -1,8 +1,9 @@
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Filtering/WindowFunctions.hpp>
-
 #include <Catch2/catch.hpp>
 #include <algorithm>
+#include <dspbb/Filtering/WindowFunctions.hpp>
+#include <dspbb/Math/Functions.hpp>
+#include <dspbb/Math/Statistics.hpp>
+#include <dspbb/Primitives/Signal.hpp>
 
 using namespace dspbb;
 
@@ -11,7 +12,7 @@ TEST_CASE("Hamming window", "[AudioFramework:WindowFunctions]") {
 	auto window = HammingWindow<float>(1024);
 
 	REQUIRE(window.Length() == 1024);
-	
+
 	float max = *std::max_element(window.begin(), window.end());
 	auto firstMinPosition = std::min_element(window.begin(), window.begin() + 512);
 	auto lastMinPosition = std::min_element(window.begin() + 512, window.end());
@@ -26,9 +27,7 @@ TEST_CASE("Hamming window complex", "[AudioFramework:WindowFunctions]") {
 	auto window = HammingWindow<std::complex<float>>(1024);
 
 	REQUIRE(window.Length() == 1024);
-
-	
-	REQUIRE(false);
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
 }
 
 
@@ -43,5 +42,5 @@ TEST_CASE("Kaiser window", "[AudioFramework:WindowFunctions]") {
 
 	REQUIRE(Approx(max) == 1.0f);
 	REQUIRE(firstMinPosition == window.begin());
-	REQUIRE(lastMinPosition == window.end() - 1);	
+	REQUIRE(lastMinPosition == window.end() - 1);
 }

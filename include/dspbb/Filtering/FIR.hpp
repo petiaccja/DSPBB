@@ -1,4 +1,4 @@
-#include "../Math/Math.hpp"
+#include "../Math/Functions.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Utility/Numbers.hpp"
 #include "FFT.hpp"

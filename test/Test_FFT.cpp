@@ -6,7 +6,7 @@
 #include <Catch2/catch.hpp>
 #include <algorithm>
 #include <dspbb/Filtering/FFT.hpp>
-#include <dspbb/Math/Math.hpp>
+#include <dspbb/Math/Functions.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 
 using namespace dspbb;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Primitives/Signal.hpp"
+#include "../Primitives/SignalView.hpp"
 
 #include <complex>
 
@@ -9,7 +10,7 @@ namespace dspbb {
 
 template <class T, eSignalDomain Domain>
 Signal<T, Domain> Abs(SignalView<const T, Domain> signal) {
-	Signal<T, Domain> absval = signal;
+	Signal<T, Domain> absval{ signal.begin(), signal.end() };
 	for (auto& v : absval) {
 		v = std::abs(v);
 	}
@@ -29,7 +30,7 @@ Signal<T, Domain> Abs(SignalView<const std::complex<T>, Domain> signal) {
 
 template <class T, eSignalDomain Domain>
 Signal<T, Domain> Log(SignalView<const T, Domain> signal) {
-	Signal<T, Domain> ret = signal;
+	Signal<T, Domain> ret{ signal.begin(), signal.end() };
 	for (auto& v : ret) {
 		v = std::log(v);
 	}
@@ -41,16 +42,22 @@ const Signal<T, Domain> Real(SignalView<const T, Domain> signal) {
 	return { signal.begin(), signal.end() };
 }
 
-
 template <class T, eSignalDomain Domain>
 Signal<T, Domain> Real(SignalView<const std::complex<T>, Domain> signal) {
-	return { signal.Real(), signal.Real() + signal.Size() };
+	Signal<T, Domain> real(signal.Size());
+	for (size_t i = 0; i < signal.Size(); ++i) {
+		real[i] = signal[i].real();
+	}
+	return real;
 }
-
 
 template <class T, eSignalDomain Domain>
 Signal<T, Domain> Imag(SignalView<const std::complex<T>, Domain> signal) {
-	return { signal.Imag(), signal.Imag() + signal.Size() };
+	Signal<T, Domain> imag(signal.Size());
+	for (size_t i = 0; i < signal.Size(); ++i) {
+		imag[i] = signal[i].imag();
+	}
+	return imag;
 }
 
 
@@ -58,10 +65,10 @@ Signal<T, Domain> Imag(SignalView<const std::complex<T>, Domain> signal) {
 // Wrappers
 
 template <class T, eSignalDomain Domain>
-auto Abs(const Signal<std::complex<T>, Domain>& signal) { return Abs(AsConstView(signal)); }
+auto Abs(const Signal<T, Domain>& signal) { return Abs(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
-auto Log(const Signal<std::complex<T>, Domain>& signal) { return Log(AsConstView(signal)); }
+auto Log(const Signal<T, Domain>& signal) { return Log(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
 auto Real(const Signal<T, Domain>& signal) { return Real(AsConstView(signal)); }
