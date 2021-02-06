@@ -16,6 +16,6 @@ TEST_CASE("Polyphase resample", "[AudioFramework:Interpolation]") {
 		signal[i] = std::sin(2.0f * pi_v<float> * float(i) / float(sampleRateIn) * 100.f);
 	}
 
-	auto filtered = InterpolatePolyphase(SignalView<const float, TIME_DOMAIN>{ signal }, polyphase, sampleRateIn, sampleRateOut, 0, 100);
+	auto filtered = InterpolatePolyphase(AsConstView(signal), polyphase, sampleRateIn, sampleRateOut, 0, 100);
 	REQUIRE(filtered.Size() > signal.Size());
 }

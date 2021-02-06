@@ -21,11 +21,11 @@ public:
 public:
 	SignalView() = default;
 
-	template <class Q = std::enable_if_t<!std::is_const<T>::value, int>>
-	SignalView(SignalT& signal, Q = 0);
+	template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<Q, T>::value, int> = 0>
+	SignalView(Signal<Q, Domain>& signal);
 
-	template <class Q = std::enable_if_t<std::is_const<T>::value, int>>
-	SignalView(const SignalT& signal, Q = 0);
+	template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<Q, T>::value, int> = 0>
+	SignalView(const Signal<Q, Domain>& signal);
 	SignalView(iterator first, iterator last);
 	SignalView(iterator first, size_t size);
 
@@ -62,7 +62,7 @@ public:
 	SignalView SubSignal(size_type offset) const;
 	SignalView SubSignal(size_type offset, size_type count) const;
 
-	template <class U = std::enable_if_t<!std::is_const_v<T>, const T>>
+	template <class U, std::enable_if_t<!std::is_const_v<T> && std::is_same<U, const T>::value, int> = 0>
 	operator SignalView<U, Domain>() const;
 
 	SignalView& operator+=(const SignalView& rhs);
@@ -137,14 +137,14 @@ protected:
 
 
 template <class T, eSignalDomain Domain>
-template <class Q>
-SignalView<T, Domain>::SignalView(SignalT& signal, Q)
+template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<Q, T>::value, int>>
+SignalView<T, Domain>::SignalView(Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q>
-SignalView<T, Domain>::SignalView(const SignalT& signal, Q)
+template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<Q, T>::value, int>>
+SignalView<T, Domain>::SignalView(const Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
@@ -222,7 +222,7 @@ SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_ty
 }
 
 template <class T, eSignalDomain Domain>
-template <class U>
+template <class U, std::enable_if_t<!std::is_const_v<T> && std::is_same<U, const T>::value, int>>
 SignalView<T, Domain>::operator SignalView<U, Domain>() const {
 	return SignalView<U, Domain>{ this->begin(), this->end() };
 }

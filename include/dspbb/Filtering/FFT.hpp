@@ -35,7 +35,7 @@ Spectrum<T> FourierTransform(TimeSignalView<const T> signal) {
 	pocketfft::shape_t shape = { signal.Size() };
 	pocketfft::stride_t stride = { sizeof(T) };
 	pocketfft::shape_t axes = { 0 };
-	pocketfft::c2c(shape, stride, stride, axes, pocketfft::FORWARD, signal.Data(), fft.Data(), T::value_type(std::sqrt(2.0)));
+	pocketfft::c2c(shape, stride, stride, axes, pocketfft::FORWARD, signal.Data(), fft.Data(), typename T::value_type(std::sqrt(2.0)));
 	return fft;
 }
 
