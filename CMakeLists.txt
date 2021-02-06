@@ -26,6 +26,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
 	add_compile_definitions("-D_ITERATOR_DEBUG_LEVEL=1")
 endif()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+link_libraries(Threads::Threads)
+
 # Output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
