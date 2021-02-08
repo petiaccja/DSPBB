@@ -12,9 +12,9 @@ class SignalView {
 public:
 	using SignalT = Signal<std::remove_const_t<T>, Domain>;
 
-	using iterator = std::conditional_t<!std::is_const_v<T>, typename SignalT::iterator, typename SignalT::const_iterator>;
+	using iterator = std::conditional_t<!std::is_const<T>::value, typename SignalT::iterator, typename SignalT::const_iterator>;
 	using const_iterator = typename SignalT::const_iterator;
-	using reverse_iterator = std::conditional_t<!std::is_const_v<T>, typename SignalT::reverse_iterator, typename SignalT::const_reverse_iterator>;
+	using reverse_iterator = std::conditional_t<!std::is_const<T>::value, typename SignalT::reverse_iterator, typename SignalT::const_reverse_iterator>;
 	using const_reverse_iterator = typename SignalT::const_reverse_iterator;
 	using size_type = typename SignalT::size_type;
 
@@ -62,7 +62,7 @@ public:
 	SignalView SubSignal(size_type offset) const;
 	SignalView SubSignal(size_type offset, size_type count) const;
 
-	template <class U, std::enable_if_t<!std::is_const_v<T> && std::is_same<U, const T>::value, int> = 0>
+	template <class U, std::enable_if_t<!std::is_const<T>::value && std::is_same<U, const T>::value, int> = 0>
 	operator SignalView<U, Domain>() const;
 
 	SignalView& operator+=(const SignalView& rhs);
@@ -222,7 +222,7 @@ SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_ty
 }
 
 template <class T, eSignalDomain Domain>
-template <class U, std::enable_if_t<!std::is_const_v<T> && std::is_same<U, const T>::value, int>>
+template <class U, std::enable_if_t<!std::is_const<T>::value && std::is_same<U, const T>::value, int>>
 SignalView<T, Domain>::operator SignalView<U, Domain>() const {
 	return SignalView<U, Domain>{ this->begin(), this->end() };
 }

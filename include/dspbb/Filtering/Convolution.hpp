@@ -22,7 +22,7 @@ namespace convolution {
 namespace impl {
 
 	template <class T, class U>
-	using ResultT = std::conditional_t<std::disjunction_v<is_complex<T>, is_complex<U>>,
+	using ResultT = std::conditional_t<is_complex<T>::value || is_complex<U>::value,
 									   std::complex<ProductT<remove_complex_t<T>, remove_complex_t<U>>>,
 									   ProductT<remove_complex_t<T>, remove_complex_t<U>>>;
 
