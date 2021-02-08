@@ -31,6 +31,7 @@ TEST_CASE("Hamming window complex", "[AudioFramework:WindowFunctions]") {
 }
 
 
+#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L
 TEST_CASE("Kaiser window", "[AudioFramework:WindowFunctions]") {
 	auto window = KaiserWindow<float>(1024, 2.55f);
 
@@ -44,3 +45,4 @@ TEST_CASE("Kaiser window", "[AudioFramework:WindowFunctions]") {
 	REQUIRE(firstMinPosition == window.begin());
 	REQUIRE(lastMinPosition == window.end() - 1);
 }
+#endif

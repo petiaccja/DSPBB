@@ -114,7 +114,8 @@ auto ConvolutionFast(const SignalT& u, const SignalU& v, PaddingMode) {
 inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Central) {
 	assert(lengthU > 0);
 	assert(lengthV > 0);
-	auto [shorter, longer] = std::minmax(lengthU, lengthV);
+	const auto& mm = std::minmax(lengthU, lengthV);
+	const auto& shorter = mm.first, longer = mm.second;
 	return longer - shorter + 1;
 }
 
@@ -124,7 +125,8 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Full) {
 	assert(lengthU > 0);
 	assert(lengthV > 0);
-	auto [shorter, longer] = std::minmax(lengthU, lengthV);
+	const auto& mm = std::minmax(lengthU, lengthV);
+	const auto &shorter = mm.first, longer = mm.second;
 	return longer + shorter - 1;
 }
 

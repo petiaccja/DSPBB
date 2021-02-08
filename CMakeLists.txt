@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.15.0)
 
 # Cpp flags
 enable_language(CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 option(ENABLE_LLVM_COV "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 

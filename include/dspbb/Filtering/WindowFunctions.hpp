@@ -22,6 +22,7 @@ Signal<T, Domain> HammingWindow(size_t length) {
 }
 
 
+#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(0.5)) {
 	using UnderlyingT = remove_complex_t<T>;
@@ -36,6 +37,7 @@ Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(0.5)) {
 	}
 	return window;
 }
+#endif
 
 
 

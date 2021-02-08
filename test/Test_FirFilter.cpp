@@ -51,9 +51,9 @@ TEST_CASE("Low pass filter", "[AudioFramework:FirFilter]") {
 
 TEST_CASE("Arbitrary filter", "[AudioFramework:FirFilter]") {
 	constexpr size_t numTaps = 255;
-	constexpr std::array amplitudes = { 1.0f, 0.2f, 0.6f, 1.2f };
+	constexpr std::array<float, 4> amplitudes = { 1.0f, 0.2f, 0.6f, 1.2f };
 	constexpr float nyquistLimit = float(sampleRate / 2);
-	constexpr std::array frequencies = { 0.0625f, 0.1875f, 0.375f, 0.75f };
+	constexpr std::array<float, 4> frequencies = { 0.0625f, 0.1875f, 0.375f, 0.75f };
 	
 	Spectrum<float> frequencyResponse(8192, amplitudes[0]);
 	std::fill(frequencyResponse.begin() + 1024, frequencyResponse.begin() + 2048, amplitudes[1]);
