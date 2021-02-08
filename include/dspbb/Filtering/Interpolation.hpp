@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../Primitives/Signal.hpp"
 #include "../Math/DotProduct.hpp"
+#include "../Primitives/Signal.hpp"
+#include "../Primitives/SignalView.hpp"
 #include "PolyphaseFilter.hpp"
 
 

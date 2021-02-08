@@ -1,5 +1,6 @@
 #include "../Math/Functions.hpp"
 #include "../Primitives/Signal.hpp"
+#include "../Primitives/SignalView.hpp"
 #include "../Utility/Numbers.hpp"
 #include "FFT.hpp"
 #include "WindowFunctions.hpp"
@@ -60,8 +61,8 @@ TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const Tim
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
 template <class T>
 TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
-						size_t numTaps,
-						std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+								 size_t numTaps,
+								 std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
 	return FirGeneralWindowed(frequencyResponse, windowFunc(numTaps));
 }
 
@@ -119,9 +120,9 @@ TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const
 /// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
 template <class T>
 TimeSignal<T> FirLowPassWindowed(size_t sampleRate,
-						float cutoffFrequency,
-						size_t numTaps,
-						std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+								 float cutoffFrequency,
+								 size_t numTaps,
+								 std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
 	return FirLowPassWindowed(cutoffFrequency, sampleRate, windowFunc(numTaps));
 }
 

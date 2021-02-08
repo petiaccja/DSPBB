@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Utility/TypeTraits.hpp"
 #include "../Primitives/Signal.hpp"
+#include "../Utility/TypeTraits.hpp"
 
 #include <cmath>
 

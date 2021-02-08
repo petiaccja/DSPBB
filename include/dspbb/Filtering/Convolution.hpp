@@ -1,10 +1,9 @@
 #pragma once
 
-#include "../Utility/TypeTraits.hpp"
 #include "../Math/DotProduct.hpp"
-
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
+#include "../Utility/TypeTraits.hpp"
 
 #include <complex>
 
@@ -38,7 +37,7 @@ namespace impl {
 		const size_t paddingLength = running.Size() - 1;
 
 		Signal<R, Domain> out;
-		
+
 		size_t outLength = base.Size() + paddingLength;
 		out.Reserve(base.Size() + 2 * paddingLength);
 		out.Append(Signal<R, Domain>(paddingLength, R(0)));
@@ -73,7 +72,7 @@ namespace impl {
 
 		return out;
 	}
-	
+
 } // namespace impl
 
 

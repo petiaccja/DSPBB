@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Convolution.hpp"
-#include "FIR.hpp"
-
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
+#include "Convolution.hpp"
+#include "FIR.hpp"
 
 
 namespace dspbb {
@@ -17,7 +16,7 @@ public:
 	size_t NumFilters() const;
 	SignalView<const T, TIME_DOMAIN> Filter(size_t i) const;
 	size_t NumTaps() const;
-	
+
 	template <class PaddingMode>
 	size_t operator()(SignalView<const T, eSignalDomain::TIME> input, SignalView<T, eSignalDomain::TIME> output, PaddingMode) const;
 	template <class PaddingMode>

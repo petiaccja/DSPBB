@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Primitives/Signal.hpp"
+#include "../Primitives/SignalView.hpp"
 #include "../Utility/TypeTraits.hpp"
 
 #include <pocketfft/pocketfft_hdronly.h>
