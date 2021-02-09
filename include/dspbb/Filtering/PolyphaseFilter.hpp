@@ -20,7 +20,7 @@ public:
 	template <class PaddingMode>
 	size_t operator()(SignalView<const T, eSignalDomain::TIME> input, SignalView<T, eSignalDomain::TIME> output, PaddingMode) const;
 	template <class PaddingMode>
-	TimeSignal<T> operator()(SignalView<const T, eSignalDomain::TIME> input, PaddingMode);
+	TimeSignal<T> operator()(SignalView<const T, eSignalDomain::TIME> input, PaddingMode) const;
 
 private:
 	TimeSignal<T> CreateLowPass(uint64_t sampleRate, float cutoffFrequency, unsigned numFilters, unsigned numTaps);
@@ -85,7 +85,7 @@ size_t PolyphaseFilter<T>::operator()(SignalView<const T, eSignalDomain::TIME> i
 
 template <class T>
 template <class PaddingMode>
-TimeSignal<T> PolyphaseFilter<T>::operator()(SignalView<const T, eSignalDomain::TIME> input, PaddingMode) {
+TimeSignal<T> PolyphaseFilter<T>::operator()(SignalView<const T, eSignalDomain::TIME> input, PaddingMode) const {
 	TimeSignal<T> output(ConvolutionLength(input.Size(), m_filterBank[0].Size(), PaddingMode{}) * m_filterBank.size(), 0.0f);
 	operator()(input, output, PaddingMode{});
 	return output;
