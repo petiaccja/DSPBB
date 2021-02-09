@@ -13,6 +13,8 @@ target_sources(UnitTest
 		Test_Signal.cpp
 		Test_SignalView.cpp
 		Test_WindowFunctions.cpp
+		Test_MathFunctions.cpp
+		Test_Algorithm.cpp
 )
 
 

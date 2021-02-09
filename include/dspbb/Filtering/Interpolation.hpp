@@ -62,9 +62,9 @@ TimeSignal<T> InterpolatePolyphase(SignalView<const T, TIME_DOMAIN> input,
 	const size_t polyphaseCount = filter.NumFilters();
 	const size_t polyphaseTaps = filter.NumTaps();
 
-	const size_t commonRate = sampleRateIn * sampleRateOut * offsetDen; // Use GCD instead.
-	auto Output2Common = [&](size_t outputIdx) { return outputIdx * commonRate / sampleRateOut; };
-	auto Common2Input = [&](size_t commonIdx) { return std::pair<uint64_t, uint64_t>{ commonIdx * sampleRateIn / commonRate, commonIdx * sampleRateIn % commonRate }; };
+	//const size_t commonRate = sampleRateIn * sampleRateOut * offsetDen; // Use GCD instead.
+	//auto Output2Common = [&](size_t outputIdx) { return outputIdx * commonRate / sampleRateOut; };
+	//auto Common2Input = [&](size_t commonIdx) { return std::pair<uint64_t, uint64_t>{ commonIdx * sampleRateIn / commonRate, commonIdx * sampleRateIn % commonRate }; };
 
 	size_t outputIdx = 0;
 	while (true) {

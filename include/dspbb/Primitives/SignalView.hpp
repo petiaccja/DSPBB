@@ -17,6 +17,7 @@ public:
 	using reverse_iterator = std::conditional_t<!std::is_const<T>::value, typename SignalT::reverse_iterator, typename SignalT::const_reverse_iterator>;
 	using const_reverse_iterator = typename SignalT::const_reverse_iterator;
 	using size_type = typename SignalT::size_type;
+	using value_type = typename SignalT::value_type;
 
 public:
 	SignalView() = default;

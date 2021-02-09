@@ -51,7 +51,6 @@ TEST_CASE("Data pointer", "[AudioFramework:SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
 	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
-	auto* v = span.Data();
 	REQUIRE(*span.Data() == 3);
 }
 
