@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../Math/Functions.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
