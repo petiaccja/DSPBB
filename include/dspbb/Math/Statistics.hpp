@@ -48,6 +48,20 @@ T Norm(SignalView<const T, Domain> signal) {
 }
 
 
+template <class T, eSignalDomain Domain>
+T Max(SignalView<const T, Domain> signal) {
+	assert(!signal.Empty());
+	return *std::max_element(signal.begin(), signal.end());
+}
+
+
+template <class T, eSignalDomain Domain>
+T Min(SignalView<const T, Domain> signal) {
+	assert(!signal.Empty());
+	return *std::min_element(signal.begin(), signal.end());
+}
+
+
 // Wrappers.
 
 template <class T, eSignalDomain Domain>
@@ -67,5 +81,11 @@ T StandardDeviation(const Signal<T, Domain>& signal) { return StandardDeviation(
 
 template <class T, eSignalDomain Domain>
 T Norm(const Signal<T, Domain>& signal) { return Norm(AsConstView(signal)); }
+
+template <class T, eSignalDomain Domain>
+T Max(const Signal<T, Domain>& signal) { return Max(AsConstView(signal)); }
+
+template <class T, eSignalDomain Domain>
+T Min(const Signal<T, Domain>& signal) { return Min(AsConstView(signal)); }
 
 } // namespace dspbb
