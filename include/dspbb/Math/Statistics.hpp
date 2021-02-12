@@ -28,8 +28,14 @@ T SumSquare(SignalView<const T, Domain> signal) {
 
 
 template <class T, eSignalDomain Domain>
+T MeanSquare(SignalView<const T, Domain> signal) {
+	return !signal.Empty() ? SumSquare(signal) / T(signal.Size()) : T(0);
+}
+
+
+template <class T, eSignalDomain Domain>
 T RootMeanSquare(SignalView<const T, Domain> signal) {
-	return !signal.Empty() ? std::sqrt(Sum(signal) / T(signal.Size())) : T(0);
+	return std::sqrt(MeanSquare(signal));
 }
 
 
@@ -72,6 +78,9 @@ T Mean(const Signal<T, Domain>& signal) { return Mean(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
 T SumSquare(const Signal<T, Domain>& signal) { return SumSquare(AsConstView(signal)); }
+
+template <class T, eSignalDomain Domain>
+T MeanSquare(const Signal<T, Domain>& signal) { return MeanSquare(AsConstView(signal)); }
 
 template <class T, eSignalDomain Domain>
 T RootMeanSquare(const Signal<T, Domain>& signal) { return RootMeanSquare(AsConstView(signal)); }

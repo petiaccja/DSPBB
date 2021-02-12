@@ -17,5 +17,5 @@ TEST_CASE("Polyphase resample", "[AudioFramework:Interpolation]") {
 	}
 
 	auto filtered = InterpolatePolyphase(AsConstView(signal), polyphase, sampleRateIn, sampleRateOut, 0, 100);
-	REQUIRE(filtered.Size() > signal.Size());
+	REQUIRE(filtered.Size() <= signal.Size());
 }

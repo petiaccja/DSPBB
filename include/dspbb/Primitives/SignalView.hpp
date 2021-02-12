@@ -22,11 +22,15 @@ public:
 public:
 	SignalView() = default;
 
-	template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<Q, T>::value, int> = 0>
+	template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int> = 0>
 	SignalView(Signal<Q, Domain>& signal);
 
-	template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<Q, T>::value, int> = 0>
+	template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int> = 0>
 	SignalView(const Signal<Q, Domain>& signal);
+
+	template <class Q, std::enable_if_t<std::is_const<T>::value && !std::is_const<Q>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int> = 0>
+	SignalView(const SignalView<Q, Domain>& signal);
+
 	SignalView(iterator first, iterator last);
 	SignalView(iterator first, size_t size);
 
@@ -63,74 +67,35 @@ public:
 	SignalView SubSignal(size_type offset) const;
 	SignalView SubSignal(size_type offset, size_type count) const;
 
-	template <class U, std::enable_if_t<!std::is_const<T>::value && std::is_same<U, const T>::value, int> = 0>
-	operator SignalView<U, Domain>() const;
-
-	SignalView& operator+=(const SignalView& rhs);
-	SignalView& operator-=(const SignalView& rhs);
-	SignalView& operator*=(const SignalView& rhs);
-	SignalView& operator/=(const SignalView& rhs);
+	SignalView& operator+=(const SignalView<const T, Domain>& rhs);
+	SignalView& operator-=(const SignalView<const T, Domain>& rhs);
+	SignalView& operator*=(const SignalView<const T, Domain>& rhs);
+	SignalView& operator/=(const SignalView<const T, Domain>& rhs);
 
 	SignalView& operator+=(const T& scalar);
 	SignalView& operator-=(const T& scalar);
 	SignalView& operator*=(const T& scalar);
 	SignalView& operator/=(const T& scalar);
 
-	friend SignalT operator+=(SignalT lhs, const SignalView& rhs) {
-		assert(lhs.Size() == rhs.Size());
-		for (size_t i = 0; i < lhs.Size(); ++i) {
-			lhs[i] += rhs[i];
-		}
-		return lhs;
-	}
-	friend SignalT operator-=(SignalT lhs, const SignalView& rhs) {
-		assert(lhs.Size() == rhs.Size());
-		for (size_t i = 0; i < lhs.Size(); ++i) {
-			lhs[i] -= rhs[i];
-		}
-		return lhs;
-	}
-	friend SignalT operator*=(SignalT lhs, const SignalView& rhs) {
-		assert(lhs.Size() == rhs.Size());
-		for (size_t i = 0; i < lhs.Size(); ++i) {
-			lhs[i] *= rhs[i];
-		}
-		return lhs;
-	}
-	friend SignalT operator/=(SignalT lhs, const SignalView& rhs) {
-		assert(lhs.Size() == rhs.Size());
-		for (size_t i = 0; i < lhs.Size(); ++i) {
-			lhs[i] /= rhs[i];
-		}
-		return lhs;
-	}
+	SignalView& operator+=(const SignalT& rhs) { return *this += SignalView<const T, Domain>(rhs); }
+	SignalView& operator-=(const SignalT& rhs) { return *this -= SignalView<const T, Domain>(rhs); }
+	SignalView& operator*=(const SignalT& rhs) { return *this *= SignalView<const T, Domain>(rhs); }
+	SignalView& operator/=(const SignalT& rhs) { return *this /= SignalView<const T, Domain>(rhs); }
 
-	SignalView& operator+=(const SignalT& rhs) { return *this += SignalView(rhs); }
-	SignalView& operator-=(const SignalT& rhs) { return *this -= SignalView(rhs); }
-	SignalView& operator*=(const SignalT& rhs) { return *this *= SignalView(rhs); }
-	SignalView& operator/=(const SignalT& rhs) { return *this /= SignalView(rhs); }
+	SignalT operator+(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) += rhs; }
+	SignalT operator-(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) -= rhs; }
+	SignalT operator*(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) *= rhs; }
+	SignalT operator/(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) /= rhs; }
 
-	SignalT operator+(const SignalView& rhs) const { return SignalT(begin(), end()) += rhs; }
-	SignalT operator-(const SignalView& rhs) const { return SignalT(begin(), end()) -= rhs; }
-	SignalT operator*(const SignalView& rhs) const { return SignalT(begin(), end()) *= rhs; }
-	SignalT operator/(const SignalView& rhs) const { return SignalT(begin(), end()) /= rhs; }
+	SignalT operator+(const SignalT& rhs) const { return *this + SignalView<const T, Domain>(rhs); }
+	SignalT operator-(const SignalT& rhs) const { return *this - SignalView<const T, Domain>(rhs); }
+	SignalT operator*(const SignalT& rhs) const { return *this * SignalView<const T, Domain>(rhs); }
+	SignalT operator/(const SignalT& rhs) const { return *this / SignalView<const T, Domain>(rhs); }
 
 	SignalT operator+(const T& scalar) const { return SignalT(begin(), end()) += scalar; }
 	SignalT operator-(const T& scalar) const { return SignalT(begin(), end()) -= scalar; }
 	SignalT operator*(const T& scalar) const { return SignalT(begin(), end()) *= scalar; }
 	SignalT operator/(const T& scalar) const { return SignalT(begin(), end()) /= scalar; }
-
-	friend SignalT operator+(const T& scalar, const SignalView& signal) { return scalar + SignalT(signal.begin(), signal.end()); }
-	friend SignalT operator-(const T& scalar, const SignalView& signal) { return scalar - SignalT(signal.begin(), signal.end()); }
-	friend SignalT operator*(const T& scalar, const SignalView& signal) { return scalar * SignalT(signal.begin(), signal.end()); }
-	friend SignalT operator/(const T& scalar, const SignalView& signal) { return scalar / SignalT(signal.begin(), signal.end()); }
-
-	friend SignalT operator+(SignalT lhs, const SignalView& rhs) { return lhs + SignalT(rhs.begin(), rhs.end()); }
-	friend SignalT operator-(SignalT lhs, const SignalView& rhs) { return lhs - SignalT(rhs.begin(), rhs.end()); }
-	friend SignalT operator*(SignalT lhs, const SignalView& rhs) { return lhs * SignalT(rhs.begin(), rhs.end()); }
-	friend SignalT operator/(SignalT lhs, const SignalView& rhs) { return lhs / SignalT(rhs.begin(), rhs.end()); }
-
-
 
 protected:
 	iterator first, last;
@@ -138,14 +103,20 @@ protected:
 
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<Q, T>::value, int>>
+template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int>>
 SignalView<T, Domain>::SignalView(Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<Q, T>::value, int>>
+template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int>>
 SignalView<T, Domain>::SignalView(const Signal<Q, Domain>& signal)
+	: SignalView(signal.begin(), signal.end()) {
+}
+
+template <class T, eSignalDomain Domain>
+template <class Q, std::enable_if_t<std::is_const<T>::value && !std::is_const<Q>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int>>
+SignalView<T, Domain>::SignalView(const SignalView<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
@@ -223,13 +194,7 @@ SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_ty
 }
 
 template <class T, eSignalDomain Domain>
-template <class U, std::enable_if_t<!std::is_const<T>::value && std::is_same<U, const T>::value, int>>
-SignalView<T, Domain>::operator SignalView<U, Domain>() const {
-	return SignalView<U, Domain>{ this->begin(), this->end() };
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator+=(const SignalView& rhs) {
+SignalView<T, Domain>& SignalView<T, Domain>::operator+=(const SignalView<const T, Domain>& rhs) {
 	assert((*this).Size() == rhs.Size());
 	for (size_t i = 0; i < (*this).Size(); ++i) {
 		(*this)[i] += rhs[i];
@@ -238,7 +203,7 @@ SignalView<T, Domain>& SignalView<T, Domain>::operator+=(const SignalView& rhs) 
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator-=(const SignalView& rhs) {
+SignalView<T, Domain>& SignalView<T, Domain>::operator-=(const SignalView<const T, Domain>& rhs) {
 	assert((*this).Size() == rhs.Size());
 	for (size_t i = 0; i < (*this).Size(); ++i) {
 		(*this)[i] -= rhs[i];
@@ -247,7 +212,7 @@ SignalView<T, Domain>& SignalView<T, Domain>::operator-=(const SignalView& rhs) 
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator*=(const SignalView& rhs) {
+SignalView<T, Domain>& SignalView<T, Domain>::operator*=(const SignalView<const T, Domain>& rhs) {
 	assert((*this).Size() == rhs.Size());
 	for (size_t i = 0; i < (*this).Size(); ++i) {
 		(*this)[i] *= rhs[i];
@@ -256,7 +221,7 @@ SignalView<T, Domain>& SignalView<T, Domain>::operator*=(const SignalView& rhs) 
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator/=(const SignalView& rhs) {
+SignalView<T, Domain>& SignalView<T, Domain>::operator/=(const SignalView<const T, Domain>& rhs) {
 	assert((*this).Size() == rhs.Size());
 	for (size_t i = 0; i < (*this).Size(); ++i) {
 		(*this)[i] /= rhs[i];
@@ -331,6 +296,62 @@ template <class T, eSignalDomain Domain>
 SignalView<const T, Domain> AsConstView(SignalView<const T, Domain> view) {
 	return view;
 }
+
+
+
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator+=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
+	assert(lhs.Size() == rhs.Size());
+	for (size_t i = 0; i < lhs.Size(); ++i) {
+		lhs[i] += rhs[i];
+	}
+	return lhs;
+}
+
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator-=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
+	assert(lhs.Size() == rhs.Size());
+	for (size_t i = 0; i < lhs.Size(); ++i) {
+		lhs[i] -= rhs[i];
+	}
+	return lhs;
+}
+
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator*=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
+	assert(lhs.Size() == rhs.Size());
+	for (size_t i = 0; i < lhs.Size(); ++i) {
+		lhs[i] *= rhs[i];
+	}
+	return lhs;
+}
+
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator/=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
+	assert(lhs.Size() == rhs.Size());
+	for (size_t i = 0; i < lhs.Size(); ++i) {
+		lhs[i] /= rhs[i];
+	}
+	return lhs;
+}
+
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator+(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar + Signal<T, Domain>(signal.begin(), signal.end()); }
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator-(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar - Signal<T, Domain>(signal.begin(), signal.end()); }
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator*(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar * Signal<T, Domain>(signal.begin(), signal.end()); }
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator/(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar / Signal<T, Domain>(signal.begin(), signal.end()); }
+
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator+(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs += Signal<T, Domain>(rhs.begin(), rhs.end()); }
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator-(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs -= Signal<T, Domain>(rhs.begin(), rhs.end()); }
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator*(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs *= Signal<T, Domain>(rhs.begin(), rhs.end()); }
+template <class T, eSignalDomain Domain>
+Signal<T, Domain> operator/(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs /= Signal<T, Domain>(rhs.begin(), rhs.end()); }
 
 
 

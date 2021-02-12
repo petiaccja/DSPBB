@@ -36,8 +36,8 @@ TEST_CASE("Low pass filter", "[AudioFramework:FirFilter]") {
 	const auto passSignal = GenTestSignal(sampleRate, cutoff * 0.85f);
 	const auto rejectSignal = GenTestSignal(sampleRate, cutoff * 1.15f);
 
-	const auto filteredPassSignal = ConvolutionFast(passSignal, impulse, convolution::full);
-	const auto filteredRejectSignal = ConvolutionFast(rejectSignal, impulse, convolution::full);
+	const auto filteredPassSignal = Convolution(passSignal, impulse, convolution::full);
+	const auto filteredRejectSignal = Convolution(rejectSignal, impulse, convolution::full);
 
 	const float energyPass = SumSquare(passSignal);
 	const float energyReject = SumSquare(rejectSignal);
@@ -63,12 +63,12 @@ TEST_CASE("Arbitrary filter", "[AudioFramework:FirFilter]") {
 	const auto impulse = FirGeneralWindowed(frequencyResponse, numTaps);
 	REQUIRE(impulse.Size() == numTaps);
 
-	const float quality = FirAccuracy(impulse, frequencyResponse);
-	REQUIRE(quality > 0.9f);
+	const auto quality = FirQuality(impulse, frequencyResponse);
+	REQUIRE(quality.cosineSimilarity > 0.95f);
 	
 	for (size_t i = 0; i < amplitudes.size(); ++i) {
 		const auto signal = GenTestSignal(sampleRate, frequencies[i]*nyquistLimit);
-		const auto filtered = ConvolutionFast(signal, impulse, convolution::full);
+		const auto filtered = Convolution(signal, impulse, convolution::full);
 		const float energy = std::sqrt(SumSquare(signal));
 		const float filteredEnergy = std::sqrt(SumSquare(filtered));
 		REQUIRE(std::abs(amplitudes[i]*energy - filteredEnergy)/energy < 0.1);

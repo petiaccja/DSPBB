@@ -11,6 +11,17 @@
 
 namespace dspbb {
 
+template <class T>
+struct FirGeneralQuality {
+	T cosineSimilarity;
+	T maxDifference;
+	T maxRelDifference;
+	T meanDifference;
+	T meanRelDifference;
+	T meanSquareDifference;
+	T meanSquareRelDifference;	
+};
+
 /// <summary>
 /// Creates an arbitrary FIR filter by windowing the impulse response acquired by the IFFT of the frequency response.
 /// </summary>
@@ -137,20 +148,32 @@ TimeSignal<T> FirLowPassWindowed(size_t sampleRate,
 ///		Bins range from 0Hz to sampleRate/2, and the number of bins must be at least half of the number of filter taps. </param>
 /// <returns> A number between 0 (extremely bad match) and 1 (perfect match). </returns>
 template <class T>
-T FirAccuracy(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
+FirGeneralQuality<T> FirQuality(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
 	if (filter.Size() > 2 * desiredResponse.Size()) {
 		throw std::logic_error("You must specify the desired response more accurately with such a large filter.");
 	}
 	const size_t numBins = desiredResponse.Length() * 2;
 	TimeSignal<T> extendedFilter = filter;
 	extendedFilter.Resize(numBins, T(0));
-	auto actualResponse = std::sqrt(T(0.5)) * Abs(FourierTransform(extendedFilter));
+	const auto actualResponseSymm = std::sqrt(T(0.5)) * Abs(FourierTransform(extendedFilter));
+	const auto actualResponse = SpectrumView<const T>( actualResponseSymm.begin(), desiredResponse.Size() );
+	const auto difference= actualResponse - desiredResponse;
+	const auto relDifference = difference / desiredResponse;
 
 	auto magActual = DotProduct(AsConstView(actualResponse), AsConstView(actualResponse), desiredResponse.Size());
 	auto magDesired = DotProduct(AsConstView(desiredResponse), AsConstView(desiredResponse), desiredResponse.Size());
 	auto similarity = DotProduct(AsConstView(desiredResponse), AsConstView(actualResponse), desiredResponse.Size());
 
-	return similarity / std::max(magActual, magDesired);
+	FirGeneralQuality<T> quality;
+	quality.cosineSimilarity = similarity / std::max(magActual, magDesired);
+	quality.maxDifference = Max(Abs(difference));
+	quality.maxRelDifference = Max(Abs(relDifference));
+	quality.meanDifference = Mean(Abs(difference));
+	quality.meanRelDifference = Mean(Abs(relDifference));
+	quality.meanSquareDifference = RootMeanSquare(difference);
+	quality.meanSquareRelDifference = RootMeanSquare(relDifference);
+
+	return quality;
 }
 
 
