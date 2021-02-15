@@ -56,7 +56,6 @@ public:
 	T* Data();
 	const T* Data() const;
 
-
 	size_type Size() const;
 	size_type Length() const;
 	size_type SizeBytes() const;

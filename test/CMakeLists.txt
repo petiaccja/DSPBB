@@ -1,7 +1,7 @@
 # Enumerate sources
 add_executable(UnitTest ${sources} ${headers})
 
-target_sources(UnitTest PRIVATE main.cpp)
+target_sources(UnitTest PRIVATE main.cpp "Test_Functions.cpp")
 
 target_sources(UnitTest 
 	PRIVATE
@@ -15,7 +15,7 @@ target_sources(UnitTest
 		Test_WindowFunctions.cpp
 		Test_MathFunctions.cpp
 		Test_Algorithm.cpp
-)
+ "Test_Statistics.cpp")
 
 
 target_include_directories(UnitTest PUBLIC ${CMAKE_SOURCE_DIR}/support)

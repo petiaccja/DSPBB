@@ -42,9 +42,9 @@ T RootMeanSquare(SignalView<const T, Domain> signal) {
 template <class T, eSignalDomain Domain>
 T StandardDeviation(SignalView<const T, Domain> signal) {
 	const T mean = Mean(signal);
-	const Signal<T, Domain> diff = Signal<T, Domain>{ signal.begin(), signal.end() } - mean;
+	const Signal<T, Domain> diff = signal - mean;
 	T sum = SumSquare(diff);
-	return signal.Size() >= 2 ? std::sqrt(sum / T(signal.Size() - 1)) : T(0);
+	return signal.Size() >= 1 ? std::sqrt(sum / T(signal.Size())) : T(0);
 }
 
 

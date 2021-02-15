@@ -75,7 +75,8 @@ auto Exp(SignalT&& signal) {
 template <class SignalT>
 auto Pow(SignalT&& signal, typename std::decay_t<SignalT>::value_type power) {
 	return Apply(
-		std::forward<SignalT>(signal), [](typename std::decay_t<SignalT>::value_type v, typename std::decay_t<SignalT>::value_type power) { return std::pow(v, power); }, power);
+		std::forward<SignalT>(signal),
+		[](typename std::decay_t<SignalT>::value_type v, typename std::decay_t<SignalT>::value_type power) { return std::pow(v, power); }, power);
 }
 
 template <class SignalT>
@@ -102,7 +103,6 @@ template <class SignalT>
 auto Cos(SignalT&& signal) {
 	return Apply(std::forward<SignalT>(signal), [](typename std::decay_t<SignalT>::value_type v) { return std::cos(v); });
 }
-
 
 template <class SignalT>
 auto Tan(SignalT&& signal) {
