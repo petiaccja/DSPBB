@@ -19,7 +19,7 @@ struct FirGeneralQuality {
 	T meanDifference;
 	T meanRelDifference;
 	T meanSquareDifference;
-	T meanSquareRelDifference;	
+	T meanSquareRelDifference;
 };
 
 /// <summary>
@@ -33,20 +33,17 @@ struct FirGeneralQuality {
 template <class T>
 TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSignalView<const T> window) {
 	const size_t numTaps = window.Size();
-	assert(numTaps <= frequencyResponse.Size() * 2);
 	assert(numTaps != 0);
-	Spectrum<T> symmetricResponse(frequencyResponse.Size() * 2);
-	std::copy(frequencyResponse.begin(), frequencyResponse.end(), symmetricResponse.begin());
-	std::copy(frequencyResponse.rbegin(), frequencyResponse.rend(), symmetricResponse.begin() + frequencyResponse.Size());
 
-	auto impulse = FourierTransform<remove_complex_t<T>>(symmetricResponse);
+	auto impulse = InverseFourierTransformR(Spectrum<std::complex<T>>(frequencyResponse.begin(), frequencyResponse.end()), false);
+	assert(numTaps <= impulse.Size());
 	auto realImpulse = Real(impulse);
 
 	TimeSignal<T> shortImpulse(numTaps);
 	std::copy(realImpulse.begin(), realImpulse.begin() + numTaps - numTaps / 2, shortImpulse.begin() + numTaps / 2);
 	std::copy(realImpulse.end() - numTaps / 2, realImpulse.end(), shortImpulse.begin());
 
-	return std::sqrt(T(2)) * shortImpulse * window;
+	return shortImpulse * window;
 }
 
 
@@ -149,15 +146,13 @@ TimeSignal<T> FirLowPassWindowed(size_t sampleRate,
 /// <returns> A number between 0 (extremely bad match) and 1 (perfect match). </returns>
 template <class T>
 FirGeneralQuality<T> FirQuality(const TimeSignal<T>& filter, const Spectrum<T>& desiredResponse) {
-	if (filter.Size() > 2 * desiredResponse.Size()) {
-		throw std::logic_error("You must specify the desired response more accurately with such a large filter.");
-	}
-	const size_t numBins = desiredResponse.Length() * 2;
+	const size_t numBins = 2 * desiredResponse.Length() - 1 - desiredResponse.Length() % 2;
+	assert(numBins >= filter.Size());
 	TimeSignal<T> extendedFilter = filter;
 	extendedFilter.Resize(numBins, T(0));
-	const auto actualResponseSymm = std::sqrt(T(0.5)) * Abs(FourierTransform(extendedFilter));
-	const auto actualResponse = SpectrumView<const T>( actualResponseSymm.begin(), desiredResponse.Size() );
-	const auto difference= actualResponse - desiredResponse;
+	const auto actualResponse = Abs(FourierTransform(extendedFilter, false));
+	assert(actualResponse.Size() == desiredResponse.Size());
+	const auto difference = actualResponse - desiredResponse;
 	const auto relDifference = difference / desiredResponse;
 
 	auto magActual = DotProduct(AsConstView(actualResponse), AsConstView(actualResponse), desiredResponse.Size());
