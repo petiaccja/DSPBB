@@ -55,8 +55,7 @@ namespace impl {
 
 		const intptr_t lenfull = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::full);
 		const intptr_t lencentral = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::central);
-
-		const intptr_t offset = -intptr_t(v.Length()) + 1;
+		
 		const intptr_t lenu = u.Length();
 		const intptr_t lenv = v.Length();
 		const intptr_t padding = lenv - 1;
