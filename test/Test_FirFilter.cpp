@@ -27,9 +27,9 @@ TimeSignal<float> GenTestSignal(size_t sampleRate, float frequency, float length
 }
 
 
-TEST_CASE("Low pass filter", "[AudioFramework:FirFilter]") {
+TEST_CASE("Low pass filter", "[FirFilter]") {
 	constexpr size_t numTaps = 255;
-	const auto impulse = FirLowPassWindowed<float>(sampleRate, cutoff, numTaps, &HammingWindow<float, TIME_DOMAIN>);
+	const auto impulse = FirLowPassWindowed<float>(sampleRate, cutoff, numTaps, windows::hamming);
 	REQUIRE(impulse.Size() == numTaps);
 
 	// Generate two signals just above and just below the cutoff and see their attenuation.
@@ -49,7 +49,7 @@ TEST_CASE("Low pass filter", "[AudioFramework:FirFilter]") {
 }
 
 
-TEST_CASE("Arbitrary filter", "[AudioFramework:FirFilter]") {
+TEST_CASE("Arbitrary filter", "[FirFilter]") {
 	constexpr size_t numTaps = 255;
 	constexpr std::array<float, 4> amplitudes = { 1.0f, 0.2f, 0.6f, 1.2f };
 	constexpr float nyquistLimit = float(sampleRate / 2);

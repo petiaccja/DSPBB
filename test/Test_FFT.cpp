@@ -16,7 +16,7 @@ constexpr size_t fftSize = 1024;
 
 
 
-TEST_CASE("FFT - Real spectral peak", "[AudioFramework:FFT]") {
+TEST_CASE("FFT - Real spectral peak", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 
 	Spectrum<std::complex<float>> complexSpectrum = FourierTransform(signal, true);
@@ -30,7 +30,7 @@ TEST_CASE("FFT - Real spectral peak", "[AudioFramework:FFT]") {
 }
 
 
-TEST_CASE("FFT - Complex spectral peak", "[AudioFramework:FFT]") {
+TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 
 	Spectrum<std::complex<float>> complexSpectrum = FourierTransform(signal);
@@ -44,7 +44,7 @@ TEST_CASE("FFT - Complex spectral peak", "[AudioFramework:FFT]") {
 }
 
 
-TEST_CASE("IFFT - Real identity", "[AudioFramework:FFT]") {
+TEST_CASE("IFFT - Real identity", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 	Spectrum<std::complex<float>> spectrum = FourierTransform(signal, false);
 	const auto repro = InverseFourierTransformR(spectrum, false);
@@ -57,7 +57,7 @@ TEST_CASE("IFFT - Real identity", "[AudioFramework:FFT]") {
 }
 
 
-TEST_CASE("IFFT - Complex identity", "[AudioFramework:FFT]") {
+TEST_CASE("IFFT - Complex identity", "[FFT]") {
 	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 	Spectrum<std::complex<float>> spectrum = FourierTransform(signal);
 	const auto repro = InverseFourierTransformC(spectrum);
@@ -70,7 +70,7 @@ TEST_CASE("IFFT - Complex identity", "[AudioFramework:FFT]") {
 }
 
 
-TEST_CASE("Parseval's relation", "[AudioFramework:FFT]") {
+TEST_CASE("Parseval's relation", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 	Spectrum<std::complex<float>> spectrum = FourierTransform(signal, true);
 
@@ -81,7 +81,7 @@ TEST_CASE("Parseval's relation", "[AudioFramework:FFT]") {
 }
 
 
-TEST_CASE("FFT - Full real even", "[AudioFramework:FFT]") {
+TEST_CASE("FFT - Full real even", "[FFT]") {
 	TimeSignal<float> even(64, 0.0f);
 	even[30] = 1.0f;
 	const Spectrum<std::complex<float>> evenHalf = FourierTransform(even, false);
@@ -92,7 +92,7 @@ TEST_CASE("FFT - Full real even", "[AudioFramework:FFT]") {
 	REQUIRE(std::all_of(evenFull.begin(), evenFull.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 }
 
-TEST_CASE("FFT - Full real odd", "[AudioFramework:FFT]") {
+TEST_CASE("FFT - Full real odd", "[FFT]") {
 	TimeSignal<float> odd(63, 0.0f);
 	odd[30] = 1.0f;
 	Spectrum<std::complex<float>> evenHalf = FourierTransform(odd, false);
@@ -104,7 +104,7 @@ TEST_CASE("FFT - Full real odd", "[AudioFramework:FFT]") {
 }
 
 
-TEST_CASE("FFT - Full real identity", "[AudioFramework:FFT]") {
+TEST_CASE("FFT - Full real identity", "[FFT]") {
 	TimeSignal<float> even(64, 0.0f);
 	TimeSignal<float> odd(63, 0.0f);
 	even[30] = 1.0f;
@@ -119,7 +119,7 @@ TEST_CASE("FFT - Full real identity", "[AudioFramework:FFT]") {
 	REQUIRE(Max(Abs(odd - Real(reproOdd))) < 0.001f);
 }
 
-TEST_CASE("FFT - Half real identity", "[AudioFramework:FFT]") {
+TEST_CASE("FFT - Half real identity", "[FFT]") {
 	TimeSignal<float> even(64, 0.0f);
 	TimeSignal<float> odd(63, 0.0f);
 	even[30] = 1.0f;

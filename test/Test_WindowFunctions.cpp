@@ -8,41 +8,98 @@
 using namespace dspbb;
 
 
-TEST_CASE("Hamming window", "[AudioFramework:WindowFunctions]") {
-	auto window = HammingWindow<float>(1024);
+TEST_CASE("Coherent gain", "[WindowFunctions]") {
+	Signal<float, TIME_DOMAIN> window(32, 0.5f);
+	REQUIRE(CoherentGain(window) == Approx(0.5f));
+}
 
-	REQUIRE(window.Length() == 1024);
+TEST_CASE("Energy gain", "[WindowFunctions]") {
+	Signal<float, TIME_DOMAIN> window(32, 0.25f);
+	REQUIRE(CoherentGain(window) == Approx(0.25f));
+}
 
-	float max = *std::max_element(window.begin(), window.end());
-	auto firstMinPosition = std::min_element(window.begin(), window.begin() + 512);
-	auto lastMinPosition = std::min_element(window.begin() + 512, window.end());
+template <class T, eSignalDomain Domain>
+static bool IsSymmetric(const Signal<T, Domain>& window) {
+	auto it = window.begin();
+	auto rev = window.rbegin();
+	for (; it != rev.base(); ++it, ++rev) {
+		auto diff = std::abs(*it - *rev);
+		if (diff > 0.001f) {
+			return false;
+		}
+	}
+	return true;
+}
 
-	REQUIRE(Approx(max) == 1.0f);
-	REQUIRE(firstMinPosition == window.begin());
-	REQUIRE(lastMinPosition == window.end() - 1);
+template <class T, eSignalDomain Domain>
+static bool IsPeakCentered(const Signal<T, Domain>& window) {
+	return std::abs(Max(Abs(window)) - std::abs(window[window.Size() / 2])) < 0.01f;
+}
+
+TEST_CASE("Hamming window", "[WindowFunctions]") {
+	auto window = HammingWindow<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.54f).margin(0.01f));
 }
 
 
-TEST_CASE("Hamming window complex", "[AudioFramework:WindowFunctions]") {
-	auto window = HammingWindow<std::complex<float>>(1024);
+TEST_CASE("Hamming window complex", "[WindowFunctions]") {
+	auto window = HammingWindow<std::complex<float>>(256);
 
-	REQUIRE(window.Length() == 1024);
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.54f).margin(0.01f));
 	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
 }
 
 
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L
-TEST_CASE("Kaiser window", "[AudioFramework:WindowFunctions]") {
-	auto window = KaiserWindow<float>(1024, 2.55f);
+TEST_CASE("Flat top window", "[WindowFunctions]") {
+	auto window = FlatTopWindow<float>(256);
 
-	REQUIRE(window.Length() == 1024);
-
-	float max = *std::max_element(window.begin(), window.end());
-	auto firstMinPosition = std::min_element(window.begin(), window.begin() + 512);
-	auto lastMinPosition = std::min_element(window.begin() + 512, window.end());
-
-	REQUIRE(Approx(max) == 1.0f);
-	REQUIRE(firstMinPosition == window.begin());
-	REQUIRE(lastMinPosition == window.end() - 1);
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.22f).margin(0.01f));
 }
-#endif
+
+
+TEST_CASE("Flat top complex", "[WindowFunctions]") {
+	auto window = FlatTopWindow<std::complex<float>>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.22f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+
+TEST_CASE("Rectangular window", "[WindowFunctions]") {
+	auto window = RectangularWindow<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(1.0f).margin(0.01f));
+}
+
+
+TEST_CASE("Rectangular complex", "[WindowFunctions]") {
+	auto window = RectangularWindow<std::complex<float>>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}

@@ -8,10 +8,15 @@ namespace dspbb {
 // Apply function to signal.
 //------------------------------------------------------------------------------
 
+template <class T, eSignalDomain Domain, class Func, class... Args, std::enable_if_t<!std::is_const<T>::value && std::is_same<std::decay_t<std::result_of_t<Func(T, Args...)>>, T>::value, int> = 0>
+void Apply(SignalView<T, Domain> inout, Func func, const Args&... args) {
+	std::for_each(inout.begin(), inout.end(), [&func, &args...](T& item) { item = func(item, args...); });
+}
+
 template <class T, dspbb::eSignalDomain Domain, class Func, class... Args, std::enable_if_t<std::is_same<std::decay_t<std::result_of_t<Func(T, Args...)>>, T>::value, int> = 0>
-Signal<T, Domain> Apply(Signal<T, Domain>&& signal, Func func, const Args&... args) {
-	std::for_each(signal.begin(), signal.end(), [&func, &args...](T& item) { item = func(item, args...); });
-	return std::move(signal);
+Signal<T, Domain> Apply(Signal<T, Domain>&& inout, Func func, const Args&... args) {
+	Apply(AsView(inout), func, args...);
+	return std::move(inout);
 }
 
 template <class T, eSignalDomain Domain, class Func, class... Args, std::enable_if_t<std::is_same<std::decay_t<std::result_of_t<Func(T, Args...)>>, T>::value, int> = 0>
@@ -38,6 +43,5 @@ template <class T, eSignalDomain Domain, class Func, class... Args, std::enable_
 auto Apply(const Signal<T, Domain>& signal, Func func, const Args&... args) {
 	return Apply(AsConstView(signal), func, args...);
 }
-
 
 } // namespace dspbb

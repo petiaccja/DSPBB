@@ -6,7 +6,7 @@
 using namespace dspbb;
 
 
-TEST_CASE("Polyphase resample", "[AudioFramework:Interpolation]") {
+TEST_CASE("Polyphase resample", "[Interpolation]") {
 	uint64_t sampleRateIn = 16000;
 	uint64_t sampleRateOut = 44100;
 	PolyphaseFilter<float> polyphase{ sampleRateIn, float(std::min(sampleRateIn, sampleRateOut)) / 2.0f, 7, 31 };

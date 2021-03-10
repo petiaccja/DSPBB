@@ -5,7 +5,7 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
-TEST_CASE("Apply", "[AudioFramework:Algorithm]") {
+TEST_CASE("Apply", "[Algorithm]") {
 	Signal<float, TIME_DOMAIN> signal{ 1.f, 4.f, 9.f };
 	auto result = Apply(signal, static_cast<float (*)(float)>(std::sqrt));
 	REQUIRE((std::is_same<decltype(result)::value_type, float>::value));
@@ -15,7 +15,7 @@ TEST_CASE("Apply", "[AudioFramework:Algorithm]") {
 }
 
 
-TEST_CASE("Apply convert", "[AudioFramework:Algorithm]") {
+TEST_CASE("Apply convert", "[Algorithm]") {
 	Signal<std::complex<float>, TIME_DOMAIN> signal{ 1.f, -4.f, 9.if };
 	auto result = Apply(signal, static_cast<float (*)(const std::complex<float>&)>(std::abs));
 	REQUIRE((std::is_same<decltype(result)::value_type, float>::value));

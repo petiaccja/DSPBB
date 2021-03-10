@@ -6,7 +6,7 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
-TEST_CASE("Signal - Default construct", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Default construct", "[Signal]") {
 	TimeSignal<float> s;
 	TimeSignal<std::complex<float>> c;
 	REQUIRE(s.Empty());
@@ -14,7 +14,7 @@ TEST_CASE("Signal - Default construct", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Ilist construct", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Ilist construct", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
 	REQUIRE(s.Length() == 3);
@@ -29,7 +29,7 @@ TEST_CASE("Signal - Ilist construct", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Element access", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Element access", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
 	for (int i = 0; i < 3; ++i) {
@@ -39,7 +39,7 @@ TEST_CASE("Signal - Element access", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Conversion construct", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Conversion construct", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
 	TimeSignal<double> d = s;
@@ -53,7 +53,7 @@ TEST_CASE("Signal - Conversion construct", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Conversion operator=", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Conversion operator=", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
 	TimeSignal<double> d;
@@ -70,7 +70,7 @@ TEST_CASE("Signal - Conversion operator=", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Reserve", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Reserve", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
 	s.Reserve(1024);
@@ -82,7 +82,7 @@ TEST_CASE("Signal - Reserve", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Resize", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Resize", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
 	s.Resize(1024);
@@ -94,7 +94,7 @@ TEST_CASE("Signal - Resize", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Append", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Append", "[Signal]") {
 	TimeSignal<float> s1 = { 1, 2, 3 };
 	TimeSignal<float> s2 = { 4, 5, 6 };
 	s1.Append(s2);
@@ -105,7 +105,7 @@ TEST_CASE("Signal - Append", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Prepend", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Prepend", "[Signal]") {
 	TimeSignal<float> s1 = { 1, 2, 3 };
 	TimeSignal<float> s2 = { 4, 5, 6 };
 	s1.Prepend(s2);
@@ -116,7 +116,7 @@ TEST_CASE("Signal - Prepend", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - ExtractFront", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - ExtractFront", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3, 4, 5, 6 };
 	TimeSignal<float> part = s.ExtractFront(2);
 	REQUIRE(s.Size() == 4);
@@ -130,7 +130,7 @@ TEST_CASE("Signal - ExtractFront", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - ExtractBack", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - ExtractBack", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3, 4, 5, 6 };
 	TimeSignal<float> part = s.ExtractBack(4);
 	REQUIRE(s.Size() == 2);
@@ -144,7 +144,7 @@ TEST_CASE("Signal - ExtractBack", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Erase", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Erase", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3, 4, 5, 6 };
 	s.Erase(s.begin() + 3);
 	REQUIRE(s.Size() == 5);
@@ -152,7 +152,7 @@ TEST_CASE("Signal - Erase", "[AudioFramework:Signal]") {
 	REQUIRE(s[3] == 5);
 }
 
-TEST_CASE("Signal - Erase range", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Erase range", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3, 4, 5, 6 };
 	s.Erase(s.begin() + 1, s.begin() + 5);
 	REQUIRE(s.Size() == 2);
@@ -161,7 +161,7 @@ TEST_CASE("Signal - Erase range", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Append (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Append (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s1 = { 1, 2, 3 };
 	TimeSignal<float> s2 = { 4, 5, 6 };
 	s1.Append(s2);
@@ -172,7 +172,7 @@ TEST_CASE("Signal - Append (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Prepend (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Prepend (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s1 = { 1, 2, 3 };
 	TimeSignal<float> s2 = { 4, 5, 6 };
 	s1.Prepend(s2);
@@ -183,7 +183,7 @@ TEST_CASE("Signal - Prepend (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - ExtractFront (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - ExtractFront (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f * (1.f + 1.if), 2.f * (1.f + 1.if), 3.f * (1.f + 1.if), 4.f * (1.f + 1.if), 5.f * (1.f + 1.if), 6.f * (1.f + 1.if) };
 	TimeSignal<std::complex<float>> part = s.ExtractFront(2);
 	REQUIRE(s.Size() == 4);
@@ -197,7 +197,7 @@ TEST_CASE("Signal - ExtractFront (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - ExtractBack (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - ExtractBack (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f * (1.f + 1.if), 2.f * (1.f + 1.if), 3.f * (1.f + 1.if), 4.f * (1.f + 1.if), 5.f * (1.f + 1.if), 6.f * (1.f + 1.if) };
 	TimeSignal<std::complex<float>> part = s.ExtractBack(4);
 	REQUIRE(s.Size() == 2);
@@ -211,7 +211,7 @@ TEST_CASE("Signal - ExtractBack (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Erase (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Erase (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1, 2, 3, 4, 5, 6 };
 	s.Erase(s.begin() + 3);
 	REQUIRE(s.Size() == 5);
@@ -220,7 +220,7 @@ TEST_CASE("Signal - Erase (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Erase range (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Erase range (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1, 2, 3, 4, 5, 6 };
 	s.Erase(s.begin() + 1, s.begin() + 5);
 	REQUIRE(s.Size() == 2);
@@ -229,7 +229,7 @@ TEST_CASE("Signal - Erase range (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Iteration", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Iteration", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3, 4, 5, 6 };
 	float expected = 1.0f;
 	for (const auto& v : s) {
@@ -239,7 +239,7 @@ TEST_CASE("Signal - Iteration", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Iteration (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Iteration (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1, 2, 3, 4, 5, 6 };
 	std::complex<float> expected = 1.0f;
 	for (const auto& v : s) {
@@ -249,7 +249,7 @@ TEST_CASE("Signal - Iteration (complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Const iteration", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Const iteration", "[Signal]") {
 	const TimeSignal<float> s = { 1, 2, 3, 4, 5, 6 };
 	float expected = 1.0f;
 	for (const auto& v : s) {
@@ -259,7 +259,7 @@ TEST_CASE("Signal - Const iteration", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - Const iteration (complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - Const iteration (complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> s = { 1, 2, 3, 4, 5, 6 };
 	std::complex<float> expected = 1.0f;
 	for (const auto& v : s) {
@@ -273,7 +273,7 @@ TEST_CASE("Signal - Const iteration (complex)", "[AudioFramework:Signal]") {
 // Real operators
 //------------------------------------------------------------------------------
 //
-TEST_CASE("Signal - += signal", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - += signal", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<float> a = { 3, 2, 1 };
 	s += a;
@@ -282,7 +282,7 @@ TEST_CASE("Signal - += signal", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - -= signal", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - -= signal", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<float> a = { 4, 5, 6 };
 	s -= a;
@@ -291,7 +291,7 @@ TEST_CASE("Signal - -= signal", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - *= signal", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - *= signal", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 4 };
 	TimeSignal<float> a = { 4, 2, 1 };
 	s *= a;
@@ -300,7 +300,7 @@ TEST_CASE("Signal - *= signal", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - /= signal", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - /= signal", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<float> a = { 2, 4, 6 };
 	s /= a;
@@ -310,7 +310,7 @@ TEST_CASE("Signal - /= signal", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - += scalar", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - += scalar", "[Signal]") {
 	TimeSignal<float> s = { 1, 1, 1 };
 	s += 5.f;
 	for (auto&& v : s) {
@@ -318,7 +318,7 @@ TEST_CASE("Signal - += scalar", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - -= scalar", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - -= scalar", "[Signal]") {
 	TimeSignal<float> s = { 6, 6, 6 };
 	s -= 5.0f;
 	for (auto&& v : s) {
@@ -326,7 +326,7 @@ TEST_CASE("Signal - -= scalar", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - *= scalar", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - *= scalar", "[Signal]") {
 	TimeSignal<float> s = { 2, 2, 2 };
 	s *= 3.0;
 	for (auto&& v : s) {
@@ -334,7 +334,7 @@ TEST_CASE("Signal - *= scalar", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - /= scalar", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - /= scalar", "[Signal]") {
 	TimeSignal<float> s = { 2, 2, 2 };
 	s /= 4.0f;
 	for (auto&& v : s) {
@@ -348,7 +348,7 @@ TEST_CASE("Signal - /= scalar", "[AudioFramework:Signal]") {
 // Complex-real operators
 //------------------------------------------------------------------------------
 
-TEST_CASE("Signal - += signal (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - += signal (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	TimeSignal<float> a = { 3, 2, 1 };
 	s += a;
@@ -358,7 +358,7 @@ TEST_CASE("Signal - += signal (complex-real)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - -= signal (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - -= signal (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	TimeSignal<float> a = { 4, 5, 6 };
 	s -= a;
@@ -368,7 +368,7 @@ TEST_CASE("Signal - -= signal (complex-real)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - *= signal (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - *= signal (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f + 1.if, 2.f + 2.if, 4.f + 4.if };
 	TimeSignal<float> a = { 4, 2, 1 };
 	s *= a;
@@ -378,7 +378,7 @@ TEST_CASE("Signal - *= signal (complex-real)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - /= signal (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - /= signal (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f + 1.if, 2.f + 2.if, 3.f + 3.if };
 	TimeSignal<float> a = { 2, 4, 6 };
 	s /= a;
@@ -389,7 +389,7 @@ TEST_CASE("Signal - /= signal (complex-real)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - += scalar (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - += scalar (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 1.f + 1.if, 1.f + 1.if, 1.f + 1.if };
 	s += 5.f;
 	for (auto&& v : s) {
@@ -398,7 +398,7 @@ TEST_CASE("Signal - += scalar (complex-real)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - -= scalar (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - -= scalar (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 6.f + 1.if, 6.f + 1.if, 6.f + 1.if };
 	s -= 5.0f;
 	for (auto&& v : s) {
@@ -407,7 +407,7 @@ TEST_CASE("Signal - -= scalar (complex-real)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - *= scalar (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - *= scalar (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 2.f + 1.if, 2.f + 1.if, 2.f + 1.if };
 	s *= 3.0;
 	for (auto&& v : s) {
@@ -416,7 +416,7 @@ TEST_CASE("Signal - *= scalar (complex-real)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - /= scalar (complex-real)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - /= scalar (complex-real)", "[Signal]") {
 	TimeSignal<std::complex<float>> s = { 2.f + 4.if, 2.f + 4.if, 2.f + 4.if };
 	s /= 4.0f;
 	for (auto&& v : s) {
@@ -431,7 +431,7 @@ TEST_CASE("Signal - /= scalar (complex-real)", "[AudioFramework:Signal]") {
 // Complex-complex operators
 //------------------------------------------------------------------------------
 
-TEST_CASE("Signal - += signal (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - += signal (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const TimeSignal<std::complex<float>> b = { 3.f + 3.if, 2.f + 6.if, 1.f + 1.if };
 	auto copy = a;
@@ -442,7 +442,7 @@ TEST_CASE("Signal - += signal (complex-complex)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - -= signal (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - -= signal (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const TimeSignal<std::complex<float>> b = { 3.f + 3.if, 2.f + 6.if, 1.f + 1.if };
 	auto copy = a;
@@ -453,7 +453,7 @@ TEST_CASE("Signal - -= signal (complex-complex)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - *= signal (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - *= signal (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const TimeSignal<std::complex<float>> b = { 3.f + 3.if, 2.f + 6.if, 1.f + 1.if };
 	auto copy = a;
@@ -464,7 +464,7 @@ TEST_CASE("Signal - *= signal (complex-complex)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - /= signal (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - /= signal (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const TimeSignal<std::complex<float>> b = { 3.f + 3.if, 2.f + 6.if, 1.f + 1.if };
 	auto copy = a;
@@ -477,7 +477,7 @@ TEST_CASE("Signal - /= signal (complex-complex)", "[AudioFramework:Signal]") {
 }
 
 
-TEST_CASE("Signal - += scalar (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - += scalar (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const std::complex<float> b = 3.f + 5.if;
 	auto copy = a;
@@ -488,7 +488,7 @@ TEST_CASE("Signal - += scalar (complex-complex)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - -= scalar (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - -= scalar (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const std::complex<float> b = 3.f + 5.if;
 	auto copy = a;
@@ -499,7 +499,7 @@ TEST_CASE("Signal - -= scalar (complex-complex)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - *= scalar (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - *= scalar (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const std::complex<float> b = 3.f + 5.if;
 	auto copy = a;
@@ -510,7 +510,7 @@ TEST_CASE("Signal - *= scalar (complex-complex)", "[AudioFramework:Signal]") {
 	}
 }
 
-TEST_CASE("Signal - /= scalar (complex-complex)", "[AudioFramework:Signal]") {
+TEST_CASE("Signal - /= scalar (complex-complex)", "[Signal]") {
 	const TimeSignal<std::complex<float>> a = { 1.f + 1.if, 2.f + 1.if, 3.f + 1.if };
 	const std::complex<float> b = 3.f + 5.if;
 	auto copy = a;

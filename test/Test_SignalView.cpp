@@ -5,7 +5,7 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
-TEST_CASE("Default construct", "[AudioFramework:SignalView]") {
+TEST_CASE("Default construct", "[SignalView]") {
 	SignalView<float, TIME_DOMAIN> span;
 	REQUIRE(span.Empty());
 	REQUIRE(span.Size() == 0);
@@ -16,7 +16,7 @@ TEST_CASE("Default construct", "[AudioFramework:SignalView]") {
 }
 
 
-TEST_CASE("Whole span", "[AudioFramework:SignalView]") {
+TEST_CASE("Whole span", "[SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
 	SignalView<float, TIME_DOMAIN> span{ signal };
@@ -26,7 +26,7 @@ TEST_CASE("Whole span", "[AudioFramework:SignalView]") {
 }
 
 
-TEST_CASE("Partial span size", "[AudioFramework:SignalView]") {
+TEST_CASE("Partial span size", "[SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
 	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 3, 2 };
@@ -36,7 +36,7 @@ TEST_CASE("Partial span size", "[AudioFramework:SignalView]") {
 }
 
 
-TEST_CASE("Partial span iterators", "[AudioFramework:SignalView]") {
+TEST_CASE("Partial span iterators", "[SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
 	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
@@ -46,7 +46,7 @@ TEST_CASE("Partial span iterators", "[AudioFramework:SignalView]") {
 }
 
 
-TEST_CASE("Data pointer", "[AudioFramework:SignalView]") {
+TEST_CASE("Data pointer", "[SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
 	SignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
@@ -54,7 +54,7 @@ TEST_CASE("Data pointer", "[AudioFramework:SignalView]") {
 }
 
 
-TEST_CASE("Real/Imag pointer", "[AudioFramework:SignalView]") {
+TEST_CASE("Real/Imag pointer", "[SignalView]") {
 	using namespace std::complex_literals;
 	TimeSignalCF signal = { 1.f + 2.if,
 							2.f + 3.if,
@@ -69,7 +69,7 @@ TEST_CASE("Real/Imag pointer", "[AudioFramework:SignalView]") {
 }
 
 
-TEST_CASE("Constant span", "[AudioFramework:SignalView]") {
+TEST_CASE("Constant span", "[SignalView]") {
 	TimeSignalF signal = { 1, 2, 3, 4, 5, 6 };
 
 	SignalView<const float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
@@ -95,7 +95,7 @@ const TimeSignal<float> s2 = { 7, 4, 5 };
 const float c1 = 5;
 
 #define TEST_CASE_VIEW_OPERATOR(NAME, OPERATOR)                             \
-	TEST_CASE("SignalView operator " NAME, "[AudioFramework:SignalView]") { \
+	TEST_CASE("SignalView operator " NAME, "[SignalView]") { \
 		const auto expected = s1 OPERATOR s2;                               \
 		const auto v1 = s1 OPERATOR AsConstView(s2);                        \
 		const auto v2 = AsConstView(s1) OPERATOR s2;                        \
@@ -108,7 +108,7 @@ const float c1 = 5;
 	}
 
 #define TEST_CASE_VIEW_OPERATOR_SCALAR(NAME, OPERATOR)                                    \
-	TEST_CASE("SignalView operator scalar " NAME, "[AudioFramework:SignalView]") { \
+	TEST_CASE("SignalView operator scalar " NAME, "[SignalView]") { \
 		const auto expected1 = c1 OPERATOR s1;                                     \
 		const auto v1 = c1 OPERATOR AsConstView(s1);                               \
 		const auto expected2 = s1 OPERATOR c1;                                     \

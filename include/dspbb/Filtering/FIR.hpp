@@ -72,7 +72,7 @@ TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const Tim
 template <class T>
 TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
 								 size_t numTaps,
-								 std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+								 std::function<TimeSignal<T>(size_t)> windowFunc = windows::hamming) {
 	return FirGeneralWindowed(frequencyResponse, windowFunc(numTaps));
 }
 
@@ -132,7 +132,7 @@ template <class T>
 TimeSignal<T> FirLowPassWindowed(size_t sampleRate,
 								 float cutoffFrequency,
 								 size_t numTaps,
-								 std::function<TimeSignal<T>(size_t)> windowFunc = &HammingWindow<T, TIME_DOMAIN>) {
+								 std::function<TimeSignal<T>(size_t)> windowFunc = windows::hamming) {
 	return FirLowPassWindowed(cutoffFrequency, sampleRate, windowFunc(numTaps));
 }
 

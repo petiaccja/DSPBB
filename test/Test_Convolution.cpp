@@ -38,7 +38,7 @@ const std::array<std::complex<float>, 31> ucvc_full{
 };
 
 
-TEST_CASE("Real central", "[AudioFramework:Convolution]") {
+TEST_CASE("Real central", "[Convolution]") {
 	TimeSignal<float> u{ ur.begin(), ur.end() };
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<float> expected = { urvr_central.begin(), urvr_central.end() };
@@ -51,7 +51,7 @@ TEST_CASE("Real central", "[AudioFramework:Convolution]") {
 	}	
 }
 
-TEST_CASE("Real full", "[AudioFramework:Convolution]") {
+TEST_CASE("Real full", "[Convolution]") {
 	TimeSignal<float> u{ ur.begin(), ur.end() };
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
@@ -65,7 +65,7 @@ TEST_CASE("Real full", "[AudioFramework:Convolution]") {
 }
 
 
-TEST_CASE("Real-complex central BR", "[AudioFramework:Convolution]") {
+TEST_CASE("Real-complex central BR", "[Convolution]") {
 	TimeSignal<float> u{ ur.begin(), ur.end() };
 	TimeSignal<std::complex<float>> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<float>> expected = { urvr_central.begin(), urvr_central.end() };
@@ -78,7 +78,7 @@ TEST_CASE("Real-complex central BR", "[AudioFramework:Convolution]") {
 	}
 }
 
-TEST_CASE("Complex-real central RB", "[AudioFramework:Convolution]") {
+TEST_CASE("Complex-real central RB", "[Convolution]") {
 	TimeSignal<std::complex<float>> u{ ur.begin(), ur.end() };
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<float>> expected = { urvr_central.begin(), urvr_central.end() };
@@ -91,7 +91,7 @@ TEST_CASE("Complex-real central RB", "[AudioFramework:Convolution]") {
 	}
 }
 
-TEST_CASE("Complex-complex central", "[AudioFramework:Convolution]") {
+TEST_CASE("Complex-complex central", "[Convolution]") {
 	TimeSignal<std::complex<float>> u{ uc.begin(), uc.end() };
 	TimeSignal<std::complex<float>> v{ vc.begin(), vc.end() };
 	TimeSignal<std::complex<float>> expected = { ucvc_central.begin(), ucvc_central.end() };
@@ -105,7 +105,7 @@ TEST_CASE("Complex-complex central", "[AudioFramework:Convolution]") {
 }
 
 
-TEST_CASE("Different types", "[AudioFramework:Convolution]") {
+TEST_CASE("Different types", "[Convolution]") {
 	TimeSignal<float> u{ ur.begin(), ur.end() };
 	TimeSignal<std::complex<double>> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<double>> expected = { urvr_central.begin(), urvr_central.end() };
@@ -119,7 +119,7 @@ TEST_CASE("Different types", "[AudioFramework:Convolution]") {
 }
 
 
-TEST_CASE("Real-world signal", "[AudioFramework:Convolution]") {
+TEST_CASE("Real-world signal", "[Convolution]") {
 	TimeSignal<float> u;
 	TimeSignal<float> v;
 
