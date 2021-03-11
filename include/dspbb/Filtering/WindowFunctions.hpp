@@ -33,7 +33,7 @@ T EnergyGain(SignalView<T, Domain> window) {
 
 template <class T, eSignalDomain Domain>
 T EnergyGain(const Signal<T, Domain>& window) {
-	return CoherentGain(AsConstView(window));
+	return EnergyGain(AsConstView(window));
 }
 
 

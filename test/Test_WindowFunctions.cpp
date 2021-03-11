@@ -14,8 +14,8 @@ TEST_CASE("Coherent gain", "[WindowFunctions]") {
 }
 
 TEST_CASE("Energy gain", "[WindowFunctions]") {
-	Signal<float, TIME_DOMAIN> window(32, 0.25f);
-	REQUIRE(CoherentGain(window) == Approx(0.25f));
+	Signal<float, TIME_DOMAIN> window(32, 0.5f);
+	REQUIRE(EnergyGain(window) == Approx(0.25f));
 }
 
 template <class T, eSignalDomain Domain>
