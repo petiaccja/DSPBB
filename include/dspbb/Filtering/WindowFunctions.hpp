@@ -8,6 +8,7 @@
 #include "../Utility/TypeTraits.hpp"
 
 #include <cmath>
+#include <functional>
 
 
 namespace dspbb {
