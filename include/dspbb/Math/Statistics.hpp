@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dspbb/Math/DotProduct.hpp"
-#include "dspbb/Primitives/Signal.hpp"
-#include "dspbb/Primitives/SignalView.hpp"
+#include <dspbb/Math/DotProduct.hpp>
+#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Primitives/SignalView.hpp>
 
 #include <cmath>
 #include <numeric>

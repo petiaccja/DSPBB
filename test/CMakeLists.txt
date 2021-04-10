@@ -1,5 +1,5 @@
 # Enumerate sources
-add_executable(UnitTest ${sources} ${headers})
+add_executable(UnitTest)
 
 target_sources(UnitTest PRIVATE main.cpp "Test_Functions.cpp")
 
@@ -15,8 +15,9 @@ target_sources(UnitTest
 		Test_WindowFunctions.cpp
 		Test_MathFunctions.cpp
 		Test_Algorithm.cpp
- "Test_Statistics.cpp")
+		Test_Statistics.cpp)
 
+find_package(Catch2 REQUIRED)
 
-target_include_directories(UnitTest PUBLIC ${CMAKE_SOURCE_DIR}/support)
-target_include_directories(UnitTest PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(UnitTest DSPBB)
+target_link_libraries(UnitTest Catch2::Catch2)

@@ -87,7 +87,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define POCKETFFT_RESTRICT
 #endif
 
-namespace pocketfft {
+namespace pocketfft_dspbb {
 
 namespace detail {
 using std::size_t;

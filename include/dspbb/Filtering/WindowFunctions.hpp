@@ -18,7 +18,7 @@ namespace dspbb {
 //------------------------------------------------------------------------------
 template <class T, eSignalDomain Domain>
 T CoherentGain(SignalView<T, Domain> window) {
-	return Sum(window) / T(window.Size());
+	return Sum(window) / remove_complex_t<T>(window.Size());
 }
 
 template <class T, eSignalDomain Domain>

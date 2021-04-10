@@ -1,6 +1,6 @@
-#include "dspbb/Generators/Sine.hpp"
-#include "dspbb/Math/DotProduct.hpp"
-#include "dspbb/Math/Statistics.hpp"
+#include <dspbb/Generators/Sine.hpp>
+#include <dspbb/Math/DotProduct.hpp>
+#include <dspbb/Math/Statistics.hpp>
 
 #include <Catch2/catch.hpp>
 #include <algorithm>
