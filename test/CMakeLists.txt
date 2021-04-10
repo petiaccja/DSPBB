@@ -15,6 +15,7 @@ target_sources(UnitTest
 		Test_WindowFunctions.cpp
 		Test_MathFunctions.cpp
 		Test_Algorithm.cpp
+		Test_Arithmetic.cpp
 		Test_Statistics.cpp)
 
 find_package(Catch2 REQUIRED)
