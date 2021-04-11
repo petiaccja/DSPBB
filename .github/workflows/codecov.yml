@@ -22,6 +22,11 @@ jobs:
       with:
         version: "10.0"
         directory: ${{ runner.temp }}/llvm
+        
+    - name: Install conan
+      shell: bash
+      run: |
+        pip install conan
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
