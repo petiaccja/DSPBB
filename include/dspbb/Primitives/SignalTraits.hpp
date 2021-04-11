@@ -58,6 +58,14 @@ struct signal_traits<SignalView<T, Domain>> {
 };
 
 
+template <class...>
+struct conjunction_compat : std::true_type {};
+template <class B1>
+struct conjunction_compat<B1> : B1 {};
+template <class B1, class... Bn>
+struct conjunction_compat<B1, Bn...>
+	: std::conditional_t<bool(B1::value), conjunction_compat<Bn...>, B1> {};
+
 
 template <class... Signals>
 struct is_same_domain {
@@ -68,7 +76,7 @@ struct is_same_domain {
 	static constexpr bool compare() {
 		return signal_traits<H1>::domain == signal_traits<H2>::domain && compare<H2, Tail...>();
 	}
-	template <class... Signals_, std::enable_if_t<std::conjunction<is_signal_like<Signals_>...>::value, int> = 0>
+	template <class... Signals_, std::enable_if_t<conjunction_compat<is_signal_like<Signals_>...>::value, int> = 0>
 	static constexpr bool test(int) {
 		return compare<Signals_...>();
 	}
