@@ -1,6 +1,6 @@
 #include <dspbb/Primitives/Signal.hpp>
 
-#include <Catch2/catch.hpp>
+#include <catch2/catch.hpp>
 #include <complex>
 
 using namespace dspbb;

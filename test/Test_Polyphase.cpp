@@ -3,7 +3,7 @@
 #include <dspbb/Filtering/PolyphaseFilter.hpp>
 #include <dspbb/Math/Statistics.hpp>
 
-#include <Catch2/catch.hpp>
+#include <catch2/catch.hpp>
 #include <cmath>
 
 using namespace dspbb;

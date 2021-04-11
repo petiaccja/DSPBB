@@ -2,7 +2,7 @@
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Math/Statistics.hpp>
 
-#include <Catch2/catch.hpp>
+#include <catch2/catch.hpp>
 #include <algorithm>
 #include <dspbb/Filtering/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>

@@ -3,7 +3,7 @@
 #include <dspbb/Filtering/Convolution.hpp>
 #include <dspbb/Filtering/FIR.hpp>
 
-#include <Catch2/catch.hpp>
+#include <catch2/catch.hpp>
 #include <array>
 
 using namespace dspbb;

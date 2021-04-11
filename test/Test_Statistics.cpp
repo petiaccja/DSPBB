@@ -1,4 +1,4 @@
-#include <Catch2/catch.hpp>
+#include <catch2/catch.hpp>
 #include <complex>
 #include <dspbb/Math/Statistics.hpp>
 
