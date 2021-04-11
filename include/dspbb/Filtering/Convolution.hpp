@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Math/Convolution.hpp"
 #include "../Math/DotProduct.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
@@ -52,10 +53,16 @@ namespace impl {
 
 	template <class T, class U, eSignalDomain Domain>
 	auto ConvolutionOrdered(SignalView<const T, Domain> u, SignalView<const U, Domain> v, convolution::impl::Full) {
-
+		const size_t len = ConvolutionLength(u.Length(), v.Length(), convolution::full);
+		const size_t offset = 0;
+		using R = ResultT<T, U>;
+		Signal<R, Domain> out(size_t(len), R(0));
+		Convolution(out.Data(), u.Data(), v.Data(), u.Size(),v.Size(), offset, len);
+		return out;
+		/*
 		const intptr_t lenfull = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::full);
 		const intptr_t lencentral = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::central);
-		
+
 		const intptr_t lenu = u.Length();
 		const intptr_t lenv = v.Length();
 		const intptr_t padding = lenv - 1;
@@ -82,10 +89,19 @@ namespace impl {
 		}
 
 		return out;
+		*/
 	}
 
 	template <class T, class U, eSignalDomain Domain>
 	auto ConvolutionOrdered(SignalView<const T, Domain> u, SignalView<const U, Domain> v, convolution::impl::Central) {
+		const size_t len = ConvolutionLength(u.Length(), v.Length(), convolution::central);
+		const size_t offset = v.Size() - 1;
+		using R = ResultT<T, U>;
+		Signal<R, Domain> out(size_t(len), R(0));
+		Convolution(out.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, len);
+		return out;
+
+		/*
 		const intptr_t lenout = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::central);
 		const intptr_t lenu = (intptr_t)u.Length();
 		const intptr_t lenv = (intptr_t)v.Length();
@@ -102,6 +118,7 @@ namespace impl {
 		}
 
 		return out;
+		*/
 	}
 
 } // namespace impl

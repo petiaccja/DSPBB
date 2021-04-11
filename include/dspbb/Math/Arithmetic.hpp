@@ -51,7 +51,7 @@ void Calculate(T* out, const T* a, const T* b, size_t length, Op op) {
 //--------------------------------------
 // Scalar-vector
 //--------------------------------------
-template <class R, class T, class U, class Op>
+template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer<T>::value, int> = 0>
 void Calculate(R* out, const T& a, const U* b, size_t length, Op op) {
 	const R* last = out + length;
 	for (; out != last; ++out, ++b) {
@@ -60,7 +60,7 @@ void Calculate(R* out, const T& a, const U* b, size_t length, Op op) {
 }
 
 
-template <class T, class Op, std::enable_if_t<is_vectorized<T>::value, int> = 0>
+template <class T, class Op, std::enable_if_t<!std::is_pointer<T>::value && is_vectorized<T>::value, int> = 0>
 void Calculate(T* out, const T& a, const T* b, size_t length, Op op) {
 	using V = xsimd::simd_type<T>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
@@ -84,7 +84,7 @@ void Calculate(T* out, const T& a, const T* b, size_t length, Op op) {
 // Vector-scalar
 //--------------------------------------
 
-template <class R, class T, class U, class Op>
+template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer<T>::value, int> = 0>
 void Calculate(R* out, const T* a, const U& b, size_t length, Op op) {
 	const R* last = out + length;
 	for (; out != last; ++out, ++a) {
@@ -93,7 +93,7 @@ void Calculate(R* out, const T* a, const U& b, size_t length, Op op) {
 }
 
 
-template <class T, class Op, std::enable_if_t<is_vectorized<T>::value, int> = 0>
+template <class T, class Op, std::enable_if_t<!std::is_pointer<T>::value && is_vectorized<T>::value, int> = 0>
 void Calculate(T* out, const T* a, const T& b, size_t length, Op op) {
 	using V = xsimd::simd_type<T>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;

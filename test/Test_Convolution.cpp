@@ -105,6 +105,7 @@ TEST_CASE("Complex-complex central", "[Convolution]") {
 }
 
 
+/*
 TEST_CASE("Different types", "[Convolution]") {
 	TimeSignal<float> u{ ur.begin(), ur.end() };
 	TimeSignal<std::complex<double>> v{ vr.begin(), vr.end() };
@@ -117,6 +118,7 @@ TEST_CASE("Different types", "[Convolution]") {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
+*/
 
 
 TEST_CASE("Real-world signal", "[Convolution]") {
