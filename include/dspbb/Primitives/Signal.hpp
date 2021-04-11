@@ -95,41 +95,6 @@ public:
 	const_reverse_iterator rend() const;
 	const_reverse_iterator crend() const;
 
-	Signal& operator+=(const Signal& rhs);
-	Signal& operator-=(const Signal& rhs);
-	Signal& operator*=(const Signal& rhs);
-	Signal& operator/=(const Signal& rhs);
-	Signal& operator+=(const T& scalar);
-	Signal& operator-=(const T& scalar);
-	Signal& operator*=(const T& scalar);
-	Signal& operator/=(const T& scalar);
-
-	Signal operator+(const Signal& rhs) const { return Signal(*this) += rhs; }
-	Signal operator-(const Signal& rhs) const { return Signal(*this) -= rhs; }
-	Signal operator*(const Signal& rhs) const { return Signal(*this) *= rhs; }
-	Signal operator/(const Signal& rhs) const { return Signal(*this) /= rhs; }
-	Signal operator+(const T& scalar) const { return Signal(*this) += scalar; }
-	Signal operator-(const T& scalar) const { return Signal(*this) -= scalar; }
-	Signal operator*(const T& scalar) const { return Signal(*this) *= scalar; }
-	Signal operator/(const T& scalar) const { return Signal(*this) /= scalar; }
-
-	friend Signal operator+(const T& scalar, const Signal& signal) { return signal + scalar; }
-	friend Signal operator-(const T& scalar, const Signal& signal) {
-		Signal result(signal.Size());
-		for (size_t i = 0; i < signal.Size(); ++i) {
-			result[i] = scalar - signal[i];
-		}
-		return result;
-	}
-	friend Signal operator*(const T& scalar, const Signal& signal) { return signal * scalar; }
-	friend Signal operator/(const T& scalar, const Signal& signal) {
-		Signal result(signal.Size());
-		for (size_t i = 0; i < signal.Size(); ++i) {
-			result[i] = scalar / signal[i];
-		}
-		return result;
-	}
-
 private:
 	std::vector<T> m_samples;
 };
@@ -338,82 +303,6 @@ typename Signal<T, Domain>::const_reverse_iterator Signal<T, Domain>::crend() co
 	return m_samples.crend();
 }
 
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator+=(const Signal& rhs) {
-	if (Length() != rhs.Length()) {
-		throw std::logic_error("Signals must be exactly the same lenth.");
-	}
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] += rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator-=(const Signal& rhs) {
-	if (Length() != rhs.Length()) {
-		throw std::logic_error("Signals must be exactly the same lenth.");
-	}
-	for (size_t i =0; i<Length(); ++i) {
-		(*this)[i] -= rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator*=(const Signal& rhs) {
-	if (Length() != rhs.Length()) {
-		throw std::logic_error("Signals must be exactly the same lenth.");
-	}
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] *= rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator/=(const Signal& rhs) {
-	if (Length() != rhs.Length()) {
-		throw std::logic_error("Signals must be exactly the same lenth.");
-	}
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] /= rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator+=(const T& scalar) {
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] += scalar;
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator-=(const T& scalar) {
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] -= scalar;
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator*=(const T& scalar) {
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] *= scalar;
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain>& Signal<T, Domain>::operator/=(const T& scalar) {
-	for (size_t i = 0; i < Length(); ++i) {
-		(*this)[i] /= scalar;
-	}
-	return *this;
-}
-
 //------------------------------------------------------------------------------
 // Helper types
 //------------------------------------------------------------------------------
@@ -436,3 +325,6 @@ using CepstrumF = Signal<float, eSignalDomain::QUEFRENCY>;
 
 
 } // namespace dspbb
+
+
+#include "SignalArithmetic.hpp"

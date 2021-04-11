@@ -272,7 +272,7 @@ TEST_CASE("Signal - Const iteration (complex)", "[Signal]") {
 //------------------------------------------------------------------------------
 // Real operators
 //------------------------------------------------------------------------------
-//
+/*
 TEST_CASE("Signal - += signal", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<float> a = { 3, 2, 1 };
@@ -521,3 +521,4 @@ TEST_CASE("Signal - /= scalar (complex-complex)", "[Signal]") {
 		REQUIRE(Approx(copy[i].imag()) == (a[i] / b).imag());
 	}
 }
+*/

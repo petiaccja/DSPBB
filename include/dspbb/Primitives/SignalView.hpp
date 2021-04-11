@@ -66,36 +66,6 @@ public:
 	SignalView SubSignal(size_type offset) const;
 	SignalView SubSignal(size_type offset, size_type count) const;
 
-	SignalView& operator+=(const SignalView<const T, Domain>& rhs);
-	SignalView& operator-=(const SignalView<const T, Domain>& rhs);
-	SignalView& operator*=(const SignalView<const T, Domain>& rhs);
-	SignalView& operator/=(const SignalView<const T, Domain>& rhs);
-
-	SignalView& operator+=(const T& scalar);
-	SignalView& operator-=(const T& scalar);
-	SignalView& operator*=(const T& scalar);
-	SignalView& operator/=(const T& scalar);
-
-	SignalView& operator+=(const SignalT& rhs) { return *this += SignalView<const T, Domain>(rhs); }
-	SignalView& operator-=(const SignalT& rhs) { return *this -= SignalView<const T, Domain>(rhs); }
-	SignalView& operator*=(const SignalT& rhs) { return *this *= SignalView<const T, Domain>(rhs); }
-	SignalView& operator/=(const SignalT& rhs) { return *this /= SignalView<const T, Domain>(rhs); }
-
-	SignalT operator+(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) += rhs; }
-	SignalT operator-(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) -= rhs; }
-	SignalT operator*(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) *= rhs; }
-	SignalT operator/(const SignalView<const T, Domain>& rhs) const { return SignalT(begin(), end()) /= rhs; }
-
-	SignalT operator+(const SignalT& rhs) const { return *this + SignalView<const T, Domain>(rhs); }
-	SignalT operator-(const SignalT& rhs) const { return *this - SignalView<const T, Domain>(rhs); }
-	SignalT operator*(const SignalT& rhs) const { return *this * SignalView<const T, Domain>(rhs); }
-	SignalT operator/(const SignalT& rhs) const { return *this / SignalView<const T, Domain>(rhs); }
-
-	SignalT operator+(const T& scalar) const { return SignalT(begin(), end()) += scalar; }
-	SignalT operator-(const T& scalar) const { return SignalT(begin(), end()) -= scalar; }
-	SignalT operator*(const T& scalar) const { return SignalT(begin(), end()) *= scalar; }
-	SignalT operator/(const T& scalar) const { return SignalT(begin(), end()) /= scalar; }
-
 protected:
 	iterator first, last;
 };
@@ -192,74 +162,6 @@ SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_ty
 	return { this->first + offset, this->first + offset + count };
 }
 
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator+=(const SignalView<const T, Domain>& rhs) {
-	assert((*this).Size() == rhs.Size());
-	for (size_t i = 0; i < (*this).Size(); ++i) {
-		(*this)[i] += rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator-=(const SignalView<const T, Domain>& rhs) {
-	assert((*this).Size() == rhs.Size());
-	for (size_t i = 0; i < (*this).Size(); ++i) {
-		(*this)[i] -= rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator*=(const SignalView<const T, Domain>& rhs) {
-	assert((*this).Size() == rhs.Size());
-	for (size_t i = 0; i < (*this).Size(); ++i) {
-		(*this)[i] *= rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator/=(const SignalView<const T, Domain>& rhs) {
-	assert((*this).Size() == rhs.Size());
-	for (size_t i = 0; i < (*this).Size(); ++i) {
-		(*this)[i] /= rhs[i];
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator+=(const T& scalar) {
-	for (auto& v : *this) {
-		v += scalar;
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator-=(const T& scalar) {
-	for (auto& v : *this) {
-		v -= scalar;
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator*=(const T& scalar) {
-	for (auto& v : *this) {
-		v *= scalar;
-	}
-	return *this;
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain>& SignalView<T, Domain>::operator/=(const T& scalar) {
-	for (auto& v : *this) {
-		v /= scalar;
-	}
-	return *this;
-}
-
 // Helpers
 template <class T, eSignalDomain Domain>
 SignalView<T, Domain> AsView(Signal<T, Domain>& signal) {
@@ -297,63 +199,6 @@ SignalView<const T, Domain> AsConstView(SignalView<const T, Domain> view) {
 }
 
 
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator+=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
-	assert(lhs.Size() == rhs.Size());
-	for (size_t i = 0; i < lhs.Size(); ++i) {
-		lhs[i] += rhs[i];
-	}
-	return lhs;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator-=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
-	assert(lhs.Size() == rhs.Size());
-	for (size_t i = 0; i < lhs.Size(); ++i) {
-		lhs[i] -= rhs[i];
-	}
-	return lhs;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator*=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
-	assert(lhs.Size() == rhs.Size());
-	for (size_t i = 0; i < lhs.Size(); ++i) {
-		lhs[i] *= rhs[i];
-	}
-	return lhs;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator/=(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) {
-	assert(lhs.Size() == rhs.Size());
-	for (size_t i = 0; i < lhs.Size(); ++i) {
-		lhs[i] /= rhs[i];
-	}
-	return lhs;
-}
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator+(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar + Signal<T, Domain>(signal.begin(), signal.end()); }
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator-(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar - Signal<T, Domain>(signal.begin(), signal.end()); }
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator*(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar * Signal<T, Domain>(signal.begin(), signal.end()); }
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator/(const T& scalar, const SignalView<const T, Domain>& signal) { return scalar / Signal<T, Domain>(signal.begin(), signal.end()); }
-
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator+(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs += Signal<T, Domain>(rhs.begin(), rhs.end()); }
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator-(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs -= Signal<T, Domain>(rhs.begin(), rhs.end()); }
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator*(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs *= Signal<T, Domain>(rhs.begin(), rhs.end()); }
-template <class T, eSignalDomain Domain>
-Signal<T, Domain> operator/(Signal<T, Domain> lhs, const SignalView<const T, Domain>& rhs) { return lhs /= Signal<T, Domain>(rhs.begin(), rhs.end()); }
-
-
-
 template <class T>
 using TimeSignalView = SignalView<T, eSignalDomain::TIME>;
 template <class T>
@@ -372,3 +217,5 @@ using CepstrumViewF = SignalView<float, eSignalDomain::QUEFRENCY>;
 
 
 } // namespace dspbb
+
+#include "SignalArithmetic.hpp"

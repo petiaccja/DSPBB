@@ -89,7 +89,7 @@ TEST_CASE("Constant span", "[SignalView]") {
 //------------------------------------------------------------------------------
 // Operators
 //------------------------------------------------------------------------------
-
+/*
 const TimeSignal<float> s1 = { 1, 2, 3 };
 const TimeSignal<float> s2 = { 7, 4, 5 };
 const float c1 = 5;
@@ -129,3 +129,4 @@ TEST_CASE_VIEW_OPERATOR_SCALAR("multiply", *)
 TEST_CASE_VIEW_OPERATOR_SCALAR("add", +)
 TEST_CASE_VIEW_OPERATOR_SCALAR("subtract", -)
 TEST_CASE_VIEW_OPERATOR_SCALAR("divide", /)
+*/
