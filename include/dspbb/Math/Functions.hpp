@@ -6,6 +6,7 @@
 
 #include <complex>
 #include <type_traits>
+#include <dspbb/Vectorization/MathFunctions.hpp>
 
 
 namespace dspbb {
