@@ -49,7 +49,7 @@ void HammingWindow(SignalView<T, Domain> out) {
 
 	std::iota(out.begin(), out.end(), U(0.0));
 	out *= preSize;
-	Cos(out);
+	Cos(out, out);
 	out *= U(-0.46);
 	out += U(0.54);
 }

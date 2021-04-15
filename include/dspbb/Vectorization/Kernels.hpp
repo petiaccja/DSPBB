@@ -148,5 +148,20 @@ void UnaryOperationVectorized(T* out, T* in, size_t length, Op op) {
 	UnaryOperation(out, in, length - vlength, op);
 }
 
+template <class R, class T, class Op, class VecOp>
+void UnaryOperationVectorized(R* out, T* in, size_t length, size_t stride, VecOp vop, Op op) {
+	const size_t vlength = (length / stride) * stride;
+
+	const R* vlast = out + vlength;
+	const R* last = out + length;
+
+	for (; out < vlast; out += stride, in += stride) {
+		vop(out, in);
+	}
+	for (; out < last; out += 1, in += 1) {
+		op(out, in);
+	}	
+}
+
 
 } // namespace dspbb

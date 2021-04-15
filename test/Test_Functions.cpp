@@ -14,13 +14,13 @@ auto iden(T arg) {
 } // namespace std
 
 
-#define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                \
-	TEST_CASE(NAME " real", "[Functions]") {                        \
-		const TimeSignal<float> signal = { 1, 8 };                  \
-		const auto applied = FUNC(signal);                          \
-		for (size_t i = 0; i < signal.Size(); ++i) {                \
-			REQUIRE(Approx(applied[i]) == std::STDFUNC(signal[i])); \
-		}                                                           \
+#define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                    \
+	TEST_CASE(NAME " real", "[Functions]") {                            \
+		const TimeSignal<float> signal = { 1, 8, 2, 5, 3, 6, 3, 6, 4 }; \
+		const auto applied = FUNC(signal);                              \
+		for (size_t i = 0; i < signal.Size(); ++i) {                    \
+			REQUIRE(Approx(applied[i]) == std::STDFUNC(signal[i]));     \
+		}                                                               \
 	}
 
 
