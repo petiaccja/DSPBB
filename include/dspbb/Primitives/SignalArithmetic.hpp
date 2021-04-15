@@ -34,21 +34,21 @@ void CheckSizes(const SignalR& r, const SignalT& a) {
 
 template <class SignalR, class SignalT, class SignalU>
 auto Multiply(SignalR&& r, const SignalT& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
 	Multiply(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Multiply(SignalR&& r, const T& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
 	Multiply(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Multiply(SignalR&& r, const SignalT& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
 	Multiply(r.Data(), a.Data(), b, r.Length());
 }
@@ -56,21 +56,21 @@ auto Multiply(SignalR&& r, const SignalT& a, const U& b)
 
 template <class SignalR, class SignalT, class SignalU>
 auto Divide(SignalR&& r, const SignalT& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
 	Divide(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Divide(SignalR&& r, const T& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
 	Divide(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Divide(SignalR&& r, const SignalT& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
 	Divide(r.Data(), a.Data(), b, r.Length());
 }
@@ -78,21 +78,21 @@ auto Divide(SignalR&& r, const SignalT& a, const U& b)
 
 template <class SignalR, class SignalT, class SignalU>
 auto Add(SignalR&& r, const SignalT& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
 	Add(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Add(SignalR&& r, const T& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
 	Add(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Add(SignalR&& r, const SignalT& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
 	Add(r.Data(), a.Data(), b, r.Length());
 }
@@ -100,21 +100,21 @@ auto Add(SignalR&& r, const SignalT& a, const U& b)
 
 template <class SignalR, class SignalT, class SignalU>
 auto Subtract(SignalR&& r, const SignalT& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
 	Subtract(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Subtract(SignalR&& r, const T& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
 	Subtract(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Subtract(SignalR&& r, const SignalT& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(r)> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
 	Subtract(r.Data(), a.Data(), b, r.Length());
 }
@@ -134,7 +134,7 @@ auto operator*(const SignalT& a, const SignalU& b) {
 	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() * std::declval<typename signal_traits<SignalU>::type>());
 	constexpr auto Domain = signal_traits<SignalT>::domain;
 	Signal<R, Domain> r(a.Size());
-	Multiply(r, a, b);
+	Multiply<Signal<R, Domain>&, SignalT, SignalU>(r, a, b);
 	return r;
 }
 
@@ -250,28 +250,28 @@ auto operator-(const T& a, const SignalU& b) {
 
 template <class SignalT, class SignalU>
 auto operator*=(SignalT&& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
 	Multiply(a, a, b);
 	return a;
 }
 
 template <class SignalT, class SignalU>
 auto operator/=(SignalT&& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
 	Divide(a, a, b);
 	return a;
 }
 
 template <class SignalT, class SignalU>
 auto operator+=(SignalT&& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
 	Add(a, a, b);
 	return a;
 }
 
 template <class SignalT, class SignalU>
 auto operator-=(SignalT&& a, const SignalU& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_same_domain_v<SignalT, SignalU>, SignalT&> {
 	Subtract(a, a, b);
 	return a;
 }
@@ -283,28 +283,28 @@ auto operator-=(SignalT&& a, const SignalU& b)
 
 template <class SignalT, class U>
 auto operator*=(SignalT&& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
 	Multiply(a, a, b);
 	return a;
 }
 
 template <class SignalT, class U>
 auto operator/=(SignalT&& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
 	Divide(a, a, b);
 	return a;
 }
 
 template <class SignalT, class U>
 auto operator+=(SignalT&& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
 	Add(a, a, b);
 	return a;
 }
 
 template <class SignalT, class U>
 auto operator-=(SignalT&& a, const U& b)
-	-> std::enable_if_t<is_mutable_signal_v<decltype(a)> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
+	-> std::enable_if_t<is_mutable_signal_v<SignalT&> && is_signal_like_v<std::decay_t<SignalT>> && !is_signal_like_v<U>, SignalT&> {
 	Subtract(a, a, b);
 	return a;
 }

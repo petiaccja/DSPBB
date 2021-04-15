@@ -1,7 +1,10 @@
 #pragma once
 
 #include <cmath>
+#pragma warning(push)
+#pragma warning(disable : 4800)
 #include <xsimd/xsimd.hpp>
+#pragma warning(pop)
 
 namespace dspbb {
 namespace math_functions {

@@ -10,7 +10,7 @@ using namespace dspbb;
 
 
 TEST_CASE("Polyphase upsample", "[Polyphase]") {
-	constexpr int factor = 4;
+	constexpr unsigned factor = 4;
 	const auto filter = FirLowPassWindowed(22050.f, factor * 44100, HammingWindow<float>(128));
 	const PolyphaseFilter<float> polyphase{ AsConstView(filter), factor };
 
