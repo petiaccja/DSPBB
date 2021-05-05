@@ -35,7 +35,7 @@ TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSigna
 	const size_t numTaps = window.Size();
 	assert(numTaps != 0);
 
-	auto impulse = InverseFourierTransformR(Spectrum<std::complex<T>>(frequencyResponse.begin(), frequencyResponse.end()), false);
+	auto impulse = InverseFourierTransformR(Spectrum<std::complex<T>>(frequencyResponse.begin(), frequencyResponse.end()), frequencyResponse.Size() * 2 - 1);
 	assert(numTaps <= impulse.Size());
 	auto realImpulse = Real(impulse);
 

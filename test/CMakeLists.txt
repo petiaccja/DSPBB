@@ -9,6 +9,7 @@ target_sources(UnitTest
 		Test_FFT.cpp
 		Test_FirFilter.cpp
 		Test_Interpolation.cpp
+		Test_OverlapAdd.cpp
 		Test_Polyphase.cpp
 		Test_Signal.cpp
 		Test_SignalView.cpp

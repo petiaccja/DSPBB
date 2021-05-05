@@ -19,7 +19,7 @@ namespace dspbb {
 ///		the DFT is even-symmetric for real inputs. </param>
 /// <returns> The complex frequency domain signal, same size as <paramref name="signal"/>. </returns>
 template <class T, class Complex = std::enable_if_t<!is_complex_v<T>, std::complex<T>>>
-Spectrum<Complex> FourierTransform(TimeSignalView<const T> signal, bool full = false) {
+Spectrum<Complex> FourierTransform(TimeSignalView<const T> signal, bool full = true) {
 	const size_t outputSize = full ? signal.Size() : signal.Size() / 2 + 1;
 	Spectrum<Complex> fft(outputSize);
 	pocketfft_dspbb::shape_t shape = { signal.Size() };
@@ -72,14 +72,15 @@ TimeSignal<std::complex<T>> InverseFourierTransformC(SpectrumView<const std::com
 ///		the same length as the <paramref name="fft"/>. If not <paramref name="full"/>,
 ///		then the whole is taken, and the output is (about) twice the length of the <paramref name="fft"/>.
 ///		</param>
-/// <param name="full"> Tells if <paramref name="fft"/> contains the whole, symmetric FFT,
-///		or only the non-redundant first half. </param>
+/// <param name="size"> Tells if <paramref name="fft"/> contains the whole, symmetric FFT,
+///		or only the non-redundant first half. If size is zero, the FFT is assumed to be full,
+///		otherwise size specifies the size of the original signal. </param>
 /// <typeparam name="T"> Please specify T explicitly to a floating type of your choice. </typeparam>
 /// <returns> The real time domain signal. </returns>
 template <class T>
-TimeSignal<T> InverseFourierTransformR(SpectrumView<const std::complex<T>> fft, bool full = false) {
+TimeSignal<T> InverseFourierTransformR(SpectrumView<const std::complex<T>> fft, size_t size = 0) {
 	assert(!fft.Empty());
-	const size_t signalSize = full ? fft.Size() : fft.Size() * 2 - 1 - fft.Size() % 2;
+	const size_t signalSize = size == 0 ? fft.Size() : size;
 	TimeSignal<T> signal(signalSize);
 	pocketfft_dspbb::shape_t shape = { signalSize };
 	pocketfft_dspbb::stride_t stride_in = { sizeof(std::complex<T>) };
@@ -91,7 +92,7 @@ TimeSignal<T> InverseFourierTransformR(SpectrumView<const std::complex<T>> fft, 
 
 
 template <class T, class Complex = std::enable_if_t<!is_complex_v<T>, std::complex<T>>>
-Spectrum<Complex> FourierTransform(const TimeSignal<T>& signal, bool full = false) {
+Spectrum<Complex> FourierTransform(const TimeSignal<T>& signal, bool full = true) {
 	return FourierTransform(AsConstView(signal), full);
 }
 
@@ -106,8 +107,20 @@ auto InverseFourierTransformC(const Spectrum<std::complex<T>>& fft) {
 }
 
 template <class T>
-auto InverseFourierTransformR(const Spectrum<std::complex<T>>& fft, bool full = false) {
-	return InverseFourierTransformR(AsConstView(fft), full);
+auto InverseFourierTransformR(const Spectrum<std::complex<T>>& fft, size_t size = 0) {
+	return InverseFourierTransformR(AsConstView(fft), size);
+}
+
+template <class T, class Integral, std::enable_if_t<std::is_integral<Integral>::value, int>  = 0>
+TimeSignal<T> InverseFourierTransformR(SpectrumView<const std::complex<T>> fft, Integral size) {
+	static_assert(!std::is_same<std::decay_t<Integral>, bool>::value, "Don't use bool here, that overload has been replaced.");
+	return InverseFourierTransformR(fft, (size_t)size);
+}
+
+template <class T, class Integral, std::enable_if_t<std::is_integral<Integral>::value, int> = 0>
+auto InverseFourierTransformR(const Spectrum<std::complex<T>>& fft, Integral size) {
+	static_assert(!std::is_same<std::decay_t<Integral>, bool>::value, "Don't use bool here, that overload has been replaced.");
+	return InverseFourierTransformR(fft, (size_t)size);
 }
 
 

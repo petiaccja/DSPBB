@@ -1,11 +1,10 @@
+#include <algorithm>
+#include <catch2/catch.hpp>
+#include <dspbb/Filtering/FFT.hpp>
 #include <dspbb/Generators/Sine.hpp>
 #include <dspbb/Math/DotProduct.hpp>
-#include <dspbb/Math/Statistics.hpp>
-
-#include <catch2/catch.hpp>
-#include <algorithm>
-#include <dspbb/Filtering/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>
+#include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 
 using namespace dspbb;
@@ -47,7 +46,7 @@ TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 TEST_CASE("IFFT - Real identity", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 	Spectrum<std::complex<float>> spectrum = FourierTransform(signal, false);
-	const auto repro = InverseFourierTransformR(spectrum, false);
+	const auto repro = InverseFourierTransformR(spectrum, signal.Size());
 
 	const float norm = Norm(signal);
 	const float rnorm = Norm(repro);
@@ -105,31 +104,27 @@ TEST_CASE("FFT - Full real odd", "[FFT]") {
 
 
 TEST_CASE("FFT - Full real identity", "[FFT]") {
-	TimeSignal<float> even(64, 0.0f);
-	TimeSignal<float> odd(63, 0.0f);
-	even[30] = 1.0f;
-	odd[30] = 1.0f;
-	const Spectrum<std::complex<float>> spectrumEven = FourierTransform(even, true);
-	const Spectrum<std::complex<float>> spectrumOdd = FourierTransform(odd, true);
-	const TimeSignal<std::complex<float>> reproEven = InverseFourierTransformC(spectrumEven);
-	const TimeSignal<std::complex<float>> reproOdd = InverseFourierTransformC(spectrumOdd);
-	REQUIRE(reproEven.Size() == even.Size());
-	REQUIRE(reproOdd.Size() == odd.Size());
-	REQUIRE(Max(Abs(even - Real(reproEven))) < 0.001f);
-	REQUIRE(Max(Abs(odd - Real(reproOdd))) < 0.001f);
+	const std::array<size_t, 7> sizes = { 63, 64, 65, 66, 67, 68, 69 };
+
+	for (auto s : sizes) {
+		TimeSignal<float> signal(s, 0.0f);
+		signal[signal.Size() / 2] = 1.0f;
+		const Spectrum<std::complex<float>> spectrum = FourierTransform(signal, true);
+		const TimeSignal<float> repro = InverseFourierTransformR(spectrum, 0);
+		REQUIRE(signal.Size() == repro.Size());
+		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
+	}
 }
 
 TEST_CASE("FFT - Half real identity", "[FFT]") {
-	TimeSignal<float> even(64, 0.0f);
-	TimeSignal<float> odd(63, 0.0f);
-	even[30] = 1.0f;
-	odd[30] = 1.0f;
-	const Spectrum<std::complex<float>> spectrumEven = FourierTransform(even, false);
-	const Spectrum<std::complex<float>> spectrumOdd = FourierTransform(odd, false);
-	const TimeSignal<float> reproEven = InverseFourierTransformR(spectrumEven, false);
-	const TimeSignal<float> reproOdd = InverseFourierTransformR(spectrumOdd, false);
-	REQUIRE(reproEven.Size() == even.Size());
-	REQUIRE(reproOdd.Size() == odd.Size());
-	REQUIRE(Max(Abs(even - reproEven)) < 0.001f);
-	REQUIRE(Max(Abs(odd - reproOdd)) < 0.001f);
+	const std::array<size_t, 7> sizes = { 63, 64, 65, 66, 67, 68, 69 };
+
+	for (auto s : sizes) {
+		TimeSignal<float> signal(s, 0.0f);
+		signal[signal.Size() / 2] = 1.0f;
+		const Spectrum<std::complex<float>> spectrum = FourierTransform(signal, false);
+		const TimeSignal<float> repro = InverseFourierTransformR(spectrum, signal.Size());
+		REQUIRE(signal.Size() == repro.Size());
+		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
+	}
 }

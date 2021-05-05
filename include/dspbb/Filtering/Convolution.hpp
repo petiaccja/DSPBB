@@ -51,105 +51,40 @@ namespace impl {
 									   std::complex<ProductT<remove_complex_t<T>, remove_complex_t<U>>>,
 									   ProductT<remove_complex_t<T>, remove_complex_t<U>>>;
 
-	template <class T, class U, eSignalDomain Domain>
-	auto ConvolutionOrdered(SignalView<const T, Domain> u, SignalView<const U, Domain> v, convolution::impl::Full) {
-		const size_t len = ConvolutionLength(u.Length(), v.Length(), convolution::full);
-		const size_t offset = 0;
-		using R = ResultT<T, U>;
-		Signal<R, Domain> out(size_t(len), R(0));
-		Convolution(out.Data(), u.Data(), v.Data(), u.Size(),v.Size(), offset, len);
-		return out;
-		/*
-		const intptr_t lenfull = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::full);
-		const intptr_t lencentral = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::central);
-
-		const intptr_t lenu = u.Length();
-		const intptr_t lenv = v.Length();
-		const intptr_t padding = lenv - 1;
-
-		assert(lenu > lenv);
-
-		using R = ResultT<T, U>;
-		Signal<R, Domain> out(size_t(lenfull), R(0));
-
-		for (intptr_t i = 0; i < padding; ++i) {
-			for (intptr_t k = 0; k <= i; ++k) {
-				out[i] += R(u[k]) * R(v[i - k]);
-			}
-		}
-		for (intptr_t i = 0; i < lencentral; ++i) {
-			for (intptr_t k = 0; k < lenv; ++k) {
-				out[i + padding] += R(u[i + k]) * R(v[lenv - k - 1]);
-			}
-		}
-		for (intptr_t i = 1; i < lenv; ++i) {
-			for (intptr_t k = i; k < lenv; ++k) {
-				out[i + padding + lencentral - 1] += R(u[lencentral + k - 1]) * R(v[lenv - k + i - 1]);
-			}
-		}
-
-		return out;
-		*/
+	template <class R, class T, class U, eSignalDomain Domain>
+	auto ConvolutionOrdered(SignalView<R, Domain> r, SignalView<const T, Domain> u, SignalView<const U, Domain> v, size_t offset) {
+		const size_t len = r.Length();
+		Convolution(r.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, len);
 	}
-
-	template <class T, class U, eSignalDomain Domain>
-	auto ConvolutionOrdered(SignalView<const T, Domain> u, SignalView<const U, Domain> v, convolution::impl::Central) {
-		const size_t len = ConvolutionLength(u.Length(), v.Length(), convolution::central);
-		const size_t offset = v.Size() - 1;
-		using R = ResultT<T, U>;
-		Signal<R, Domain> out(size_t(len), R(0));
-		Convolution(out.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, len);
-		return out;
-
-		/*
-		const intptr_t lenout = (intptr_t)ConvolutionLength(u.Length(), v.Length(), convolution::central);
-		const intptr_t lenu = (intptr_t)u.Length();
-		const intptr_t lenv = (intptr_t)v.Length();
-
-		assert(lenu > lenv);
-
-		using R = ResultT<T, U>;
-		Signal<R, Domain> out(size_t(lenout), R(0));
-
-		for (intptr_t k = 0; k < lenv; ++k) {
-			for (intptr_t i = 0; i < lenout; ++i) {
-				out[i] += R(u[i + k]) * R(v[lenv - k - 1]);
-			}
-		}
-
-		return out;
-		*/
-	}
-
 } // namespace impl
 
 
-/// <summary>
-/// Ordinary convolution.
-/// </summary>
-/// <typeparam name="T"> Any float or complex. </typeparam>
-/// <typeparam name="U"> Any float or complex, operations should work with <typeparamref name="T"/>. </typeparam>
-/// <typeparam name="PaddingMode"> One of <see cref="dspbb::convolution::full"/> or <see cref="dspbb::convolution::central"/>. </typeparam>
-/// <param name="u"> The first argument of the convolution. </param>
-/// <param name="v"> The second argument of the convolution. </param>
-/// <returns> The result of the convolution. </returns>
-template <class T, class U, eSignalDomain Domain, class PaddingMode>
-auto Convolution(SignalView<const T, Domain> u, SignalView<const U, Domain> v, PaddingMode) {
-	return u.Size() >= v.Size() ? impl::ConvolutionOrdered(u, v, PaddingMode{}) : impl::ConvolutionOrdered(v, u, PaddingMode{});
+// WARNING: offset is not tested for this, apart from full and central.
+template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t length) {
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using U = typename signal_traits<std::decay_t<SignalU>>::type;
+	using R = impl::ResultT<T, U>;
+	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
+
+	Signal<R, Domain> r(size_t(length), R(0));
+	u.Size() >= v.Size() ? impl::ConvolutionOrdered(AsView(r), AsView(u), AsView(v), offset) :
+							 impl::ConvolutionOrdered(AsView(r), AsView(v), AsView(u), offset);
+	return r;
 }
 
-/// <summary>
-/// Ordinary convolution.
-/// </summary>
-/// <typeparam name="SignalT"> Either a Signal or SignalView. </typeparam>
-/// <typeparam name="SignalU"> Either a Signal or SignalView, same domain as SignalT. </typeparam>
-/// <typeparam name="PaddingMode"> One of <see cref="dspbb::convolution::full"/> or <see cref="dspbb::convolution::central"/>. </typeparam>
-/// <param name="u"> The first argument of the convolution. </param>
-/// <param name="v"> The second argument of the convolution. </param>
-/// <returns> The result of the convolution. </returns>
-template <class SignalT, class SignalU, class PaddingMode>
-auto Convolution(const SignalT& u, const SignalU& v, PaddingMode) {
-	return Convolution(AsConstView(u), AsConstView(v), PaddingMode{});
+template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+auto Convolution(const SignalT& u, const SignalU& v, convolution::impl::Full) {
+	const size_t length = ConvolutionLength(u.Length(), v.Length(), convolution::full);
+	size_t offset = 0;
+	return Convolution(u, v, offset, length);
+}
+
+template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+auto Convolution(const SignalT& u, const SignalU& v, convolution::impl::Central) {
+	const size_t length = ConvolutionLength(u.Length(), v.Length(), convolution::central);
+	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
+	return Convolution(u, v, offset, length);
 }
 
 } // namespace dspbb
