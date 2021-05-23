@@ -10,59 +10,59 @@
 namespace dspbb {
 
 template <class T, eSignalDomain Domain>
-T Sum(SignalView<const T, Domain> signal) {
+T Sum(SignalView<T, Domain> signal) {
 	return std::accumulate(signal.begin(), signal.end(), T(0));
 }
 
 
 template <class T, eSignalDomain Domain>
-T Mean(SignalView<const T, Domain> signal) {
+T Mean(SignalView<T, Domain> signal) {
 	return !signal.Empty() ? Sum(signal) / T(signal.Size()) : T(0);
 }
 
 
 template <class T, eSignalDomain Domain>
-T SumSquare(SignalView<const T, Domain> signal) {
+T SumSquare(SignalView<T, Domain> signal) {
 	return DotProduct(signal, signal, signal.Size());
 }
 
 
 template <class T, eSignalDomain Domain>
-T MeanSquare(SignalView<const T, Domain> signal) {
+T MeanSquare(SignalView<T, Domain> signal) {
 	return !signal.Empty() ? SumSquare(signal) / T(signal.Size()) : T(0);
 }
 
 
 template <class T, eSignalDomain Domain>
-T RootMeanSquare(SignalView<const T, Domain> signal) {
+T RootMeanSquare(SignalView<T, Domain> signal) {
 	return std::sqrt(MeanSquare(signal));
 }
 
 
 template <class T, eSignalDomain Domain>
-T StandardDeviation(SignalView<const T, Domain> signal) {
+T StandardDeviation(SignalView<T, Domain> signal) {
 	const T mean = Mean(signal);
-	const Signal<T, Domain> diff = signal - mean;
+	const Signal<std::remove_cv_t<T>, Domain> diff = signal - mean;
 	T sum = SumSquare(diff);
 	return signal.Size() >= 1 ? std::sqrt(sum / T(signal.Size())) : T(0);
 }
 
 
 template <class T, eSignalDomain Domain>
-T Norm(SignalView<const T, Domain> signal) {
+T Norm(SignalView<T, Domain> signal) {
 	return std::sqrt(SumSquare(signal));
 }
 
 
 template <class T, eSignalDomain Domain>
-T Max(SignalView<const T, Domain> signal) {
+T Max(SignalView<T, Domain> signal) {
 	assert(!signal.Empty());
 	return *std::max_element(signal.begin(), signal.end());
 }
 
 
 template <class T, eSignalDomain Domain>
-T Min(SignalView<const T, Domain> signal) {
+T Min(SignalView<T, Domain> signal) {
 	assert(!signal.Empty());
 	return *std::min_element(signal.begin(), signal.end());
 }

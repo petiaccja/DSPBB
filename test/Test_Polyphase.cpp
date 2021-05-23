@@ -1,28 +1,51 @@
 #include "dspbb/Generators/Sine.hpp"
 
-#include <dspbb/Filtering/PolyphaseFilter.hpp>
-#include <dspbb/Math/Statistics.hpp>
-
 #include <catch2/catch.hpp>
-#include <cmath>
+#include <dspbb/Filtering/PolyphaseFilter.hpp>
 
 using namespace dspbb;
 
 
-TEST_CASE("Polyphase upsample", "[Polyphase]") {
-	constexpr unsigned factor = 4;
-	const auto filter = FirLowPassWindowed(22050.f, factor * 44100, HammingWindow<float>(128));
-	const PolyphaseFilter<float> polyphase{ AsConstView(filter), factor };
-
-	const auto signal = SineWave<float, TIME_DOMAIN>(221, 44100, 100.0);
-	TimeSignal<float> interspersed(signal.Size()*factor, 0.0f);
-	for (size_t i = 0; i < signal.Size(); ++i) {
-		interspersed[factor*i] = signal[i];
+TEST_CASE("Polyphase view filter non-uniform", "[Polyphase]") {
+	const TimeSignal<float> filter = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2 };
+	const std::array<size_t, 4> filterSizes = { 3, 3, 3, 2 };
+	TimeSignal<float> scratch(filter.Size(), std::numeric_limits<float>::quiet_NaN());
+	const auto view = PolyphaseDecompose(scratch, filter, 4);
+	REQUIRE(view.numFilters == 4);
+	for (size_t i = 0; i < 4; ++i) {
+		REQUIRE(std::all_of(view[i].begin(), view[i].end(), [i](float c) { return c == float(4*i); }));
+		REQUIRE(view[i].Size() == filterSizes[i]);
 	}
+}
 
-	const auto filtered = polyphase(SignalView<const float, TIME_DOMAIN>{ signal.begin(), signal.end() }, convolution::full);
-	const auto control = Convolution(interspersed, factor*filter, convolution::full);
-	REQUIRE(filtered.Size() == control.Size() - factor + 1);
-	const auto diff = Max(Abs(filtered - TimeSignalView<const float>{ control.begin(), filtered.Size() }));
-	REQUIRE(diff < 0.001f);
+TEST_CASE("Polyphase view filter uniform", "[Polyphase]") {
+	const TimeSignal<float> filter = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 };
+	const std::array<size_t, 4> filterSizes = { 3, 3, 3, 3 };
+	TimeSignal<float> scratch(filter.Size(), std::numeric_limits<float>::quiet_NaN());
+	const auto view = PolyphaseDecompose(scratch, filter, 4);
+	REQUIRE(view.numFilters == 4);
+	for (size_t i = 0; i < 4; ++i) {
+		REQUIRE(std::all_of(view[i].begin(), view[i].end(), [i](float c) { return c == float(4*i); }));
+		REQUIRE(view[i].Size() == filterSizes[i]);
+	}
+}
+
+TEST_CASE("Polyphase normalize", "[Polyphase]") {
+	const TimeSignal<float> filter = { 1, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 };
+	TimeSignal<float> scratch(filter.Size(), std::numeric_limits<float>::quiet_NaN());
+	const auto view = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, 4));
+	for (size_t i = 0; i < 4; ++i) {
+		REQUIRE(Sum(view[i]) == Approx(1.0f));
+	}
+}
+
+
+TEST_CASE("Polyphase reverse", "[Polyphase]") {
+	const TimeSignal<float> filter = { 0, 1, 2, 3 };
+	TimeSignal<float> scratch(filter.Size(), std::numeric_limits<float>::quiet_NaN());
+	const auto view = PolyphaseDecompose(scratch, filter, 2);
+	REQUIRE(view[0][0] == 2*2);
+	REQUIRE(view[0][1] == 2*0);
+	REQUIRE(view[1][0] == 2*3);
+	REQUIRE(view[1][1] == 2*1);
 }

@@ -40,12 +40,12 @@ public:
 	iterator end() { return last; }
 	const_iterator end() const { return last; }
 	const_iterator cend() const { return last; }
-	reverse_iterator rbegin() { return reverse_iterator{ first }; }
-	const_reverse_iterator rbegin() const { return const_reverse_iterator{ first }; }
-	const_reverse_iterator crbegin() const { return const_reverse_iterator{ first }; }
-	reverse_iterator rend() { return reverse_iterator{ last }; }
-	const_reverse_iterator rend() const { return const_reverse_iterator{ last }; }
-	const_reverse_iterator crend() const { return const_reverse_iterator{ last }; }
+	reverse_iterator rbegin() { return reverse_iterator{ last }; }
+	const_reverse_iterator rbegin() const { return const_reverse_iterator{ last }; }
+	const_reverse_iterator crbegin() const { return const_reverse_iterator{ last }; }
+	reverse_iterator rend() { return reverse_iterator{ first }; }
+	const_reverse_iterator rend() const { return const_reverse_iterator{ first }; }
+	const_reverse_iterator crend() const { return const_reverse_iterator{ first }; }
 
 	T& Front();
 	const T& Front() const;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Math/Functions.hpp"
+#include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
 #include "../Utility/Numbers.hpp"
@@ -101,8 +102,9 @@ TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, TimeS
 		impulse[centerIndex] = T(1);
 	}
 
-	auto norm = std::accumulate(impulse.begin(), impulse.end(), T(0));
-	return impulse * window / norm;
+	impulse *= window;
+	impulse *= T(1) / Sum(impulse);
+	return impulse;
 }
 
 
@@ -129,10 +131,10 @@ TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const
 /// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
 /// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
 template <class T>
-TimeSignal<T> FirLowPassWindowed(size_t sampleRate,
-								 float cutoffFrequency,
-								 size_t numTaps,
-								 std::function<TimeSignal<T>(size_t)> windowFunc = windows::hamming) {
+TimeSignal<T> FirLowPassWindowed(float cutoffFrequency,
+                                 size_t sampleRate,
+                                 size_t numTaps,
+                                 std::function<TimeSignal<T>(size_t)> windowFunc = windows::hamming) {
 	return FirLowPassWindowed(cutoffFrequency, sampleRate, windowFunc(numTaps));
 }
 
