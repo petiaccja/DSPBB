@@ -14,14 +14,6 @@ template <class T, eSignalDomain Domain>
 struct PolyphaseDecomposition {
 	SignalView<T, Domain> filterBank;
 	size_t numFilters;
-	std::pair<size_t, size_t> SubSignalLocation(size_t index) const {
-		assert(index < numFilters);
-		const size_t numExtended = filterBank.Size() % numFilters;
-		const size_t baseFilterSize = filterBank.Size() / numFilters;
-		const size_t thisFilterSize = baseFilterSize + size_t(index < numExtended);
-		const size_t offset = baseFilterSize * index + std::min(numExtended, index);
-		return { offset, thisFilterSize };
-	}
 	SignalView<T, Domain> operator[](size_t index) {
 		auto loc = SubSignalLocation(index);
 		return filterBank.SubSignal(loc.first, loc.second);
@@ -29,6 +21,15 @@ struct PolyphaseDecomposition {
 	SignalView<const T, Domain> operator[](size_t index) const {
 		auto loc = SubSignalLocation(index);
 		return filterBank.SubSignal(loc.first, loc.second);
+	}
+private:
+	std::pair<size_t, size_t> SubSignalLocation(size_t index) const {
+		assert(index < numFilters);
+		const size_t numExtended = filterBank.Size() % numFilters;
+		const size_t baseFilterSize = filterBank.Size() / numFilters;
+		const size_t thisFilterSize = baseFilterSize + size_t(index < numExtended);
+		const size_t offset = baseFilterSize * index + std::min(numExtended, index);
+		return { offset, thisFilterSize };
 	}
 };
 

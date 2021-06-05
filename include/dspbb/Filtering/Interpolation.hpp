@@ -3,6 +3,7 @@
 #include "../Math/DotProduct.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
+#include "../Primitives/SignalTraits.hpp"
 #include "PolyphaseFilter.hpp"
 
 
@@ -10,9 +11,11 @@ namespace dspbb {
 
 
 
-template <class T, eSignalDomain Domain>
-void InterpolateZeroFill(SignalView<T, Domain> output,
-						 SignalView<const T, Domain> input,
+template <class SignalR,
+		  class SignalT,
+		  std::enable_if_t<is_same_domain_v<SignalR, SignalT> && is_mutable_signal_v<SignalR>, int> = 0>
+void InterpolateZeroFill(SignalR&& output,
+						 const SignalT& input,
 						 uint64_t rate) {
 	assert(output.Size() == input.Size() * rate);
 	auto writeIt = output.begin();
@@ -27,19 +30,22 @@ void InterpolateZeroFill(SignalView<T, Domain> output,
 }
 
 
-template <class T, eSignalDomain Domain>
-std::pair<int64_t, uint64_t> Interpolate(SignalView<T, Domain> output,
-										 SignalView<const T, Domain> input,
-										 const PolyphaseDecomposition<T, Domain>& polyphase,
+template <class SignalR,
+		  class SignalT,
+		  class P, eSignalDomain D,
+		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, Signal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
+std::pair<int64_t, uint64_t> Interpolate(SignalR&& output,
+										 const SignalT& input,
+										 const PolyphaseDecomposition<P, D>& polyphase,
 										 std::pair<uint64_t, uint64_t> sampleRates,
 										 std::pair<int64_t, uint64_t> startPoint = { 0, 1 }) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
 	const size_t commonRate = sampleRates.first * sampleRates.second * startPoint.second * polyphase.numFilters; // Use smallest common multiple instead.
 
 	// All these are in common rate.
 	const int64_t commonStartPoint = startPoint.first * commonRate / startPoint.second;
 	const uint64_t commonStep = sampleRates.first * commonRate / sampleRates.second;
 	int64_t commonSample = commonStartPoint;
-	size_t outputIdx = 0;
 
 	for (auto& o : output) {
 		const int64_t commonFraction = commonSample % commonRate;
@@ -56,21 +62,15 @@ std::pair<int64_t, uint64_t> Interpolate(SignalView<T, Domain> output,
 
 		const auto filter = polyphase[polyphaseIndex].SubSignal(inputIndexClamped - inputIndex);
 		const auto filterNext = polyphase[polyphaseIndexNext].SubSignal(inputIndexClampedNext - inputIndexNext);
-		const auto inputSection = input.SubSignal(inputIndexClamped);
-		const auto inputSectionNext = input.SubSignal(inputIndexClampedNext);
+		const auto inputSection = AsView(input).SubSignal(inputIndexClamped);
+		const auto inputSectionNext = AsView(input).SubSignal(inputIndexClampedNext);
 
-		const Signal<T, Domain> filterDbg = { filter.begin(), filter.end() };
-		const Signal<T, Domain> inputSectionDbg = { inputSection.begin(), inputSection.end() };
-		const Signal<T, Domain> filterDbgNext = { filterNext.begin(), filterNext.end() };
-		const Signal<T, Domain> inputSectionDbgNext = { inputSectionNext.begin(), inputSectionNext.end() };
-
-		const T sample = DotProduct(inputSection, filter, std::min(inputSection.Size(), filter.Size()));
-		const T sampleNext = DotProduct(inputSectionNext, filterNext, std::min(inputSectionNext.Size(), filterNext.Size()));
-		o = (sample * T(commonRate - polyphaseFraction) + sampleNext * T(polyphaseFraction)) / T(commonRate);
+		const auto sample = DotProduct(inputSection, filter, std::min(inputSection.Size(), filter.Size()));
+		const auto sampleNext = DotProduct(inputSectionNext, filterNext, std::min(inputSectionNext.Size(), filterNext.Size()));
+		o = (sample * R(commonRate - polyphaseFraction) + sampleNext * R(polyphaseFraction)) / R(commonRate);
 
 		// Next sample
 		commonSample += commonStep;
-		++outputIdx;
 	}
 	return { commonSample, commonRate };
 }
