@@ -1,8 +1,8 @@
 #pragma once
 
+#include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
-#include "../Math/Statistics.hpp"
 #include "Convolution.hpp"
 #include "FIR.hpp"
 
@@ -22,6 +22,10 @@ struct PolyphaseDecomposition {
 		auto loc = SubSignalLocation(index);
 		return filterBank.SubSignal(loc.first, loc.second);
 	}
+	size_t Size() const {
+		return (filterBank.Size() + numFilters - 1) / numFilters;
+	}
+
 private:
 	std::pair<size_t, size_t> SubSignalLocation(size_t index) const {
 		assert(index < numFilters);
@@ -35,7 +39,7 @@ private:
 
 template <class T, eSignalDomain Domain>
 void PolyphaseNormalize(PolyphaseDecomposition<T, Domain>& polyphase) {
-	for (size_t i = 0;i<polyphase.numFilters; ++i) {
+	for (size_t i = 0; i < polyphase.numFilters; ++i) {
 		polyphase[i] *= T(1) / Sum(polyphase[i]);
 	}
 }

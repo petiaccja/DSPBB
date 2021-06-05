@@ -2,43 +2,128 @@
 
 #include "../Math/DotProduct.hpp"
 #include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalView.hpp"
 #include "../Primitives/SignalTraits.hpp"
+#include "../Primitives/SignalView.hpp"
 #include "PolyphaseFilter.hpp"
 
 
 namespace dspbb {
 
 
-
+/// <summary>
+/// Erases all but every <paramref name="rate"/>th sample.
+/// </summary>
 template <class SignalR,
 		  class SignalT,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT> && is_mutable_signal_v<SignalR>, int> = 0>
-void InterpolateZeroFill(SignalR&& output,
-						 const SignalT& input,
-						 uint64_t rate) {
+void Decimate(SignalR&& output,
+			  const SignalT& input,
+			  size_t rate) {
+	assert(output.Size() == (input.Size() + rate - 1) / rate);
+	size_t readIdx = 0;
+	for (auto& o : output) {
+		o = input[readIdx];
+		readIdx += rate;
+	}
+}
+
+template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
+auto Decimate(const SignalT& input, size_t rate) {
+	SignalT output((input.Size() + rate - 1) / rate);
+	Decimate(output, input, rate);
+	return output;
+}
+
+
+/// <summary>
+/// Inserts zeros between samples to increase sample rate by a factor of <paramref name="rate"/>.
+/// </summary>
+/// <remarks> Follow expansion by a low-pass filter to interpolate a signal. </remarks>
+template <class SignalR,
+		  class SignalT,
+		  std::enable_if_t<is_same_domain_v<SignalR, SignalT> && is_mutable_signal_v<SignalR>, int> = 0>
+void Expand(SignalR&& output,
+			const SignalT& input,
+			size_t rate) {
 	assert(output.Size() == input.Size() * rate);
 	auto writeIt = output.begin();
-	for (auto& v : input) {
-		*writeIt = v;
+	for (auto& i : input) {
+		*writeIt = i;
 		++writeIt;
-		for (uint64_t i = rate; i > 1; --i) {
+		for (size_t i = rate; i > 1; --i) {
 			*writeIt = 0;
 			++writeIt;
 		}
 	}
 }
 
+template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
+auto Expand(const SignalT& input, size_t rate) {
+	SignalT output(input.Size() * rate);
+	Expand(output, input, rate);
+	return output;
+}
 
+
+/// <summary>
+/// Inserts meaningful samples to increase sample rate by a factor of <paramref name="polyphase"/>.numFilters.
+/// </summary>
+/// <param name="polyphase"> A polyphase decomposition of an appropriate low-pass filter.
+///		The number of phases defines the interpolation ratio. </param>
+///	<remarks> No need to follow up with low-pass filtering.
+///		The polyphase filter must have the appropriate cutoff-frequency of
+///		(input sample rate / 2), and the polyphase filter must operate at
+///		the output sample rate. </remarks>
 template <class SignalR,
 		  class SignalT,
 		  class P, eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, Signal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
-std::pair<int64_t, uint64_t> Interpolate(SignalR&& output,
-										 const SignalT& input,
-										 const PolyphaseDecomposition<P, D>& polyphase,
-										 std::pair<uint64_t, uint64_t> sampleRates,
-										 std::pair<int64_t, uint64_t> startPoint = { 0, 1 }) {
+void Interpolate(SignalR&& output,
+				 const SignalT& input,
+				 const PolyphaseDecomposition<P, D>& polyphase,
+				 intptr_t offset) {
+	const auto rate = polyphase.numFilters;
+	size_t count = output.Size() / rate;
+
+	auto writeIt = output.begin();
+	for (size_t inputIdx = 0; inputIdx < count; ++inputIdx) {
+		for (size_t i = 0; i < rate; ++i, ++writeIt) {
+			const auto& filter = polyphase[i];
+			intptr_t offsetInputIdx = intptr_t(inputIdx) - intptr_t(filter.Size()) + 1 + intptr_t(offset);
+			const intptr_t inputIndexClamped = std::max(offsetInputIdx, intptr_t(0));
+			const auto subInput = AsConstView(input).SubSignal(inputIndexClamped);
+			const auto subFilter = filter.SubSignal(-std::min(intptr_t(0), offsetInputIdx));
+			const size_t dotLength = std::min(subFilter.Size(), subInput.Size());
+			*writeIt = DotProduct(subFilter, subInput, dotLength);
+		}
+	}
+}
+
+
+/// <summary>
+/// Arbitrary rational resampling of a signal using approximate polyphase interpolation.
+/// </summary>
+/// <param name="polyphase"> A polyphase decomposition of an appropriate low-pass filter.
+///		The number of phases is arbitrary (see remarks), but must be at least 2. </param>
+/// <param name="sampleRates"> A pair of the {input, output} sample rates.
+///		For example, use {16000, 44100} if you want to increase the sample rate of a signal by 2.75625 times. </param>
+/// <param name="startPoint"> A rational number that tells where to take the first output sample. For example, specify {1, 2}
+///		so that the first output sample will be taken from halfway between the first and second input samples. Specify {3, 77}
+///		to take the first output sample from just after the first input sample. The denominator is arbitrary, the numerator
+///		must be larger than zero, and float(num)/float(den) must be smaller or equal to length(<paramref name="input"/>)-1.</param>
+/// <returns> A rational number that tells from where the next output sample would have been taken.
+///		Analogues in meaning to <paramref name="startPoint"/>, but its denominator is not necessarily the same.
+///		When resampling streams in batches, you can use this as a base for the <paramref name="startPoint"/> to a subsequent Resample call to ensure
+///		the output stream is continuous. </returns>
+template <class SignalR,
+		  class SignalT,
+		  class P, eSignalDomain D,
+		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, Signal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
+std::pair<int64_t, uint64_t> Resample(SignalR&& output,
+									  const SignalT& input,
+									  const PolyphaseDecomposition<P, D>& polyphase,
+									  std::pair<uint64_t, uint64_t> sampleRates,
+									  std::pair<int64_t, uint64_t> startPoint = { 0, 1 }) {
 	using R = typename signal_traits<std::decay_t<SignalR>>::type;
 	const size_t commonRate = sampleRates.first * sampleRates.second * startPoint.second * polyphase.numFilters; // Use smallest common multiple instead.
 
