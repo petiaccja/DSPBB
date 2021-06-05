@@ -87,12 +87,12 @@ More like notes to myself as to what I want to have.
     - ❌️ Chebyshev II
     - ❌️ Elliptic
     - ❌️ Quality assessment tools
-  - ✔️ Polyphase FIR
-  - ❔️ Resampling
-    - ❌️ Decimation
-    - ❔️ Integer downsampling
-    - ❔️ Integer upsampling
-    - ✔️ Arbitrary rational interpolation
+  - ✔️ Polyphase FIR decomposition
+  - ✔️ Resampling
+    - ✔️ Decimation (every n-th)
+    - ✔️ Expansion (zero-fill)
+    - ✔️ Interpolation (polyphase)
+    - ✔️ Arbitrary resampling (polyphase)
   - ❌️ Hilbert filter
   - ❌️ Wavelets
     - ❌️ DWT
