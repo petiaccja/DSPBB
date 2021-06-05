@@ -4,87 +4,115 @@
 ![Build](https://github.com/petiaccja/DSPBB/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/petiaccja/DSPBB/branch/master/graph/badge.svg?token=8A2I59KJ5H)](https://codecov.io/gh/petiaccja/DSPBB)
 
-Yeah, I made this library out of frustration that I couldn't find something that does low-level DSP stuff, for free, is maintained, and is modern. Well I guess this library is half-baked right now, so please don't use it, unless you wanna put up with API changes. Maybe it will turn into something useful one day.
+I couldn't really find a **low-level digital signal processing** (DSP) library that is 
+- **free** (BSD, MIT)
+- **modern** (C\++14 - C\++20)
+- **maintained**
+- **nice to use**
+
+... so I decided to make one.
+
+At this point, the interfaces change frequently, features come and go, so I don't suggest you use this library for anything other than your own entertainment. However, if the features below appeal to you, stay tuned!
+
+
 
 
 ## Features
 
 More like notes to myself as to what I want to have.
 
-- ✓ Primitives:
-  - ✓ Signal
-    - ✓ Real
-    - ✓ Complex
-    - ✓ 4 operators
-  - ✓ SignalView
-- Generators
-  - ✓ Sine
-  - Square
-  - Sawtooth
-  - Triangle
-  - PWM
-- Common math functions
-  - ✓ Log
-  - ✓ Abs
-  - ✓ Real
-  - ✓ Imag
-  - Exp
-  - Angle
-- Vector math basics
-  - ✓ Dot product
-  - ✓ Norm
-- Statistics
-  - ✓ Sum
-  - ✓ SumSquare
-  - ✓ RootMeanSquare
-  - ✓ Mean
-  - ✓ Stddev
-  - Skewness
-  - Covariance
-  - Correlation
-- Filtering
-  - ✓ Convolution
-  - ✓ FFT
-  - FIR
-    - ✓ Window method
-    - Parks-McClellan method
-    - ✓ Low-pass
-    - High-pass
-    - Band-pass
-    - ✓ Arbitrary response
-    - Quality assessment tools
-  - IIR
-    - Butterworth
-    - Chebyshev I
-    - Chebyshev II
-    - Elliptic
-    - Quality assessment tools
-  - ✓ Polyphase FIR
-  - Resampling
-    - Decimation
-    - Integer downsampling
-    - Integer upsampling
-    - ✓ Arbitrary rational resampling
-  - Hilbert
-  - Wavelets
-    - DWT
-    - CWT
-    - Wavelet design
-  - Windowing
-    - Derived properties
-      - Gain
-      - Energy
-    - Functions
-      - Rectangular
-      - Triangular
-      - ✓ Hamming
-      - Blackman
-      - Blackman-Harris
-      - Flat top
-      - ✓ Kaiser
-      - Gaussian
-      - Dolph-Chebyshev
-      - Lanczos
-- Literals
-  - Hz, kHz, MHz, GHz, THz
-  - dB, dB10, dB20
+### Design
+
+- ❌️ No dependencies
+  - ❌️ XSimd is optional
+  - ✔️ PocketFFT included
+- ✔️ Vectorization
+- ❔️ Embedded-friendly
+  - ❔️ No malloc
+
+### Functionality
+
+- ✔️ Primitives:
+  - ✔️ Signal
+    - ✔️ Real
+    - ✔️ Complex
+    - ✔️ Arithmetic operators
+  - ✔️ SignalView
+    - ✔️ Arithmetic operators
+- ❔️ Generators
+  - ❔️ Wave
+    - ✔️ Sine
+    - ❌️ Square
+    - ❌️ Sawtooth
+    - ❌️ Triangle
+    - ❌️ PWM
+  - ❌️ Space
+    - ❌️ Linspace
+    - ❌️ Logspace
+- ❔️ Common math functions
+  - ✔️ Complex (Abs, Arg, Real, Imag)
+  - ✔️ Trigonometric (Sin, Cos, Tan x inverse)
+  - ✔️ Hyperbolic (Sinh, Cosh, Tanh x inverse)
+  - ✔️ Exponential (Exp, Log, Log2, Log10)
+  - ✔️ Polynomial (Pow, Sqrt, Cbrt)
+  - ❌️ Special math (Erf, Gamma, etc.)
+- ✔️ Vector math basics
+  - ✔️ Dot product
+  - ✔️ Norm (sqrt(SumSquare))
+- ❔️ Statistics
+  - ✔️ Sum
+  - ✔️ SumSquare
+  - ✔️ RootMeanSquare
+  - ✔️ Mean
+  - ✔️ Stddev
+  - ❌️ Skewness
+  - ❌️ Kurtosis
+  - ❌️ Covariance
+  - ❌️ Correlation
+- ❔️ Filtering
+  - ✔️ Convolution
+  - ✔️ FFT
+  - ❔️ FIR filtering
+    - ✔️ Window method
+    - ❌️ Least-squares method
+    - ❌️ Parks-McClellan method
+    - ✔️ Low-pass
+    - ❌️ High-pass
+    - ❌️ Band-pass
+    - ✔️ Arbitrary response
+    - ❌️ Quality assessment tools
+  - ❌️ IIR filtering
+    - ❌️ Butterworth
+    - ❌️ Chebyshev I
+    - ❌️ Chebyshev II
+    - ❌️ Elliptic
+    - ❌️ Quality assessment tools
+  - ✔️ Polyphase FIR
+  - ❔️ Resampling
+    - ❌️ Decimation
+    - ❔️ Integer downsampling
+    - ❔️ Integer upsampling
+    - ✔️ Arbitrary rational interpolation
+  - ❌️ Hilbert filter
+  - ❌️ Wavelets
+    - ❌️ DWT
+    - ❌️ CWT
+    - ❌️ Wavelet design
+  - ❔️ Windowing
+    - ✔️ Derived properties
+      - ✔️ Gain
+      - ✔️ Energy
+    - ❔️ Functions
+      - ❌️ Rectangular
+      - ❌️ Triangular
+      - ✔️ Hamming
+      - ❌️ Blackman
+      - ❌️ Blackman-Harris
+      - ✔️ Flat top
+      - ❔️ Kaiser (c++17 only)
+      - ❌️ Gaussian
+      - ❌️ Dolph-Chebyshev
+      - ❌️ Lanczos
+- ❌️ Literals
+  - ❌️ Hz, kHz, MHz, GHz, THz
+  - ❌️ dB, dB10, dB20
