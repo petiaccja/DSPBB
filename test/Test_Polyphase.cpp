@@ -1,4 +1,4 @@
-#include "dspbb/Generators/Sine.hpp"
+#include "dspbb/Generators/Waveforms.hpp"
 
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/PolyphaseFilter.hpp>

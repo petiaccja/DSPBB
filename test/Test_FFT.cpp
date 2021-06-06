@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/FFT.hpp>
-#include <dspbb/Generators/Sine.hpp>
+#include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>

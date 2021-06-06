@@ -8,6 +8,7 @@ target_sources(UnitTest
 		Test_Convolution.cpp
 		Test_FFT.cpp
 		Test_FirFilter.cpp
+		Test_Generators.cpp
 		Test_Interpolation.cpp
 		Test_OverlapAdd.cpp
 		Test_Polyphase.cpp

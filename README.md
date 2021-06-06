@@ -40,14 +40,14 @@ More like notes to myself as to what I want to have.
   - ✔️ SignalView
     - ✔️ Arithmetic operators
 - ❔️ Generators
-  - ❔️ Wave
+  - ✔️ Wave
     - ✔️ Sine
-    - ❌️ Square
-    - ❌️ Sawtooth
-    - ❌️ Triangle
-    - ❌️ PWM
-  - ❌️ Space
-    - ❌️ Linspace
+    - ✔️ Square
+    - ✔️ Sawtooth (fw, bw, tri, any)
+    - ✔️ PWM
+  - ❌️ Chirp/Sweep
+  - ❔️ Space
+    - ✔️ Linspace
     - ❌️ Logspace
 - ❔️ Common math functions
   - ✔️ Complex (Abs, Arg, Real, Imag)
