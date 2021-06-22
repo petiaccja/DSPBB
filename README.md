@@ -103,7 +103,7 @@ More like notes to myself as to what I want to have.
       - ✔️ Gain
       - ✔️ Energy
     - ❔️ Functions
-      - ❌️ Rectangular
+      - ✔️ Rectangular
       - ❌️ Triangular
       - ✔️ Hamming
       - ❌️ Blackman
