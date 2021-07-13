@@ -39,16 +39,16 @@ More like notes to myself as to what I want to have.
     - ✔️ Arithmetic operators
   - ✔️ SignalView
     - ✔️ Arithmetic operators
-- ❔️ Generators
+- ✔️ Generators
   - ✔️ Wave
     - ✔️ Sine
     - ✔️ Square
     - ✔️ Sawtooth (fw, bw, tri, any)
     - ✔️ PWM
   - ✔️ Chirp/Sweep
-  - ❔️ Space
+  - ✔️ Space
     - ✔️ Linspace
-    - ❌️ Logspace
+    - ✔️ Logspace
 - ❔️ Common math functions
   - ✔️ Complex (Abs, Arg, Real, Imag)
   - ✔️ Trigonometric (Sin, Cos, Tan x inverse)

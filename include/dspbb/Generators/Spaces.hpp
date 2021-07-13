@@ -2,6 +2,7 @@
 
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalTraits.hpp"
+#include "../Math/Functions.hpp"
 
 #include <numeric>
 
@@ -26,6 +27,24 @@ template <class T, eSignalDomain Domain>
 auto LinSpace(remove_complex_t<T> start, remove_complex_t<T> end, size_t count, bool inclusive = true) {
 	Signal<T, Domain> s(count);
 	LinSpace(s, start, end, inclusive);
+	return s;
+}
+
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0, class R = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>>
+auto LogSpace(SignalR&& output,
+			  R start,
+			  R end,
+			  R base = R(10),
+			  bool inclusive = true) {
+	LinSpace(output, start, end, inclusive);
+	output *= std::log(base);
+	Exp(output, output);	
+}
+
+template <class T, eSignalDomain Domain>
+auto LogSpace(remove_complex_t<T> start, remove_complex_t<T> end, size_t count, remove_complex_t<T> base = remove_complex_t<T>(10), bool inclusive = true) {
+	Signal<T, Domain> s(count);
+	LogSpace(s, start, end, base, inclusive);
 	return s;
 }
 

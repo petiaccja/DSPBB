@@ -28,6 +28,15 @@ TEST_CASE("Linspace exclusive", "[Generators]") {
 	REQUIRE(s[17] - s[12] == Approx(5.0f * (s[9] - s[8])));
 }
 
+TEST_CASE("Logspace", "[Generators]") {
+	const auto s = LogSpace<float, TIME_DOMAIN>(2.0f, 4.0f, 23, 10.f, true);
+	REQUIRE(s.Size() == 23);
+	REQUIRE(s[0] == Approx(100.f));
+	REQUIRE(s[22] == Approx(10000.f));
+	const auto quot = TimeSignalView<const float>(s.begin(), s.end() - 1) / TimeSignalView<const float>(s.begin() + 1, s.end());
+	REQUIRE(Max(quot) == Approx(Min(quot)));
+}
+
 
 TEST_CASE("Sine wave", "[Generators]") {
 	const auto s = SineWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.5f);
