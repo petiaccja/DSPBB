@@ -45,7 +45,7 @@ More like notes to myself as to what I want to have.
     - ✔️ Square
     - ✔️ Sawtooth (fw, bw, tri, any)
     - ✔️ PWM
-  - ❌️ Chirp/Sweep
+  - ✔️ Chirp/Sweep
   - ❔️ Space
     - ✔️ Linspace
     - ❌️ Logspace

@@ -93,3 +93,24 @@ TEST_CASE("Square wave", "[Generators]") {
 	REQUIRE(s[size_t(cycle * 0.99f)] == Approx(-1.0f));
 	REQUIRE(s[size_t(cycle * 1.01f)] == Approx(1.0f));
 }
+
+// Enough to test the base chirp phase function.
+TEST_CASE("Chirp phase", "[Generators]") {
+	TimeSignal<float> s(512);
+	const double phase = 1.55;
+	const double startFrequency = 1150.;
+	const double endFrequency = 2320.;
+	const uint64_t sampleRate = 44100;
+	impl::GenericChirp(s, sampleRate, startFrequency, endFrequency, phase, [](float phase) { return phase; });
+	REQUIRE(s[0] == Approx(phase));
+	REQUIRE(*(s.begin() + 1) - *(s.begin()) == Approx(2 * pi_v<double> * startFrequency / sampleRate).epsilon(0.01f));
+	REQUIRE(*(s.end() - 1) - *(s.end() - 2) == Approx(2 * pi_v<double> * endFrequency / sampleRate).epsilon(0.01f));
+	REQUIRE(Max(TimeSignalView<float>(s.begin(), s.end() - 1) - TimeSignalView<float>(s.begin() + 1, s.end())) < 0.0f);
+}
+
+TEST_CASE("Square chirp", "[Generators]") {
+	const auto s = SquareChirp<float, TIME_DOMAIN>(4410, 44100, 2 * frequency, frequency, 0.0f);
+	REQUIRE(Max(s) == Approx(1));
+	REQUIRE(Min(s) == Approx(-1));
+	REQUIRE(s[0] == Approx(1.0f));
+}
