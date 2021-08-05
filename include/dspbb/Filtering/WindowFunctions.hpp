@@ -40,9 +40,10 @@ T EnergyGain(const Signal<T, Domain>& window) {
 //------------------------------------------------------------------------------
 // List of window functions.
 //------------------------------------------------------------------------------
-template <class T, eSignalDomain Domain = eSignalDomain::TIME, std::enable_if_t<!std::is_const<T>::value, int> = 0>
-void HammingWindow(SignalView<T, Domain> out) {
-	using U = remove_complex_t<T>;
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void HammingWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
 
 	const U N = U(out.Length());
 	const U preSize = U(2) * pi_v<U> / (N - U(1));
@@ -54,9 +55,10 @@ void HammingWindow(SignalView<T, Domain> out) {
 	out += U(0.54);
 }
 
-template <class T, eSignalDomain Domain = eSignalDomain::TIME, std::enable_if_t<!std::is_const<T>::value, int> = 0>
-void FlatTopWindow(SignalView<T, Domain> out) {
-	using U = remove_complex_t<T>;
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void FlatTopWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
 
 	U c0 = U(0.21557895);
 	U c1 = U(-0.41663158);
@@ -71,7 +73,7 @@ void FlatTopWindow(SignalView<T, Domain> out) {
 	U preSize4 = U(8) * pi_v<U> / (N - U(1));
 
 	std::iota(out.begin(), out.end(), U(0.0));
-	Apply(out, [&](T k) -> T {
+	Apply(out, [&](R k) -> R {
 		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
 		return c0
 			   + c1 * std::cos(preSize1 * kreal)
@@ -81,9 +83,11 @@ void FlatTopWindow(SignalView<T, Domain> out) {
 	});
 }
 
-template <class T, eSignalDomain Domain = eSignalDomain::TIME, std::enable_if_t<!std::is_const<T>::value, int> = 0>
-void RectangularWindow(SignalView<T, Domain> out) {
-	std::fill(out.begin(), out.end(), T(1.0));
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void RectangularWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	std::fill(out.begin(), out.end(), R(U(1.0)));
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
@@ -110,44 +114,39 @@ Signal<T, Domain> RectangularWindow(size_t length) {
 // Helper for when you have to pass a window function as an argument.
 //------------------------------------------------------------------------------
 namespace windows {
-	namespace impl {
-		template <class T, eSignalDomain Domain>
-		using FunctionPtr = Signal<T, Domain> (*)(size_t);
+	struct Hamming {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) {
+			return HammingWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return HammingWindow<T, Domain>(length);
+		}
+	} const hamming;
 
-		template <class T, eSignalDomain Domain>
-		using Functional = std::function<Signal<T, Domain>(size_t)>;
+	struct Rectangular {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) {
+			return HammingWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return HammingWindow<T, Domain>(length);
+		}
+	} const rectangular;
 
-		template <class T, eSignalDomain Domain>
-		using FunctionPtrInplace = void (*)(SignalView<T, Domain>);
-
-		template <class T, eSignalDomain Domain>
-		using FunctionalInplace = std::function<void(SignalView<T, Domain>)>;
-	} // namespace impl
-
-#define DSPBB_WINDOW_CONVERSION_HELPER(VAR_NAME, FUNC_NAME)                                                         \
-	struct FUNC_NAME##Conv {                                                                                        \
-		template <class T, eSignalDomain Domain>                                                                    \
-		operator impl::FunctionPtr<T, Domain>() {                                                                   \
-			return static_cast<impl::FunctionPtr<T, Domain>>(FUNC_NAME);                                            \
-		}                                                                                                           \
-		template <class T, eSignalDomain Domain>                                                                    \
-		operator impl::Functional<T, Domain>() {                                                                    \
-			return impl::Functional<T, Domain>(static_cast<impl::FunctionPtr<T, Domain>>(FUNC_NAME));               \
-		}                                                                                                           \
-		template <class T, eSignalDomain Domain>                                                                    \
-		operator impl::FunctionPtrInplace<T, Domain>() {                                                            \
-			return static_cast<impl::FunctionPtrInplace<T, Domain>>(FUNC_NAME);                                     \
-		}                                                                                                           \
-		template <class T, eSignalDomain Domain>                                                                    \
-		operator impl::FunctionalInplace<T, Domain>() {                                                             \
-			return impl::FunctionalInplace<T, Domain>(static_cast<impl::FunctionPtrInplace<T, Domain>>(FUNC_NAME)); \
-		}                                                                                                           \
-	} static VAR_NAME;
-
-	DSPBB_WINDOW_CONVERSION_HELPER(hamming, HammingWindow)
-	DSPBB_WINDOW_CONVERSION_HELPER(flattop, FlatTopWindow)
-	DSPBB_WINDOW_CONVERSION_HELPER(rectangular, RectangularWindow)
-} // namespace windows
+	struct Flattop {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) {
+			return HammingWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return HammingWindow<T, Domain>(length);
+		}
+	} const flattop;
+}
 
 
 

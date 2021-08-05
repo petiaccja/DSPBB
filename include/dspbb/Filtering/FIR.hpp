@@ -70,11 +70,11 @@ TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, const Tim
 /// <param name="numTaps"> Number of coefficients the resulting FIR impulse response.
 ///		Must be less-equal than twice the number of coefficients in the frequency response. </param>
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
-template <class T>
+template <class T, class WindowFunc = decltype(windows::hamming)>
 TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
 								 size_t numTaps,
-								 std::function<TimeSignal<T>(size_t)> windowFunc = windows::hamming) {
-	return FirGeneralWindowed(frequencyResponse, windowFunc(numTaps));
+								 WindowFunc windowFunc = windows::hamming) {
+	return FirGeneralWindowed(frequencyResponse, windowFunc.operator()<T, TIME_DOMAIN>(numTaps));
 }
 
 
@@ -130,12 +130,12 @@ TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, const
 /// <param name="cutoffFrequency"> Frequencies below the cutoff are left as is, ones above are silenced. </param>
 /// <param name="numTaps"> Number of coefficients of the resulting FIR impulse response. </param>
 /// <returns> The coefficients of the impulse response of the FIR LPF. </returns>
-template <class T>
+template <class T, class WindowFunc = decltype(windows::hamming)>
 TimeSignal<T> FirLowPassWindowed(float cutoffFrequency,
-                                 size_t sampleRate,
-                                 size_t numTaps,
-                                 std::function<TimeSignal<T>(size_t)> windowFunc = windows::hamming) {
-	return FirLowPassWindowed(cutoffFrequency, sampleRate, windowFunc(numTaps));
+								 size_t sampleRate,
+								 size_t numTaps,
+								 WindowFunc windowFunc = windows::hamming) {
+	return FirLowPassWindowed(cutoffFrequency, sampleRate, windowFunc.operator()<T, TIME_DOMAIN>(numTaps));
 }
 
 
