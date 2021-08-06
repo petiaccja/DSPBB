@@ -11,9 +11,50 @@
 
 #include <cmath>
 #include <numeric>
+#include <stdexcept>
 
 
 namespace dspbb {
+
+
+//------------------------------------------------------------------------------
+// Utility
+//------------------------------------------------------------------------------
+
+template <class T, class U>
+T NormalizedFrequency(T frequency, U sample_rate) {
+	return T(2) * frequency / T(sample_rate);
+}
+
+
+//------------------------------------------------------------------------------
+// Band transforms
+//------------------------------------------------------------------------------
+
+template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+void MirrorResponse(SignalR&& mirrored, const SignalT& filter) {
+	assert(mirrored.Size() == filter.Size());
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	T sign = T(1);
+	for (size_t i = 0, i < filter.Size(); ++i, sign *= T(-1)) {
+		mirrored[i] = R(sign * filter[i]);
+	}
+}
+
+template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+void ComplementaryResponse(SignalR&& complementary, const SignalT& filter) {
+	assert(filter.Size() % 2 == 1);
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	Multiply(complementary, filter, T(-1));
+	complementary[complementary.Size() / 2] += R(1);
+}
+
+template <class SignalR, class SignalT, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+void MoveResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency) {
+	throw std::logic_error("Not implemented");
+}
 
 
 //------------------------------------------------------------------------------
