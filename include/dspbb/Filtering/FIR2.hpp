@@ -22,8 +22,8 @@ namespace dspbb {
 //------------------------------------------------------------------------------
 
 template <class T, class U>
-T NormalizedFrequency(T frequency, U sample_rate) {
-	return T(2) * frequency / T(sample_rate);
+T NormalizedFrequency(T frequency, U sampleRate) {
+	return T(2) * frequency / T(sampleRate);
 }
 
 
@@ -37,7 +37,7 @@ void MirrorResponse(SignalR&& mirrored, const SignalT& filter) {
 	using R = typename signal_traits<std::decay_t<SignalR>>::type;
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	T sign = T(1);
-	for (size_t i = 0, i < filter.Size(); ++i, sign *= T(-1)) {
+	for (size_t i = 0; i < filter.Size(); ++i, sign *= T(-1)) {
 		mirrored[i] = R(sign * filter[i]);
 	}
 }
@@ -61,7 +61,7 @@ void MoveResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency)
 // Windowed filters
 //------------------------------------------------------------------------------
 
-template <class SignalR, class U, class WindowFunc = decltype(windows::hamming), std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+template <class SignalR, class U, class WindowFunc = decltype(windows::hamming), std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
 void FirLowpassWin(SignalR&& coefficients,
 				   U cutoffNorm,
 				   WindowFunc windowFunc = windows::hamming) {
@@ -96,7 +96,7 @@ void FirLowpassWin(SignalR&& coefficients,
 		coefficients[size - i - 1] = sinc;
 	}
 	if (size % 2 == 1) {
-		coefficients[size] / 2 = 1;
+		coefficients[size / 2] = 1;
 	}
 	coefficients *= window;
 	coefficients *= T(1) / T(Sum(coefficients));
@@ -113,7 +113,7 @@ Signal<T, Domain> FirLowpassWin(U cutoffNorm,
 }
 
 
-template <class T, eSignalDomain Domain, class U, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>::domain>, int> = 0>
+template <class T, eSignalDomain Domain, class U, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>>::domain, int> = 0>
 Signal<T, Domain> FirLowpassWin(U cutoffNorm, const SignalW& window) {
 	Signal<T, Domain> r(window.Size());
 	FirLowpassWin(r, cutoffNorm, window);
@@ -128,20 +128,20 @@ Signal<T, Domain> FirArbitraryWin(SignalView<const T, FREQUENCY_DOMAIN> response
 	const auto impulse = InverseFourierTransformR(complexResponse, response.Size() * 2 - 1);
 	assert(impulse.Size() % 2 == 1);
 	size_t numNonzeroTaps = std::min(numTaps, impulse.Size());
-	SignalView<const T, Domain> sectionHead{ impulse.end() - (numNonzeroTaps + 1) / 2, impulse.end() };
+	SignalView<const T, Domain> sectionHead{ impulse.end() - numNonzeroTaps / 2, impulse.end() };
 	SignalView<const T, Domain> sectionTail{ impulse.begin(), impulse.begin() + (numNonzeroTaps + 1) / 2 };
-	Signal<T, Domain> filter(numTaps, 0);
+	Signal<T, Domain> filter(numTaps, T(0));
 	size_t offset = (numTaps - numNonzeroTaps) / 2;
 	SignalView<T, Domain> nonzeroFilter(filter.begin() + offset, numNonzeroTaps);
 	windowFunc(nonzeroFilter);
 	nonzeroFilter *= T(1) / Sum(nonzeroFilter);
 	nonzeroFilter.SubSignal(0, sectionHead.Size()) *= sectionHead;
-	nonzeroFilter.SubSignal(sectionHead.Size(), sectionTail.Size()) *= sectionHead;
+	nonzeroFilter.SubSignal(sectionHead.Size(), sectionTail.Size()) *= sectionTail;
 	return filter;
 }
 
 
-template <class T, eSignalDomain Domain, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>::domain>, int> = 0>
+template <class T, eSignalDomain Domain, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>>::domain, int> = 0>
 Signal<T, Domain> FirArbitraryWin(SignalView<const T, FREQUENCY_DOMAIN> response, const SignalW& window) {
 	const size_t numTaps = window.Size();
 	assert(numTaps % 2 == 1);
@@ -149,15 +149,14 @@ Signal<T, Domain> FirArbitraryWin(SignalView<const T, FREQUENCY_DOMAIN> response
 	const auto impulse = InverseFourierTransformR(complexResponse, response.Size() * 2 - 1);
 	assert(impulse.Size() % 2 == 1);
 	size_t numNonzeroTaps = std::min(numTaps, impulse.Size());
-	SignalView<const T, Domain> sectionHead{ impulse.end() - (numNonzeroTaps + 1) / 2, impulse.end() };
+	SignalView<const T, Domain> sectionHead{ impulse.end() - numNonzeroTaps / 2, impulse.end() };
 	SignalView<const T, Domain> sectionTail{ impulse.begin(), impulse.begin() + (numNonzeroTaps + 1) / 2 };
-	Signal<T, Domain> filter(numTaps, 0);
+	Signal<T, Domain> filter(numTaps, T(0));
 	size_t offset = (numTaps - numNonzeroTaps) / 2;
 	SignalView<T, Domain> nonzeroFilter(filter.begin() + offset, numNonzeroTaps);
-	windowFunc(nonzeroFilter);
 	nonzeroFilter *= T(1) / Sum(nonzeroFilter);
 	Multiply(nonzeroFilter.SubSignal(0, sectionHead.Size()), AsConstView(window).SubSignal(0, sectionHead.Size()), sectionHead);
-	Multiply(nonzeroFilter.SubSignal(sectionHead.Size(), sectionTail.Size()), AsConstView(window).SubSignal(sectionHead.Size(), sectionTail.Size()), sectionHead);
+	Multiply(nonzeroFilter.SubSignal(sectionHead.Size(), sectionTail.Size()), AsConstView(window).SubSignal(sectionHead.Size(), sectionTail.Size()), sectionTail);
 	return filter;
 }
 

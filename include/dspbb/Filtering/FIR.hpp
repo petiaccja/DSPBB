@@ -8,7 +8,7 @@
 #include "FFT.hpp"
 #include "WindowFunctions.hpp"
 
-#include <numeric>
+#include "FIR2.hpp"
 
 namespace dspbb {
 
@@ -33,6 +33,7 @@ struct FirGeneralQuality {
 /// <returns> The coefficients of the impulse response of the FIR filter. </returns>
 template <class T>
 TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse, TimeSignalView<const T> window) {
+	return FirArbitraryWin<T, TIME_DOMAIN>(frequencyResponse, window);
 	const size_t numTaps = window.Size();
 	assert(numTaps != 0);
 
@@ -88,6 +89,8 @@ TimeSignal<T> FirGeneralWindowed(const Spectrum<T>& frequencyResponse,
 /// <returns></returns>
 template <class T>
 TimeSignal<T> FirLowPassWindowed(float cutoffFrequency, size_t sampleRate, TimeSignalView<const T> window) {
+	return FirLowpassWin<T, TIME_DOMAIN>(NormalizedFrequency(cutoffFrequency, sampleRate), window);
+	
 	const auto numTaps = window.Size();
 	const T xOffset = T(numTaps - 1) / T(2);
 	const T xScale = T(cutoffFrequency) / T(sampleRate) * T(2) * pi_v<T>;

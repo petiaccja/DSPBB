@@ -1,10 +1,10 @@
 #pragma once
 
 #include <algorithm>
-#include <complex>
-#include <vector>
 #include <cassert>
+#include <complex>
 #include <stdexcept>
+#include <vector>
 
 
 namespace dspbb {
@@ -48,7 +48,7 @@ public:
 	template <class U>
 	Signal(const Signal<U, Domain>& other);
 	Signal(size_type count, const T* data);
-	template <class Iter>
+	template <class Iter, std::enable_if_t<std::is_convertible<decltype(*std::declval<Iter>()), T>::value, int> = 0>
 	Signal(Iter first, Iter last) : m_samples(first, last) {}
 
 	Signal& operator=(const Signal&) = default;
