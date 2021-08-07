@@ -65,8 +65,9 @@ template <class SignalR, class U, class WindowFunc = decltype(windows::hamming),
 void FirLowpassWin(SignalR&& coefficients,
 				   U cutoffNorm,
 				   WindowFunc windowFunc = windows::hamming) {
+	assert(coefficients.Size() % 2 == 1);
 	using T = remove_complex_t<signal_traits<std::decay_t<SignalR>>::type>;
-	const T offset = T(coefficients.Size()) / T(2);
+	const T offset = T(coefficients.Size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.Size();
 
@@ -85,8 +86,9 @@ template <class SignalR, class U, class SignalW, std::enable_if_t<is_mutable_sig
 void FirLowpassWin(SignalR&& coefficients,
 				   U cutoffNorm,
 				   const SignalW& window) {
+	assert(coefficients.Size() % 2 == 1);
 	using T = remove_complex_t<signal_traits<std::decay_t<SignalR>>::type>;
-	const T offset = T(coefficients.Size()) / T(2);
+	const T offset = T(coefficients.Size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.Size();
 	for (size_t i = 0; i < coefficients.Size() / 2; ++i) {
@@ -134,7 +136,6 @@ Signal<T, Domain> FirArbitraryWin(SignalView<const T, FREQUENCY_DOMAIN> response
 	size_t offset = (numTaps - numNonzeroTaps) / 2;
 	SignalView<T, Domain> nonzeroFilter(filter.begin() + offset, numNonzeroTaps);
 	windowFunc(nonzeroFilter);
-	nonzeroFilter *= T(1) / Sum(nonzeroFilter);
 	nonzeroFilter.SubSignal(0, sectionHead.Size()) *= sectionHead;
 	nonzeroFilter.SubSignal(sectionHead.Size(), sectionTail.Size()) *= sectionTail;
 	return filter;
@@ -154,7 +155,6 @@ Signal<T, Domain> FirArbitraryWin(SignalView<const T, FREQUENCY_DOMAIN> response
 	Signal<T, Domain> filter(numTaps, T(0));
 	size_t offset = (numTaps - numNonzeroTaps) / 2;
 	SignalView<T, Domain> nonzeroFilter(filter.begin() + offset, numNonzeroTaps);
-	nonzeroFilter *= T(1) / Sum(nonzeroFilter);
 	Multiply(nonzeroFilter.SubSignal(0, sectionHead.Size()), AsConstView(window).SubSignal(0, sectionHead.Size()), sectionHead);
 	Multiply(nonzeroFilter.SubSignal(sectionHead.Size(), sectionTail.Size()), AsConstView(window).SubSignal(sectionHead.Size(), sectionTail.Size()), sectionTail);
 	return filter;
