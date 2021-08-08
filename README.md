@@ -77,8 +77,8 @@ More like notes to myself as to what I want to have.
     - ❌️ Least-squares method
     - ❌️ Parks-McClellan method
     - ✔️ Low-pass
-    - ❌️ High-pass
-    - ❌️ Band-pass
+    - ✔️ High-pass
+    - ✔️ Band-pass
     - ✔️ Arbitrary response
     - ❌️ Quality assessment tools
   - ❌️ IIR filtering
