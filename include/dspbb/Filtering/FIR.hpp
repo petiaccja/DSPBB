@@ -74,7 +74,7 @@ void FirLowpassWin(SignalR&& coefficients,
 				   U cutoffNorm,
 				   WindowFunc windowFunc = windows::hamming) {
 	assert(coefficients.Size() % 2 == 1);
-	using T = remove_complex_t<signal_traits<std::decay_t<SignalR>>::type>;
+	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
 	const T offset = T(coefficients.Size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.Size();
@@ -95,7 +95,7 @@ void FirLowpassWin(SignalR&& coefficients,
 				   U cutoffNorm,
 				   const SignalW& window) {
 	assert(coefficients.Size() % 2 == 1);
-	using T = remove_complex_t<signal_traits<std::decay_t<SignalR>>::type>;
+	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
 	const T offset = T(coefficients.Size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.Size();
