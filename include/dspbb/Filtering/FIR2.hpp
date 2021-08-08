@@ -52,14 +52,27 @@ void ComplementaryResponse(SignalR&& complementary, const SignalT& filter) {
 }
 
 template <class SignalR, class SignalT, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
-void MoveResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency) {
-	throw std::logic_error("Not implemented");
+void ShiftResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency) {
+	U offset = static_cast<U>(filter.Size() / 2);
+	U scale = pi_v<U> * normalizedFrequency;
+	const size_t size = filter.Size();
+	for (size_t i = 0; i < size / 2; ++i) {
+		const U x = (U(i) - offset) * scale;
+		const U c = std::cos(x);
+		moved[i] = c * filter[i];
+		moved[size - i - 1] = c * filter[size - i - 1];
+	}
+	moved *= typename signal_traits<SignalT>::type(2);
 }
 
 
 //------------------------------------------------------------------------------
 // Windowed filters
 //------------------------------------------------------------------------------
+
+//--------------------------------------
+// Lowpass
+//--------------------------------------
 
 template <class SignalR, class U, class WindowFunc = decltype(windows::hamming), std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
 void FirLowpassWin(SignalR&& coefficients,
@@ -72,7 +85,7 @@ void FirLowpassWin(SignalR&& coefficients,
 	const size_t size = coefficients.Size();
 
 	windowFunc(coefficients);
-	for (size_t i = 0; i < coefficients.Size() / 2; ++i) {
+	for (size_t i = 0; i < size / 2; ++i) {
 		const T x = (T(i) - offset) * scale;
 		const T sinc = std::sin(x) / x;
 		coefficients[i] *= sinc;
@@ -116,12 +129,95 @@ Signal<T, Domain> FirLowpassWin(U cutoffNorm,
 
 
 template <class T, eSignalDomain Domain, class U, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>>::domain, int> = 0>
-Signal<T, Domain> FirLowpassWin(U cutoffNorm, const SignalW& window) {
+Signal<T, Domain> FirLowpassWin(U cutoffNorm,
+								const SignalW& window) {
 	Signal<T, Domain> r(window.Size());
 	FirLowpassWin(r, cutoffNorm, window);
 	return r;
 }
 
+
+//--------------------------------------
+// Highpass
+//--------------------------------------
+
+template <class SignalR, class U, class WindowFunc = decltype(windows::hamming), std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
+void FirHighpassWin(SignalR&& coefficients,
+					U cutoffNorm,
+					WindowFunc windowFunc = windows::hamming) {
+	FirLowpassWin(coefficients, cutoffNorm, windowFunc);
+	ComplementaryResponse(coefficients, coefficients);
+}
+template <class SignalR, class U, class SignalW, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalW>, int> = 0>
+void FirHighpassWin(SignalR&& coefficients,
+					U cutoffNorm,
+					const SignalW& window) {
+	FirLowpassWin(coefficients, cutoffNorm, window);
+	ComplementaryResponse(coefficients, coefficients);
+}
+template <class T, eSignalDomain Domain, class U, class WindowFunc = decltype(windows::hamming)>
+Signal<T, Domain> FirHighpassWin(U cutoffNorm,
+								 size_t numTaps,
+								 WindowFunc windowFunc = windows::hamming) {
+	Signal<T, Domain> r(numTaps);
+	FirHighpassWin(r, cutoffNorm, windowFunc);
+	return r;
+}
+template <class T, eSignalDomain Domain, class U, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>>::domain, int> = 0>
+Signal<T, Domain> FirHighpassWin(U cutoffNorm,
+								 const SignalW& window) {
+	Signal<T, Domain> r(window.Size());
+	FirHighpassWin(r, cutoffNorm, window);
+	return r;
+}
+
+
+//--------------------------------------
+// Bandpass
+//--------------------------------------
+
+template <class SignalR, class U, class WindowFunc = decltype(windows::hamming), std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
+void FirBandpassWin(SignalR&& coefficients,
+					U bandLow,
+					U bandHigh,
+					WindowFunc windowFunc = windows::hamming) {
+	U bandWidth = bandHigh - bandLow;
+	U bandCenter = (bandHigh + bandLow) / 2;
+	FirLowpassWin(coefficients, bandWidth / U(2), windowFunc);
+	ShiftResponse(coefficients, coefficients, bandCenter);
+}
+template <class SignalR, class U, class SignalW, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalW>, int> = 0>
+void FirBandpassWin(SignalR&& coefficients,
+					U bandLow,
+					U bandHigh,
+					const SignalW& window) {
+	U bandWidth = bandHigh - bandLow;
+	U bandCenter = (bandHigh + bandLow) / 2;
+	FirLowpassWin(coefficients, bandWidth / U(2), window);
+	ShiftResponse(coefficients, coefficients, bandCenter);
+}
+template <class T, eSignalDomain Domain, class U, class WindowFunc = decltype(windows::hamming)>
+Signal<T, Domain> FirBandpassWin(U bandLow,
+								 U bandHigh,
+								 size_t numTaps,
+								 WindowFunc windowFunc = windows::hamming) {
+	Signal<T, Domain> r(numTaps);
+	FirBandpassWin(r, bandLow, bandHigh, windowFunc);
+	return r;
+}
+template <class T, eSignalDomain Domain, class U, class SignalW, std::enable_if_t<Domain == signal_traits<std::decay_t<SignalW>>::domain, int> = 0>
+Signal<T, Domain> FirBandpassWin(U bandLow,
+								 U bandHigh,
+								 const SignalW& window) {
+	Signal<T, Domain> r(window.Size());
+	FirBandpassWin(r, bandLow, bandHigh, window);
+	return r;
+}
+
+
+//--------------------------------------
+// Arbitrary response
+//--------------------------------------
 
 template <class T, eSignalDomain Domain, class WindowFunc = decltype(windows::hamming)>
 Signal<T, Domain> FirArbitraryWin(SignalView<const T, FREQUENCY_DOMAIN> response, size_t numTaps, WindowFunc windowFunc = windows::hamming) {
