@@ -5,7 +5,6 @@
 #include <dspbb/Primitives/SignalTraits.hpp>
 #include <dspbb/Primitives/SignalView.hpp>
 #include <dspbb/Utility/Algorithm.hpp>
-#include <dspbb/Vectorization/ComplexFunctions.hpp>
 #include <dspbb/Vectorization/MathFunctions.hpp>
 #include <type_traits>
 
@@ -16,69 +15,32 @@ namespace dspbb {
 #define DSPBB_IMPL_FUNCTION_2_PARAM(NAME, FUNC)                                                                                                                        \
 	template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0> \
 	auto NAME(SignalT&& out, const SignalU& in) {                                                                                                                      \
-		return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](auto v) { return math_functions::FUNC(v); });                                          \
+		return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](const auto& v) { return math_functions::FUNC(v); });                                          \
 	}
 
-#define DSPBB_IMPL_FUNCTION_1_PARAM(NAME)                                                        \
+#define DSPBB_IMPL_FUNCTION_1_PARAM(NAME, FUNC)                                                  \
 	template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0> \
 	auto NAME(const SignalT& signal) {                                                           \
-		SignalT r(signal.Size());                                                                \
+		using R = decltype(std::FUNC(std::declval<typename signal_traits<SignalT>::type>()));    \
+		constexpr auto domain = signal_traits<SignalT>::domain;                                  \
+		Signal<R, domain> r(signal.Size());                                                      \
 		NAME(r, signal);                                                                         \
 		return r;                                                                                \
 	}
 
 #define DSPBB_IMPL_FUNCTION(NAME, FUNC)     \
 	DSPBB_IMPL_FUNCTION_2_PARAM(NAME, FUNC) \
-	DSPBB_IMPL_FUNCTION_1_PARAM(NAME)
+	DSPBB_IMPL_FUNCTION_1_PARAM(NAME, FUNC)
 
 
 //------------------------------------------------------------------------------
 // Complex number functions
 //------------------------------------------------------------------------------
 
-#define DSPBB_IMPL_COMPLEX_FUNCTION_2_PARAM(NAME, VECOP, OP, FUNC)                                                                                                     \
-	template <class SignalT,                                                                                                                                           \
-			  class SignalU,                                                                                                                                           \
-			  class T,                                                                                                                                                 \
-			  std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0>                               \
-	auto NAME(SignalT&& out, const SignalU& in, int, std::complex<T>) {                                                                                                \
-                                                                                                                                                                       \
-		return UnaryOperationVectorized(out.Data(),                                                                                                                    \
-										in.Data(),                                                                                                                     \
-										out.Length(),                                                                                                                  \
-										complex_functions::VECOP<T>::stride,                                                                                           \
-										complex_functions::VECOP<T>{},                                                                                                 \
-										complex_functions::OP<T>{});                                                                                                   \
-	}                                                                                                                                                                  \
-                                                                                                                                                                       \
-	template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0> \
-	auto NAME(SignalT&& out, const SignalU& in, int, ...) {                                                                                                            \
-                                                                                                                                                                       \
-		return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](auto v) { return math_functions::FUNC(v); });                                          \
-	}                                                                                                                                                                  \
-                                                                                                                                                                       \
-	template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0> \
-	auto NAME(SignalT&& out, const SignalU& in) {                                                                                                                      \
-		return NAME(std::forward<SignalT>(out), in, 0, typename signal_traits<SignalU>::type{});                                                                       \
-	}
-
-#define DSPBB_IMPL_COMPLEX_FUNCTION_1_PARAM(NAME, FUNC)                                          \
-	template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0> \
-	auto NAME(const SignalT& signal) {                                                           \
-		using R = decltype(std::FUNC(std::declval<typename signal_traits<SignalT>::type>()));    \
-		Signal<R, signal_traits<SignalT>::domain> r(signal.Size());                              \
-		NAME(r, signal);                                                                         \
-		return r;                                                                                \
-	}
-
-#define DSPBB_IMPL_COMPLEX_FUNCTION(NAME, VECOP, OP, FUNC)     \
-	DSPBB_IMPL_COMPLEX_FUNCTION_2_PARAM(NAME, VECOP, OP, FUNC) \
-	DSPBB_IMPL_COMPLEX_FUNCTION_1_PARAM(NAME, FUNC)
-
-DSPBB_IMPL_COMPLEX_FUNCTION(Abs, AbsVec, Abs, abs)
-DSPBB_IMPL_COMPLEX_FUNCTION(Arg, ArgVec, Arg, arg)
-DSPBB_IMPL_COMPLEX_FUNCTION(Real, RealVec, Real, real)
-DSPBB_IMPL_COMPLEX_FUNCTION(Imag, ImagVec, Imag, imag)
+DSPBB_IMPL_FUNCTION(Abs, abs)
+DSPBB_IMPL_FUNCTION(Arg, arg)
+DSPBB_IMPL_FUNCTION(Real, real)
+DSPBB_IMPL_FUNCTION(Imag, imag)
 
 //------------------------------------------------------------------------------
 // Exponential functions
@@ -95,11 +57,11 @@ DSPBB_IMPL_FUNCTION(Exp, exp)
 
 
 template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0>
-auto Pow(SignalT&& out, const SignalU& in, std::remove_const_t<typename std::decay_t<SignalU>::value_type> power) {
-	return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [power](auto v) { return math_functions::pow(v, power); });
+auto Pow(SignalT&& out, const SignalU& in, typename signal_traits<std::decay_t<SignalU>>::type power) {
+	return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [power](const auto& v) { return math_functions::pow(v, decltype(v)(power)); });
 }
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
-auto Pow(const SignalT& signal, std::remove_const_t<typename std::decay_t<SignalT>::value_type> power) {
+auto Pow(const SignalT& signal, typename signal_traits<std::decay_t<SignalT>>::type power) {
 	SignalT r(signal.Size());
 	Pow(r, signal, power);
 	return r;

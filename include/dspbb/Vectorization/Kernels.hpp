@@ -14,6 +14,20 @@ struct is_vectorized {
 	static constexpr bool value = xsimd::simd_traits<T>::size > 1;
 };
 
+template <class R, class T, class Op>
+struct is_unary_vectorized {
+	constexpr static bool get(...) { return false; }
+	template <class R_ = R,
+			  class T_ = T,
+			  class Op_ = Op,
+			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
+								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
+								   && std::is_same<xsimd::simd_type<R_>, std::result_of_t<Op(xsimd::simd_type<T_>)>>::value,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
 
 //------------------------------------------------------------------------------
 // Binary operations.
@@ -128,43 +142,38 @@ void UnaryOperation(R* out, const T* in, size_t length, Op op) {
 	}
 }
 
-template <class R, class T, class Op>
+template <class R, class T, class Op, std::enable_if_t<!is_unary_vectorized<R, T, Op>::value, int> = 0>
 void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
 	return UnaryOperation(out, in, length, op);
 }
 
-template <class T, class Op, std::enable_if_t<!is_vectorized<T>::value, int> = 0>
-void UnaryOperationVectorized(T* out, T* in, size_t length, Op op) {
-	using V = xsimd::simd_type<T>;
+template <class R, class T, class Op, std::enable_if_t<is_unary_vectorized<R, T, Op>::value, int> = 0>
+void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
+	using TV = xsimd::simd_type<T>;
+	using RV = xsimd::simd_type<R>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
 
 	const size_t vlength = (length / vsize) * vsize;
 
-	const T* vlast = out + vlength;
+	const R* vlast = out + vlength;
 	for (; out < vlast; out += vsize, in += vsize) {
-		V vin;
+		TV vin;
 		vin.load_unaligned(in);
-		auto vr = op(vin);
+		const auto vr = op(vin);
 		vr.store_unaligned(out);
 	}
 
 	UnaryOperation(out, in, length - vlength, op);
 }
 
-template <class R, class T, class Op, class VecOp>
-void UnaryOperationVectorized(R* out, T* in, size_t length, size_t stride, VecOp vop, Op op) {
-	const size_t vlength = (length / stride) * stride;
+//------------------------------------------------------------------------------
+// Reduction.
+//------------------------------------------------------------------------------
 
-	const R* vlast = out + vlength;
-	const R* last = out + length;
-
-	for (; out < vlast; out += stride, in += stride) {
-		vop(out, in);
-	}
-	for (; out < last; out += 1, in += 1) {
-		op(out, in);
-	}	
+template <class T, class Op>
+T ReductionVectorized(const T* in, size_t length, Op op, T init = T(0)) {
 }
+
 
 
 } // namespace dspbb
