@@ -69,5 +69,36 @@ namespace math_functions {
 	using xsimd::real;
 	using xsimd::imag;
 
+	// Misc
+	namespace impl {
+		template <class T, std::enable_if_t<(xsimd::simd_batch_traits<T>::size > 1), int> = 0>
+		decltype(auto) min(const T& a, const T& b, int) {
+			return xsimd::min(a, b);
+		}
+		template <class T, std::enable_if_t<(xsimd::simd_batch_traits<T>::size > 1), int> = 0>
+		decltype(auto) max(const T& a, const T& b, int) {
+			return xsimd::max(a, b);
+		}
+		template <class T>
+		decltype(auto) min(const T& a, const T& b, ...) {
+			return std::min(a, b);
+		}
+		template <class T>
+		decltype(auto) max(const T& a, const T& b, ...) {
+			return std::max(a, b);
+		}
+	} // namespace impl
+
+	template <class T>
+	decltype(auto) min(const T& a, const T& b) {
+		return impl::min(a, b, 0);
+	}
+	template <class T>
+	decltype(auto) max(const T& a, const T& b) {
+		return impl::max(a, b, 0);
+	}
+
+	
+
 } // namespace math_functions
 } // namespace dspbb
