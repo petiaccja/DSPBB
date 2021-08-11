@@ -5,7 +5,31 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
+TEST_CASE("CentralMoment #0 and #1", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(0 == CentralMoment(s, 0));
+	REQUIRE(0 == CentralMoment(s, 1));
+}
 
+TEST_CASE("CentralMoment #2", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(4) == CentralMoment(s, 2));
+}
+
+TEST_CASE("CentralMoment #3", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(5.25) == CentralMoment(s, 3));
+}
+
+TEST_CASE("CentralMoment #4", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(44.5) == CentralMoment(s, 4));
+}
+
+TEST_CASE("CentralMoment #5", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(101.25) == CentralMoment(s, 5));
+}
 
 
 TEST_CASE("Sum", "[Statistics]") {
