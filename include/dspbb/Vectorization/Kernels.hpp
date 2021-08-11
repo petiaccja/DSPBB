@@ -5,6 +5,8 @@
 #include <xsimd/xsimd.hpp>
 #pragma warning(pop)
 
+#include <numeric>
+
 
 namespace dspbb {
 
@@ -12,6 +14,49 @@ namespace dspbb {
 template <class T>
 struct is_vectorized {
 	static constexpr bool value = xsimd::simd_traits<T>::size > 1;
+};
+
+template <class R, class T, class Op>
+struct is_unary_vectorized {
+	constexpr static bool get(...) { return false; }
+	template <class R_ = R,
+			  class T_ = T,
+			  class Op_ = Op,
+			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
+								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
+								   && std::is_same<xsimd::simd_type<R_>, std::result_of_t<Op(xsimd::simd_type<T_>)>>::value,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
+template <class R, class T, class Op>
+struct is_reduce_vectorized {
+	constexpr static bool get(...) { return false; }
+	template <class R_ = R,
+			  class T_ = T,
+			  class Op_ = Op,
+			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
+								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
+								   && std::is_convertible<std::result_of_t<Op(xsimd::simd_type<R_>, xsimd::simd_type<T_>)>, xsimd::simd_type<R_>>::value,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
+template <class R, class T, class ReduceOp, class MapOp>
+struct is_map_reduce_vectorized {
+	constexpr static bool get(...) { return false; }
+	template <class R_ = R,
+			  class T_ = T,
+			  class ReduceOp_ = ReduceOp,
+			  class MapOp_ = MapOp,
+			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
+								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
+								   && std::is_convertible<std::result_of_t<ReduceOp(xsimd::simd_type<R_>, std::result_of_t<MapOp(xsimd::simd_type<T>)>)>, xsimd::simd_type<R_>>::value,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
 };
 
 
@@ -128,43 +173,112 @@ void UnaryOperation(R* out, const T* in, size_t length, Op op) {
 	}
 }
 
-template <class R, class T, class Op>
+template <class R, class T, class Op, std::enable_if_t<!is_unary_vectorized<R, T, Op>::value, int> = 0>
 void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
 	return UnaryOperation(out, in, length, op);
 }
 
-template <class T, class Op, std::enable_if_t<!is_vectorized<T>::value, int> = 0>
-void UnaryOperationVectorized(T* out, T* in, size_t length, Op op) {
-	using V = xsimd::simd_type<T>;
+template <class R, class T, class Op, std::enable_if_t<is_unary_vectorized<R, T, Op>::value, int> = 0>
+void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
+	using TV = xsimd::simd_type<T>;
+	using RV = xsimd::simd_type<R>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
 
 	const size_t vlength = (length / vsize) * vsize;
 
-	const T* vlast = out + vlength;
+	const R* vlast = out + vlength;
 	for (; out < vlast; out += vsize, in += vsize) {
-		V vin;
+		TV vin;
 		vin.load_unaligned(in);
-		auto vr = op(vin);
+		const auto vr = op(vin);
 		vr.store_unaligned(out);
 	}
 
 	UnaryOperation(out, in, length - vlength, op);
 }
 
-template <class R, class T, class Op, class VecOp>
-void UnaryOperationVectorized(R* out, T* in, size_t length, size_t stride, VecOp vop, Op op) {
-	const size_t vlength = (length / stride) * stride;
+//------------------------------------------------------------------------------
+// Reduction.
+//------------------------------------------------------------------------------
 
-	const R* vlast = out + vlength;
-	const R* last = out + length;
-
-	for (; out < vlast; out += stride, in += stride) {
-		vop(out, in);
-	}
-	for (; out < last; out += 1, in += 1) {
-		op(out, in);
-	}	
+template <class R, class T, class Op>
+R Reduce(const T* in, size_t length, R init, Op op) {
+	// TODO: use C++17 std::reduce
+	return std::accumulate(in, in + length, init, op);
 }
+
+template <class R, class T, class Op, std::enable_if_t<!is_reduce_vectorized<R, T, Op>::value, int> = 0>
+R ReduceVectorized(const T* in, size_t length, R init, Op op) {
+	return Reduce(in, length, init, op);
+}
+
+template <class R, class T, class Op, std::enable_if_t<is_reduce_vectorized<R, T, Op>::value, int> = 0>
+R ReduceVectorized(const T* in, size_t length, R init, Op op) {
+	using TV = xsimd::simd_type<T>;
+	using RV = xsimd::simd_type<R>;
+	constexpr size_t vsize = xsimd::simd_traits<T>::size;
+
+	const size_t vlength = (length / vsize) * vsize;
+	const R* vlast = in + vlength;
+	if (vlength > 0) {
+		RV acc;
+		acc.load_unaligned(in);
+		in += vsize;
+		for (; in < vlast; in += vsize) {
+			TV vin;
+			vin.load_unaligned(in);
+			acc = op(acc, vin);
+		}
+		alignas(alignof(RV)) std::array<R, vsize> arr;
+		acc.store_aligned(arr.data());
+		init = Reduce(arr.data(), arr.size(), init, op);
+	}
+
+	return Reduce(in, length - vlength, init, op);
+}
+
+template <class R, class T, class ReduceOp, class MapOp>
+R MapReduce(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
+	// TODO: use C++17 std::transform_reduce
+	R acc = std::move(init);
+	const T* end = in + length;
+	for (; in < end; ++in) {
+		acc = reduceOp(acc, mapOp(*in));
+	}
+	return acc;
+}
+
+template <class R, class T, class ReduceOp, class MapOp, std::enable_if_t<!is_map_reduce_vectorized<R, T, ReduceOp, MapOp>::value, int> = 0>
+R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
+	return MapReduce(in, length, init, reduceOp, mapOp);
+}
+
+template <class R, class T, class ReduceOp, class MapOp, std::enable_if_t<is_map_reduce_vectorized<R, T, ReduceOp, MapOp>::value, int> = 0>
+R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
+	using TV = xsimd::simd_type<T>;
+	using RV = xsimd::simd_type<R>;
+	constexpr size_t vsize = xsimd::simd_traits<T>::size;
+
+	const size_t vlength = (length / vsize) * vsize;
+	const R* vlast = in + vlength;
+	if (vlength > 0) {
+		TV unmapped;
+		unmapped.load_unaligned(in);
+		RV acc = mapOp(unmapped);
+		in += vsize;
+		for (; in < vlast; in += vsize) {
+			TV vin;
+			vin.load_unaligned(in);
+			acc = reduceOp(acc, mapOp(vin));
+		}
+		alignas(alignof(RV)) std::array<R, vsize> arr;
+		acc.store_aligned(arr.data());
+		init = Reduce(arr.data(), arr.size(), init, reduceOp);
+	}
+
+	return MapReduce(in, length - vlength, init, reduceOp, mapOp);
+}
+
 
 
 } // namespace dspbb
