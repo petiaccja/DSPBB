@@ -1,7 +1,7 @@
 # Enumerate sources
 add_executable(UnitTest)
 
-target_sources(UnitTest PRIVATE main.cpp "Test_Functions.cpp")
+target_sources(UnitTest PRIVATE main.cpp)
 
 target_sources(UnitTest 
 	PRIVATE
@@ -16,10 +16,12 @@ target_sources(UnitTest
 		Test_SignalView.cpp
 		Test_SignalArithmetic.cpp
 		Test_WindowFunctions.cpp
-		Test_MathFunctions.cpp
+		
 		Test_Algorithm.cpp
 		Test_Arithmetic.cpp
-		Test_Statistics.cpp)
+		Test_Statistics.cpp
+		Test_Functions.cpp
+		Test_Kernels.cpp)
 
 find_package(Catch2 REQUIRED)
 
