@@ -119,4 +119,29 @@ auto Min(const SignalT& signal) {
 	return ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return math_functions::min(a, b); });
 }
 
+
+template <class SignalT, class SignalU, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
+auto Covariance(const SignalT& a, const SignalU& b) {
+	assert(a.Size() == b.Size());
+	const auto size = a.Size();
+	using R = decltype(std::declval<typename SignalT::value_type>() * std::declval<typename SignalU::value_type>());
+	const auto ma = Mean(a);
+	const auto mb = Mean(b);
+	return InnerProduct(
+		a.Data(),
+		b.Data(),
+		size,
+		R(0),
+		[ma, mb](const auto& a, const auto& b) { return (a - ma) * (b - mb); },
+		[](const auto& acc, const auto& x) { return acc + x; }) / R(size);
+}
+
+
+template <class SignalT, class SignalU, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
+auto Correlation(const SignalT& a, const SignalU& b) {
+	assert(a.Size() == b.Size());
+	return Covariance(a, b) / (StandardDeviation(a) * StandardDeviation(b));
+}
+
+
 } // namespace dspbb

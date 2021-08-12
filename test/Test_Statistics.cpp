@@ -53,12 +53,12 @@ TEST_CASE("Variance", "[Statistics]") {
 
 TEST_CASE("Skewness", "[Statistics]") {
 	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
-	REQUIRE(Approx(5.25f/8.f) == Skewness(s));
+	REQUIRE(Approx(5.25f / 8.f) == Skewness(s));
 }
 
 TEST_CASE("Kurtosis", "[Statistics]") {
 	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
-	REQUIRE(Approx(44.5f/16.f) == Kurtosis(s));
+	REQUIRE(Approx(44.5f / 16.f) == Kurtosis(s));
 }
 
 TEST_CASE("Sum", "[Statistics]") {
@@ -105,4 +105,44 @@ TEST_CASE("Max", "[Statistics]") {
 TEST_CASE("Min", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
 	REQUIRE(Approx(1) == Min(s));
+}
+
+
+TEST_CASE("Covariance self", "[Statistics]") {
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> t = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	REQUIRE(Approx(Variance(s)) == Covariance(s, t));
+}
+
+TEST_CASE("Covariance anti", "[Statistics]") {
+	TimeSignal<float> base = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> s = base - Mean(base);
+	TimeSignal<float> t = Mean(base) - base;
+	REQUIRE(Approx(-Variance(s)) == Covariance(s, t));
+}
+
+TEST_CASE("Covariance middle", "[Statistics]") {
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> t = { 3, 4, 5, 6, 3, 7, 3, 7, 4, 5 };
+	REQUIRE(Approx(0.15f) == Covariance(s, t));
+}
+
+
+TEST_CASE("Correlation self", "[Statistics]") {
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> t = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	REQUIRE(Approx(1) == Correlation(s, t));
+}
+
+TEST_CASE("Correlation anti", "[Statistics]") {
+	TimeSignal<float> base = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> s = base - Mean(base);
+	TimeSignal<float> t = Mean(base) - base;
+	REQUIRE(Approx(-1) == Correlation(s, t));
+}
+
+TEST_CASE("Correlation middle", "[Statistics]") {
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> t = { 3, 4, 5, 6, 3, 7, 3, 7, 4, 5 };
+	REQUIRE(Approx(0.15f/4.27f) == Correlation(s, t));
 }
