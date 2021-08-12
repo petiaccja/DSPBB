@@ -31,6 +31,35 @@ TEST_CASE("CentralMoment #5", "[Statistics]") {
 	REQUIRE(Approx(101.25) == CentralMoment(s, 5));
 }
 
+TEST_CASE("StandardizedMoment #1", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(0) == StandardizedMoment(s, 1));
+}
+
+TEST_CASE("StandardizedMoment #2", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(1) == StandardizedMoment(s, 2));
+}
+
+TEST_CASE("Standard deviation", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(2) == StandardDeviation(s));
+}
+
+TEST_CASE("Variance", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(4) == Variance(s));
+}
+
+TEST_CASE("Skewness", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(5.25f/8.f) == Skewness(s));
+}
+
+TEST_CASE("Kurtosis", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(44.5f/16.f) == Kurtosis(s));
+}
 
 TEST_CASE("Sum", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
@@ -60,13 +89,6 @@ TEST_CASE("RootMeanSquare", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
 	REQUIRE(Approx(std::sqrt(38.5f)) == RootMeanSquare(s));
 }
-
-
-TEST_CASE("Standard deviation", "[Statistics]") {
-	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
-	REQUIRE(Approx(2) == StandardDeviation(s));
-}
-
 
 TEST_CASE("Norm", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
