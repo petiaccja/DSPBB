@@ -33,32 +33,32 @@ TEST_CASE("CentralMoment #5", "[Statistics]") {
 
 
 TEST_CASE("Sum", "[Statistics]") {
-	TimeSignal<float> s = { 1, 3, 2 };
-	REQUIRE(Approx(6) == Sum(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
+	REQUIRE(Approx(55) == Sum(s));
 }
 
 
 TEST_CASE("Mean", "[Statistics]") {
-	TimeSignal<float> s = { 1, 3, 2 };
-	REQUIRE(Approx(2) == Mean(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
+	REQUIRE(Approx(5.5f) == Mean(s));
 }
 
 
 TEST_CASE("SumSquare", "[Statistics]") {
-	TimeSignal<float> s = { std::sqrt(2.0f), 3, 4 };
-	REQUIRE(Approx(27) == SumSquare(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
+	REQUIRE(Approx(385) == SumSquare(s));
 }
 
 
 TEST_CASE("MeanSquare", "[Statistics]") {
-	TimeSignal<float> s = { std::sqrt(2.0f), 3, 4 };
-	REQUIRE(Approx(9) == MeanSquare(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
+	REQUIRE(Approx(38.5f) == MeanSquare(s));
 }
 
 
 TEST_CASE("RootMeanSquare", "[Statistics]") {
-	TimeSignal<float> s = { std::sqrt(2.0f), 3, 4 };
-	REQUIRE(Approx(3) == RootMeanSquare(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
+	REQUIRE(Approx(std::sqrt(38.5f)) == RootMeanSquare(s));
 }
 
 
@@ -69,18 +69,18 @@ TEST_CASE("Standard deviation", "[Statistics]") {
 
 
 TEST_CASE("Norm", "[Statistics]") {
-	TimeSignal<float> s = { 3, 4 };
-	REQUIRE(Approx(5) == Norm(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
+	REQUIRE(Approx(std::sqrt(385.f)) == Norm(s));
 }
 
 
 TEST_CASE("Max", "[Statistics]") {
-	TimeSignal<float> s = { 1, 3, 2 };
-	REQUIRE(Approx(3) == Max(s));
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	REQUIRE(Approx(10) == Max(s));
 }
 
 
 TEST_CASE("Min", "[Statistics]") {
-	TimeSignal<float> s = { 1, 3, 2 };
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
 	REQUIRE(Approx(1) == Min(s));
 }
