@@ -279,5 +279,24 @@ R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, Map
 }
 
 
+//------------------------------------------------------------------------------
+// Inner product
+//------------------------------------------------------------------------------
+
+template <class R, class T, class U, class ProductOp, class ReduceOp>
+R InnerProduct(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
+	R acc = std::move(init);
+	for (size_t i = 0; i < length; ++i, ++a, ++b) {
+		acc = reduceOp(acc, productOp(*a, *b));
+	}
+	return acc;
+}
+
+template <class R, class T, class U, class ProductOp, class ReduceOp>
+R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
+	return InnerProduct(a, b, length, init, productOp, reduceOp);
+}
+
+
 
 } // namespace dspbb
