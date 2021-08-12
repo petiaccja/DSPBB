@@ -64,9 +64,12 @@ More like notes to myself as to what I want to have.
   - ✔️ SumSquare
   - ✔️ RootMeanSquare
   - ✔️ Mean
-  - ✔️ Stddev
-  - ❌️ Skewness
-  - ❌️ Kurtosis
+  - ✔️ Standard deviation
+  - ✔️ Variance
+  - ✔️ Skewness
+  - ✔️ Kurtosis
+  - ✔️ Central moments
+  - ✔️ Standardized moments
   - ❌️ Covariance
   - ❌️ Correlation
 - ❔️ Filtering

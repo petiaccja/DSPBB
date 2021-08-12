@@ -181,7 +181,6 @@ void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
 template <class R, class T, class Op, std::enable_if_t<is_unary_vectorized<R, T, Op>::value, int> = 0>
 void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
 	using TV = xsimd::simd_type<T>;
-	using RV = xsimd::simd_type<R>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
 
 	const size_t vlength = (length / vsize) * vsize;
