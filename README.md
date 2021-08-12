@@ -70,8 +70,9 @@ More like notes to myself as to what I want to have.
   - ✔️ Kurtosis
   - ✔️ Central moments
   - ✔️ Standardized moments
-  - ❌️ Covariance
-  - ❌️ Correlation
+  - ✔️ Covariance
+  - ✔️ Correlation
+  - Sample moments
 - ❔️ Filtering
   - ✔️ Convolution
   - ✔️ FFT
