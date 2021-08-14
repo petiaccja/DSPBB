@@ -53,7 +53,24 @@ struct is_map_reduce_vectorized {
 			  class MapOp_ = MapOp,
 			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
-								   && std::is_convertible<std::result_of_t<ReduceOp(xsimd::simd_type<R_>, std::result_of_t<MapOp(xsimd::simd_type<T>)>)>, xsimd::simd_type<R_>>::value,
+								   && std::is_convertible<std::result_of_t<ReduceOp(xsimd::simd_type<R_>, std::result_of_t<MapOp(xsimd::simd_type<T_>)>)>, xsimd::simd_type<R_>>::value,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
+template <class R, class T, class U, class ProductOp, class ReduceOp>
+struct is_inner_product_vectorized {
+	constexpr static bool get(...) { return false; }
+	template <class R_ = R,
+			  class T_ = T,
+			  class U_ = U,
+			  class ProductOp_ = ProductOp,
+			  class ReduceOp_ = ReduceOp,
+			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
+								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
+								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<U_>::size
+								   && std::is_convertible<std::result_of_t<ReduceOp(xsimd::simd_type<R_>, std::result_of_t<ProductOp_(xsimd::simd_type<T_>, xsimd::simd_type<U_>)>)>, xsimd::simd_type<R_>>::value,
 							   int> = 0>
 	constexpr static bool get(int) { return true; }
 	static constexpr bool value = get(0);
@@ -259,7 +276,7 @@ R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, Map
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
 
 	const size_t vlength = (length / vsize) * vsize;
-	const R* vlast = in + vlength;
+	const T* vlast = in + vlength;
 	if (vlength > 0) {
 		TV unmapped;
 		unmapped.load_unaligned(in);
@@ -292,9 +309,39 @@ R InnerProduct(const T* a, const U* b, size_t length, R init, ProductOp productO
 	return acc;
 }
 
-template <class R, class T, class U, class ProductOp, class ReduceOp>
+template <class R, class T, class U, class ProductOp, class ReduceOp, std::enable_if_t<!is_inner_product_vectorized<R, T, U, ProductOp, ReduceOp>::value, int> = 0>
 R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
 	return InnerProduct(a, b, length, init, productOp, reduceOp);
+}
+
+template <class R, class T, class U, class ProductOp, class ReduceOp, std::enable_if_t<is_inner_product_vectorized<R, T, U, ProductOp, ReduceOp>::value, int> = 0>
+R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
+	using TV = xsimd::simd_type<T>;
+	using UV = xsimd::simd_type<T>;
+	using RV = xsimd::simd_type<R>;
+	constexpr size_t vsize = xsimd::simd_traits<T>::size;
+
+	const size_t vlength = (length / vsize) * vsize;
+	const T* alast = a + vlength;
+	if (vlength > 0) {
+		TV av;
+		UV bv;
+		av.load_unaligned(a);
+		bv.load_unaligned(b);
+		RV acc = productOp(av, bv);
+		a += vsize;
+		b += vsize;
+		for (; a < alast; a += vsize, b += vsize) {
+			av.load_unaligned(a);
+			bv.load_unaligned(b);
+			acc = reduceOp(acc, productOp(av, bv));
+		}
+		alignas(alignof(RV)) std::array<R, vsize> arr;
+		acc.store_aligned(arr.data());
+		init = Reduce(arr.data(), arr.size(), init, reduceOp);
+	}
+
+	return InnerProduct(a, b, length - vlength, init, productOp, reduceOp);
 }
 
 
