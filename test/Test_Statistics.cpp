@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include <complex>
 #include <dspbb/Math/Statistics.hpp>
+#include <dspbb/Utility/Algorithm.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;
@@ -60,6 +61,36 @@ TEST_CASE("Kurtosis", "[Statistics]") {
 	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
 	REQUIRE(Approx(44.5f / 16.f) == Kurtosis(s));
 }
+
+
+
+TEST_CASE("Corrected standard deviation", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(2.138089935) == CorrectedStandardDeviation(s));
+}
+
+TEST_CASE("Corrected variance", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(4.571428571) == CorrectedVariance(s));
+}
+
+TEST_CASE("Corrected skewness", "[Statistics]") {
+	TimeSignal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };
+	REQUIRE(Approx(0.818487553) == CorrectedSkewness(s));
+}
+
+TEST_CASE("Corrected kurtosis", "[Statistics]") {
+	TimeSignal<float> s(1000000);
+	std::mt19937 rne(762375);
+	std::normal_distribution<float> rng;
+	for (auto& v : s) {
+		v = rng(rne);
+	}
+	// Kurtosis of normal distribution should be 3.
+	REQUIRE(Approx(3.0f).epsilon(0.01f) == CorrectedKurtosis(s));
+}
+
+
 
 TEST_CASE("Sum", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 5, 6, 7, 8, 9, 10 };
@@ -127,6 +158,11 @@ TEST_CASE("Covariance middle", "[Statistics]") {
 	REQUIRE(Approx(0.15f) == Covariance(s, t));
 }
 
+TEST_CASE("Corrected covariance self", "[Statistics]") {
+	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	TimeSignal<float> t = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
+	REQUIRE(Approx(CorrectedVariance(s)) == CorrectedCovariance(s, t));
+}
 
 TEST_CASE("Correlation self", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
@@ -144,5 +180,5 @@ TEST_CASE("Correlation anti", "[Statistics]") {
 TEST_CASE("Correlation middle", "[Statistics]") {
 	TimeSignal<float> s = { 1, 3, 2, 4, 8, 9, 10, 5, 6, 7 };
 	TimeSignal<float> t = { 3, 4, 5, 6, 3, 7, 3, 7, 4, 5 };
-	REQUIRE(Approx(0.15f/4.27f) == Correlation(s, t));
+	REQUIRE(Approx(0.15f / 4.27f) == Correlation(s, t));
 }
