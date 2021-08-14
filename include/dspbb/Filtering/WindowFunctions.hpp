@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Generators/Spaces.hpp"
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
@@ -8,7 +9,6 @@
 #include "../Utility/TypeTraits.hpp"
 
 #include <cmath>
-#include <functional>
 
 
 namespace dspbb {
@@ -46,10 +46,7 @@ void HammingWindow(SignalR&& out) {
 	using U = remove_complex_t<R>;
 
 	const U N = U(out.Length());
-	const U preSize = U(2) * pi_v<U> / (N - U(1));
-
-	std::iota(out.begin(), out.end(), U(0.0));
-	out *= preSize;
+	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	Cos(out, out);
 	out *= U(-0.46);
 	out += U(0.54);
@@ -72,14 +69,14 @@ void FlatTopWindow(SignalR&& out) {
 	U preSize3 = U(6) * pi_v<U> / (N - U(1));
 	U preSize4 = U(8) * pi_v<U> / (N - U(1));
 
-	std::iota(out.begin(), out.end(), U(0.0));
-	Apply(out, [&](R k) -> R {
+	LinSpace(out, U(0), U(out.Size() - 1), true);
+	std::for_each(out.begin(), out.end(), [&](R& k) {
 		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
-		return c0
-			   + c1 * std::cos(preSize1 * kreal)
-			   + c2 * std::cos(preSize2 * kreal)
-			   + c3 * std::cos(preSize3 * kreal)
-			   + c4 * std::cos(preSize4 * kreal);
+		k = c0
+			+ c1 * std::cos(preSize1 * kreal)
+			+ c2 * std::cos(preSize2 * kreal)
+			+ c3 * std::cos(preSize3 * kreal)
+			+ c4 * std::cos(preSize4 * kreal);
 	});
 }
 
@@ -89,6 +86,53 @@ void RectangularWindow(SignalR&& out) {
 	using U = remove_complex_t<R>;
 	std::fill(out.begin(), out.end(), R(U(1.0)));
 }
+
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void TriangularWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	LinSpace(out, U(0), U(2), true);
+	out -= U(1);
+	Abs(out, out);
+	out *= U(-1);
+	out += U(1);
+}
+
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void BlackmanWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	LinSpace(out, U(0), U(2) * pi_v<U>, true);
+	std::for_each(out.begin(), out.end(), [&](R& k) {
+		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
+		k = U(0.42) - U(0.5) * std::cos(kreal) + U(0.08) * std::cos(2 * kreal);
+	});
+}
+
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void BlackmanHarrisWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	LinSpace(out, U(0), U(2) * pi_v<U>, true);
+	std::for_each(out.begin(), out.end(), [&](R& k) {
+		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
+		k = U(0.35875) - U(0.48829) * std::cos(kreal) + U(0.14128) * std::cos(2 * kreal) + U(-0.01168) * std::cos(3 * kreal);
+	});
+}
+
+template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void GaussianWindow(SignalR&& out, V sigma = 1.f) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	const auto N = U(out.Size());
+	const auto M = (N - U(1)) / U(2);
+	LinSpace(out, -M, M, true);
+	out *= U(1) / (U(sigma) * M);
+	Multiply(out, out, out);
+	out *= U(-0.5);
+	Exp(out, out);
+}
+
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> HammingWindow(size_t length) {
@@ -110,13 +154,41 @@ Signal<T, Domain> RectangularWindow(size_t length) {
 	return window;
 }
 
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> TriangularWindow(size_t length) {
+	Signal<T, Domain> window(length);
+	TriangularWindow(AsView(window));
+	return window;
+}
+
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> BlackmanWindow(size_t length) {
+	Signal<T, Domain> window(length);
+	BlackmanWindow(AsView(window));
+	return window;
+}
+
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> BlackmanHarrisWindow(size_t length) {
+	Signal<T, Domain> window(length);
+	BlackmanHarrisWindow(AsView(window));
+	return window;
+}
+
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> GaussianWindow(size_t length, T sigma = 1) {
+	Signal<T, Domain> window(length);
+	GaussianWindow(AsView(window), sigma);
+	return window;
+}
+
 //------------------------------------------------------------------------------
 // Helper for when you have to pass a window function as an argument.
 //------------------------------------------------------------------------------
 namespace windows {
 	struct Hamming {
 		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) {
+		auto operator()(SignalR&& out) const {
 			return HammingWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
@@ -127,45 +199,77 @@ namespace windows {
 
 	struct Rectangular {
 		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) {
-			return HammingWindow(out);
+		auto operator()(SignalR&& out) const {
+			return RectangularWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
-			return HammingWindow<T, Domain>(length);
+			return RectangularWindow<T, Domain>(length);
 		}
 	} const rectangular;
 
 	struct Flattop {
 		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) {
-			return HammingWindow(out);
+		auto operator()(SignalR&& out) const {
+			return FlatTopWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
-			return HammingWindow<T, Domain>(length);
+			return FlatTopWindow<T, Domain>(length);
 		}
 	} const flattop;
-}
 
+	struct Triangular {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return TriangularWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return TriangularWindow<T, Domain>(length);
+		}
+	} const triangular;
 
+	struct Blackman {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return BlackmanWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return BlackmanWindow<T, Domain>(length);
+		}
+	} const blackman;
 
-// TODO: do something about this
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L
-template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(0.5)) {
-	using UnderlyingT = remove_complex_t<T>;
+	struct BlackmanHarris {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return BlackmanHarrisWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return BlackmanHarrisWindow<T, Domain>(length);
+		}
+	} const blackmanHarris;
 
-	Signal<T, Domain> window;
-	window.Resize(length);
-	for (size_t i = 0; i < length; ++i) {
-		constexpr UnderlyingT pi = UnderlyingT(3.141592653589793238);
-		const UnderlyingT x = 2 * UnderlyingT(i) / UnderlyingT(length) - 1;
-		const UnderlyingT value = UnderlyingT(std::cyl_bessel_i(UnderlyingT(0), pi * alpha * std::sqrt(1 - x * x)) / std::cyl_bessel_i(UnderlyingT(0), pi * alpha));
-		window[i] = value;
-	}
-	return window;
-}
-#endif
+	struct Gaussian {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return GaussianWindow(out, m_sigma);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return GaussianWindow<T, Domain>(length, m_sigma);
+		}
+		template <class T>
+		Gaussian sigma(T sigma) const {
+			auto copy = *this;
+			copy.m_sigma = double(sigma);
+			return copy;
+		}
+		double m_sigma = 1;
+	} const gaussian;
+} // namespace windows
+
 
 } // namespace dspbb
