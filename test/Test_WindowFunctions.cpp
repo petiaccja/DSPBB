@@ -37,7 +37,7 @@ static bool IsPeakCentered(const Signal<T, Domain>& window) {
 }
 
 TEST_CASE("Hamming window", "[WindowFunctions]") {
-	auto window = HammingWindow<float>(256);
+	auto window = windows::hamming.operator()<float>(256);
 
 	REQUIRE(window.Length() == 256);
 	REQUIRE(IsPeakCentered(window));
@@ -48,7 +48,8 @@ TEST_CASE("Hamming window", "[WindowFunctions]") {
 
 
 TEST_CASE("Hamming window complex", "[WindowFunctions]") {
-	auto window = HammingWindow<std::complex<float>>(256);
+	TimeSignal<std::complex<float>> window(256);
+	windows::hamming(window);
 
 	REQUIRE(window.Length() == 256);
 	REQUIRE(IsPeakCentered(window));
@@ -60,7 +61,7 @@ TEST_CASE("Hamming window complex", "[WindowFunctions]") {
 
 
 TEST_CASE("Flat top window", "[WindowFunctions]") {
-	auto window = FlatTopWindow<float>(256);
+	auto window = windows::flattop.operator()<float>(256);
 
 	REQUIRE(window.Length() == 256);
 	REQUIRE(IsPeakCentered(window));
@@ -71,7 +72,8 @@ TEST_CASE("Flat top window", "[WindowFunctions]") {
 
 
 TEST_CASE("Flat top complex", "[WindowFunctions]") {
-	auto window = FlatTopWindow<std::complex<float>>(256);
+	TimeSignal<std::complex<float>> window(256);
+	windows::flattop(window);
 
 	REQUIRE(window.Length() == 256);
 	REQUIRE(IsPeakCentered(window));
@@ -83,7 +85,7 @@ TEST_CASE("Flat top complex", "[WindowFunctions]") {
 
 
 TEST_CASE("Rectangular window", "[WindowFunctions]") {
-	auto window = RectangularWindow<float>(256);
+	auto window = windows::rectangular.operator()<float>(256);
 
 	REQUIRE(window.Length() == 256);
 	REQUIRE(IsPeakCentered(window));
@@ -94,7 +96,8 @@ TEST_CASE("Rectangular window", "[WindowFunctions]") {
 
 
 TEST_CASE("Rectangular complex", "[WindowFunctions]") {
-	auto window = RectangularWindow<std::complex<float>>(256);
+	TimeSignal<std::complex<float>> window(256);
+	windows::rectangular(window);
 
 	REQUIRE(window.Length() == 256);
 	REQUIRE(IsPeakCentered(window));
@@ -103,3 +106,97 @@ TEST_CASE("Rectangular complex", "[WindowFunctions]") {
 	REQUIRE(std::abs(CoherentGain(window)) == Approx(1.0f).margin(0.01f));
 	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
 }
+
+
+TEST_CASE("Triangular window", "[WindowFunctions]") {
+	auto window = windows::triangular.operator()<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.50f).margin(0.01f));
+}
+
+
+TEST_CASE("Triangular complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::triangular(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.50f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+TEST_CASE("Blackman window", "[WindowFunctions]") {
+	auto window = windows::blackman.operator()<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.42f).margin(0.01f));
+}
+
+
+TEST_CASE("Blackman complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::blackman(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.42f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+TEST_CASE("Blackman-Harris window", "[WindowFunctions]") {
+	auto window = windows::blackmanHarris.operator()<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.36f).margin(0.01f));
+}
+
+
+TEST_CASE("Blackman-Harris complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::blackmanHarris(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.36f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+TEST_CASE("Gaussian window", "[WindowFunctions]") {
+	auto window = windows::gaussian.sigma(0.3f).operator()<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.37f).margin(0.01f));
+}
+
+
+TEST_CASE("Gaussian complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::gaussian.sigma(0.3f)(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.37f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+

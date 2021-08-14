@@ -109,13 +109,13 @@ More like notes to myself as to what I want to have.
       - ✔️ Energy
     - ❔️ Functions
       - ✔️ Rectangular
-      - ❌️ Triangular
+      - ✔️ Triangular
       - ✔️ Hamming
-      - ❌️ Blackman
-      - ❌️ Blackman-Harris
+      - ✔️ Blackman
+      - ✔️ Blackman-Harris
       - ✔️ Flat top
-      - ❔️ Kaiser (c++17 only)
-      - ❌️ Gaussian
+      - ❌️ Kaiser
+      - ✔️ Gaussian
       - ❌️ Dolph-Chebyshev
       - ❌️ Lanczos
 - ❌️ Literals
