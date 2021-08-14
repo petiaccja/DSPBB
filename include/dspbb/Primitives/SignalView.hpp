@@ -65,7 +65,7 @@ public:
 	SignalView SubSignal(size_type offset, size_type count) const;
 
 protected:
-	iterator first, last;
+	iterator first = nullptr, last = nullptr;
 };
 
 template <class T, eSignalDomain Domain>
