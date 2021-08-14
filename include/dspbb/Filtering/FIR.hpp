@@ -282,9 +282,9 @@ FirGeneralQuality<T> FirQuality(const TimeSignal<T>& filter, const Spectrum<T>& 
 	const auto difference = actualResponse - desiredResponse;
 	const auto relDifference = difference / desiredResponse;
 
-	auto magActual = DotProduct(AsConstView(actualResponse), AsConstView(actualResponse), desiredResponse.Size());
-	auto magDesired = DotProduct(AsConstView(desiredResponse), AsConstView(desiredResponse), desiredResponse.Size());
-	auto similarity = DotProduct(AsConstView(desiredResponse), AsConstView(actualResponse), desiredResponse.Size());
+	auto magActual = DotProduct(AsConstView(actualResponse), AsConstView(actualResponse));
+	auto magDesired = DotProduct(AsConstView(desiredResponse), AsConstView(desiredResponse));
+	auto similarity = DotProduct(AsConstView(desiredResponse), AsConstView(actualResponse));
 
 	FirGeneralQuality<T> quality;
 	quality.cosineSimilarity = similarity / std::max(magActual, magDesired);

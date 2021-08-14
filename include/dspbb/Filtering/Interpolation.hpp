@@ -94,7 +94,7 @@ void Interpolate(SignalR&& output,
 			const auto subInput = AsConstView(input).SubSignal(inputIndexClamped);
 			const auto subFilter = filter.SubSignal(-std::min(intptr_t(0), offsetInputIdx));
 			const size_t dotLength = std::min(subFilter.Size(), subInput.Size());
-			*writeIt = DotProduct(subFilter, subInput, dotLength);
+			*writeIt = DotProduct(subFilter.SubSignal(0, dotLength), subInput.SubSignal(0, dotLength));
 		}
 	}
 }
@@ -150,8 +150,10 @@ std::pair<int64_t, uint64_t> Resample(SignalR&& output,
 		const auto inputSection = AsView(input).SubSignal(inputIndexClamped);
 		const auto inputSectionNext = AsView(input).SubSignal(inputIndexClampedNext);
 
-		const auto sample = DotProduct(inputSection, filter, std::min(inputSection.Size(), filter.Size()));
-		const auto sampleNext = DotProduct(inputSectionNext, filterNext, std::min(inputSectionNext.Size(), filterNext.Size()));
+		const auto dotLength = std::min(inputSection.Size(), filter.Size());
+		const auto sample = DotProduct(inputSection.SubSignal(0, dotLength), filter.SubSignal(0, dotLength));
+		const auto dotLengthNext = std::min(inputSectionNext.Size(), filterNext.Size());
+		const auto sampleNext = DotProduct(inputSectionNext.SubSignal(0, dotLengthNext), filterNext.SubSignal(0, dotLengthNext));
 		o = (sample * R(commonRate - polyphaseFraction) + sampleNext * R(polyphaseFraction)) / R(commonRate);
 
 		// Next sample

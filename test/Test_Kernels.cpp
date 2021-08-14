@@ -37,3 +37,13 @@ TEST_CASE("MapReduceVectorized", "[Kernels]") {
 	const auto sum = MapReduceVectorized(a.data(), a.size(), 10.0, reduceOp, mapOp);
 	REQUIRE(std::sqrt((sum - 10.0) * 6) == Approx(pi_v<double>).margin(0.001));
 }
+
+TEST_CASE("InnerProductVectorized", "[Kernels]") {
+	const auto reduceOp = [](const auto& a, const auto& b) { return a + b; };
+	const auto productOp = [](const auto& a, const auto& b) { return 1.0 / (a * b); };
+
+	std::array<double, 50000> a;
+	std::iota(a.begin(), a.end(), 1);
+	const auto sum = InnerProductVectorized(a.data(), a.data(), a.size(), 10.0, productOp, reduceOp);
+	REQUIRE(std::sqrt((sum - 10.0) * 6) == Approx(pi_v<double>).margin(0.001));
+}
