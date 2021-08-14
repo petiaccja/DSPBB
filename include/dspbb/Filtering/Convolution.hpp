@@ -45,12 +45,6 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 }
 
 namespace impl {
-
-	template <class T, class U>
-	using ResultT = std::conditional_t<is_complex<T>::value || is_complex<U>::value,
-									   std::complex<ProductT<remove_complex_t<T>, remove_complex_t<U>>>,
-									   ProductT<remove_complex_t<T>, remove_complex_t<U>>>;
-
 	template <class R, class T, class U, eSignalDomain Domain>
 	auto ConvolutionOrdered(SignalView<R, Domain> r, SignalView<const T, Domain> u, SignalView<const U, Domain> v, size_t offset) {
 		const size_t len = r.Length();
@@ -64,7 +58,7 @@ template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<Signal
 auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t length) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
-	using R = impl::ResultT<T, U>;
+	using R = decltype(std::declval<T>() * std::declval<U>());
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 
 	Signal<R, Domain> r(size_t(length), R(0));

@@ -50,7 +50,7 @@ TEST_CASE("IFFT - Real identity", "[FFT]") {
 
 	const float norm = Norm(signal);
 	const float rnorm = Norm(repro);
-	const float similarity = DotProduct(signal, repro, signal.Length()) / norm / rnorm;
+	const float similarity = DotProduct(signal, repro) / norm / rnorm;
 	REQUIRE(similarity == Approx(1));
 	REQUIRE(norm == Approx(rnorm));
 }
@@ -63,7 +63,7 @@ TEST_CASE("IFFT - Complex identity", "[FFT]") {
 
 	const float norm = std::abs(Norm(signal));
 	const float rnorm = std::abs(Norm(repro));
-	const float similarity = std::abs(DotProduct(signal, repro, signal.Length())) / norm / rnorm;
+	const float similarity = std::abs(DotProduct(signal, repro)) / norm / rnorm;
 	REQUIRE(similarity == Approx(1));
 	REQUIRE(norm == Approx(rnorm));
 }

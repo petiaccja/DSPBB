@@ -69,6 +69,9 @@ namespace math_functions {
 	using xsimd::real;
 	using xsimd::imag;
 
+	using xsimd::conj;
+	using std::conj;
+
 	// Misc
 	namespace impl {
 		template <class T, std::enable_if_t<(xsimd::simd_batch_traits<T>::size > 1), int> = 0>
