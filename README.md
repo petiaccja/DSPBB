@@ -59,20 +59,21 @@ More like notes to myself as to what I want to have.
 - ✔️ Vector math basics
   - ✔️ Dot product
   - ✔️ Norm (sqrt(SumSquare))
-- ❔️ Statistics
+- ✔️ Statistics
   - ✔️ Sum
-  - ✔️ SumSquare
-  - ✔️ RootMeanSquare
   - ✔️ Mean
-  - ✔️ Standard deviation
-  - ✔️ Variance
-  - ✔️ Skewness
-  - ✔️ Kurtosis
+  - ✔️ SumSquare
+  - ✔️ MeanSquare
+  - ✔️ RootMeanSquare
+  - ✔️ Min/Max
   - ✔️ Central moments
   - ✔️ Standardized moments
-  - ✔️ Covariance
+  - ✔️ Standard deviation (popultion & corrected)
+  - ✔️ Variance (popultion & corrected)
+  - ✔️ Skewness (popultion & corrected)
+  - ✔️ Kurtosis (popultion & corrected)
+  - ✔️ Covariance (popultion & corrected)
   - ✔️ Correlation
-  - Sample moments
 - ❔️ Filtering
   - ✔️ Convolution
   - ✔️ FFT
