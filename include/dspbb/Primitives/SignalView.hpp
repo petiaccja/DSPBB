@@ -10,29 +10,27 @@ namespace dspbb {
 template <class T, eSignalDomain Domain>
 class SignalView {
 public:
-	using SignalT = Signal<std::remove_const_t<T>, Domain>;
-
-	using iterator = std::conditional_t<!std::is_const<T>::value, typename SignalT::iterator, typename SignalT::const_iterator>;
-	using const_iterator = typename SignalT::const_iterator;
-	using reverse_iterator = std::conditional_t<!std::is_const<T>::value, typename SignalT::reverse_iterator, typename SignalT::const_reverse_iterator>;
-	using const_reverse_iterator = typename SignalT::const_reverse_iterator;
-	using size_type = typename SignalT::size_type;
-	using value_type = typename SignalT::value_type;
+	using iterator = T*;
+	using const_iterator = const T*;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+	using size_type = std::size_t;
+	using value_type = T;
 
 public:
 	SignalView() = default;
 
-	template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int> = 0>
+	template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int> = 0>
 	SignalView(Signal<Q, Domain>& signal);
-
-	template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int> = 0>
+	template <class Q, std::enable_if_t<std::is_convertible<const Q*, T*>::value, int> = 0>
 	SignalView(const Signal<Q, Domain>& signal);
-
-	template <class Q, std::enable_if_t<std::is_const<T>::value && !std::is_const<Q>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int> = 0>
+	template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int> = 0>
 	SignalView(const SignalView<Q, Domain>& signal);
-
-	SignalView(iterator first, iterator last);
-	SignalView(iterator first, size_t size);
+	
+	template <class Iter, std::enable_if_t<std::is_convertible<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>::value, int> = 0>
+	SignalView(Iter first, Iter last);
+	template <class Iter, std::enable_if_t<std::is_convertible<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>::value, int> = 0>
+	SignalView(Iter first, size_t size);
 
 	iterator begin() { return first; }
 	const_iterator begin() const { return first; }
@@ -51,8 +49,8 @@ public:
 	const T& Front() const;
 	T& Back();
 	const T& Back() const;
-	T& operator[](typename SignalT::size_type index);
-	const T& operator[](typename SignalT::size_type index) const;
+	T& operator[](size_type index);
+	const T& operator[](size_type index) const;
 	T* Data();
 	const T* Data() const;
 
@@ -67,38 +65,39 @@ public:
 	SignalView SubSignal(size_type offset, size_type count) const;
 
 protected:
-	iterator first, last;
+	iterator first = nullptr, last = nullptr;
 };
 
-
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<!std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int>>
+template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int>>
 SignalView<T, Domain>::SignalView(Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_const<T>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int>>
+template <class Q, std::enable_if_t<std::is_convertible<const Q*, T*>::value, int>>
 SignalView<T, Domain>::SignalView(const Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_const<T>::value && !std::is_const<Q>::value && std::is_same<std::decay_t<Q>, std::decay_t<T>>::value, int>>
+template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int>>
 SignalView<T, Domain>::SignalView(const SignalView<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain>::SignalView(iterator first, iterator last)
-	: first(first),
-	  last(last) {
+template <class Iter, std::enable_if_t<std::is_convertible<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>::value, int>>
+SignalView<T, Domain>::SignalView(Iter first, Iter last) {
+	this->first = first != last ? std::addressof(*first) : nullptr;
+	this->last = this->first + (last - first);
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain>::SignalView(iterator first, size_t size)
-	: first(first),
-	  last(first + size) {
+template <class Iter, std::enable_if_t<std::is_convertible<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>::value, int>>
+SignalView<T, Domain>::SignalView(Iter first, size_t size) {
+	this->first = size != 0 ? std::addressof(*first) : nullptr;
+	this->last = this->first + size;
 }
 
 template <class T, eSignalDomain Domain>
@@ -114,10 +113,10 @@ template <class T, eSignalDomain Domain>
 const T& SignalView<T, Domain>::Back() const { return *(last - 1); }
 
 template <class T, eSignalDomain Domain>
-T& SignalView<T, Domain>::operator[](typename SignalT::size_type index) { return first[index]; }
+T& SignalView<T, Domain>::operator[](size_type index) { return first[index]; }
 
 template <class T, eSignalDomain Domain>
-const T& SignalView<T, Domain>::operator[](typename SignalT::size_type index) const { return first[index]; }
+const T& SignalView<T, Domain>::operator[](size_type index) const { return first[index]; }
 
 template <class T, eSignalDomain Domain>
 T* SignalView<T, Domain>::Data() { return std::addressof(*first); }
