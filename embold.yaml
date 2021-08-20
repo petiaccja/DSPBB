@@ -1,0 +1,7 @@
+version: 1
+sources:
+  exclusions:
+    - 'test'
+    - 'include/dspbb/PocketFFT'
+    - '.git'
+    - '.github'
