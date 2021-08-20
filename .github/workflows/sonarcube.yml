@@ -50,7 +50,7 @@ jobs:
         env:
           CC: clang
           CXX: clang++
-        run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+        run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=Debug
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --clean-first --build ${{runner.workspace}}/build --config ${{matrix.build_type}}
