@@ -53,7 +53,7 @@ jobs:
         run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=Debug
       - name: Run build-wrapper
         run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --clean-first --build ${{runner.workspace}}/build
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build ${{runner.workspace}}/build --clean-first --config Debug
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
