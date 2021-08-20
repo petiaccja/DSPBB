@@ -25,7 +25,7 @@ template <class T, eSignalDomain Domain>
 class Signal {
 	template <class U, eSignalDomain DomainB>
 	friend class Signal;
-
+	using storage_type = std::vector<T>;
 public:
 	using value_type = T;
 	using pointer = T*;
@@ -34,16 +34,16 @@ public:
 	using const_reference = const value_type&;
 	using size_type = std::size_t;
 
-	using iterator = typename std::vector<T>::iterator;
-	using const_iterator = typename std::vector<T>::const_iterator;
-	using reverse_iterator = typename std::vector<T>::reverse_iterator;
-	using const_reverse_iterator = typename std::vector<T>::const_reverse_iterator;
+	using iterator = typename storage_type::iterator;
+	using const_iterator = typename storage_type::const_iterator;
+	using reverse_iterator = typename storage_type::reverse_iterator;
+	using const_reverse_iterator = typename storage_type::const_reverse_iterator;
 
 public:
 	Signal() = default;
 	explicit Signal(size_type count, const T& value = {});
 	Signal(const Signal&) = default;
-	Signal(Signal&&) = default;
+	Signal(Signal&&) noexcept(std::is_nothrow_move_constructible<storage_type>::value) = default;
 	Signal(std::initializer_list<T> ilist);
 	template <class U>
 	Signal(const Signal<U, Domain>& other);
@@ -52,7 +52,7 @@ public:
 	Signal(Iter first, Iter last) : m_samples(first, last) {}
 
 	Signal& operator=(const Signal&) = default;
-	Signal& operator=(Signal&&) = default;
+	Signal& operator=(Signal&&) noexcept(std::is_nothrow_move_assignable<storage_type>::value) = default;
 	template <class U>
 	Signal& operator=(const Signal<U, Domain>&);
 
@@ -96,7 +96,7 @@ public:
 	const_reverse_iterator crend() const;
 
 private:
-	std::vector<T> m_samples;
+	storage_type m_samples;
 };
 
 

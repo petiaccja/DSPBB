@@ -125,6 +125,10 @@ std::pair<int64_t, uint64_t> Resample(SignalR&& output,
 									  std::pair<uint64_t, uint64_t> sampleRates,
 									  std::pair<int64_t, uint64_t> startPoint = { 0, 1 }) {
 	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	assert(sampleRates.first > 0);
+	assert(sampleRates.second > 0);
+	assert(startPoint.second > 0);
+	assert(polyphase.numFilters > 0);
 	const size_t commonRate = sampleRates.first * sampleRates.second * startPoint.second * polyphase.numFilters; // Use smallest common multiple instead.
 
 	// All these are in common rate.
