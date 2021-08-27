@@ -9,13 +9,14 @@
 namespace dspbb {
 
 
-template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 void HilbertFirFromHalfbandIII(SignalR& out, const SignalT& halfband) {
 	assert(halfband.Size() % 2 == 1);
 
-
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = typename std::decay_t<SignalT>::value_type;
+	constexpr auto Domain = signal_traits<std::decay_t<SignalR>>::domain;
+
 	const size_t filterSize = halfband.Size();
 	constexpr size_t kernelSize = 32;
 	static constexpr std::array<T, kernelSize> kernel = { 2, 0, -2, 0, 2, 0, -2, 0,
@@ -27,24 +28,24 @@ void HilbertFirFromHalfbandIII(SignalR& out, const SignalT& halfband) {
 
 	if (halfband.Size() <= maxSizeSingleStep) {
 		const size_t offset = kernelCenter - filterSize / 2;
-		SignalView<const T> kernelRegion{ kernel.data() + offset, kernel.data() + filterSize };
+		SignalView<const T, Domain> kernelRegion{ kernel.data() + offset, kernel.data() + filterSize };
 		Multiply(out, halfband, kernelRegion);
 	}
 	else {
 		size_t tap = (filterSize / 2 - kernelCenter) % kernelSize;
 
-		Multiply(SignalView<R>{ out.Data(), tap },
-				 SignalView<T>{ halfband.Data(), tap },
-				 SignalView<T>{ kernel.begin() + kernelSize - tap, kernel.end() });
+		Multiply(SignalView<R, Domain>{ out.Data(), tap },
+				 SignalView<const T, Domain>{ halfband.Data(), tap },
+				 SignalView<const T, Domain>{ kernel.begin() + kernelSize - tap, kernel.end() });
 		for (; tap < filterSize; tap += kernelSize) {
-			Multiply(SignalView<R>{ out.Data() + tap, kernelSize },
-					 SignalView<T>{ halfband.Data() + tap, kernelSize },
-					 SignalView<T>{ kernel.data(), kernelSize });
+			Multiply(SignalView<R, Domain>{ out.Data() + tap, kernelSize },
+					 SignalView<const T, Domain>{ halfband.Data() + tap, kernelSize },
+					 SignalView<const T, Domain>{ kernel.data(), kernelSize });
 		}
 		const size_t lastChunkSize = filterSize - tap;
-		Multiply(SignalView<R>{ out.Data() + tap, lastChunkSize },
-				 SignalView<T>{ halfband.Data() + tap, lastChunkSize },
-				 SignalView<T>{ kernel.data(), lastChunkSize });
+		Multiply(SignalView<R, Domain>{ out.Data() + tap, lastChunkSize },
+				 SignalView<const T, Domain>{ halfband.Data() + tap, lastChunkSize },
+				 SignalView<const T, Domain>{ kernel.data(), lastChunkSize });
 	}
 }
 
@@ -68,14 +69,14 @@ void HilbertFirWinIII(SignalR& out, const SignalT& window) {
 
 template <class T, eSignalDomain Domain, class WindowFunc>
 auto HilbertFirWinIII(size_t taps, WindowFunc windowFunc = windows::hamming) {
-	auto out = FirLowpassWin<T, Domain>(taps, 0.5, windowFunc);
+	auto out = FirLowpassWin<T, Domain>(0.5, taps, windowFunc);
 	HilbertFirFromHalfbandIII(out, out);
 	return out;
 }
 
 template <class T, eSignalDomain Domain, class SignalT, class WindowFunc>
 auto HilbertFirWinIII(size_t taps, const SignalT& window) {
-	auto out = FirLowpassWin<T, Domain>(taps, 0.5, window);
+	auto out = FirLowpassWin<T, Domain>(0.5, taps, window);
 	HilbertFirFromHalfbandIII(out, out);
 	return out;
 }
