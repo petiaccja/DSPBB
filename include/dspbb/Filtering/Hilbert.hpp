@@ -37,7 +37,7 @@ void HilbertFirFromHalfbandIII(SignalR& out, const SignalT& halfband) {
 		Multiply(SignalView<R, Domain>{ out.Data(), tap },
 				 SignalView<const T, Domain>{ halfband.Data(), tap },
 				 SignalView<const T, Domain>{ kernel.begin() + kernelSize - tap, kernel.end() });
-		for (; tap < filterSize; tap += kernelSize) {
+		for (; tap + kernelSize < filterSize; tap += kernelSize) {
 			Multiply(SignalView<R, Domain>{ out.Data() + tap, kernelSize },
 					 SignalView<const T, Domain>{ halfband.Data() + tap, kernelSize },
 					 SignalView<const T, Domain>{ kernel.data(), kernelSize });
