@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/Hilbert.hpp>
 #include <dspbb/Filtering/Interpolation.hpp>
+#include <dspbb/Generators/Waveforms.hpp>
 
 using namespace dspbb;
 
@@ -28,3 +29,22 @@ TEST_CASE("Form Type IV", "[Hilbert]") {
 	REQUIRE(Min(secondHalf) > 0.0f);
 }
 
+constexpr size_t testSignalSize = 4096;
+
+TEST_CASE("Response type III", "[Hilbert]") {
+	const auto filter = HilbertFirWinIII<float, TIME_DOMAIN>(377, windows::hamming);	
+	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
+	const auto imaginarySignal = Convolution(filter, testSignal, convolution::central);
+	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
+	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.000001f);
+	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
+}
+
+TEST_CASE("Response type IV", "[Hilbert]") {
+	const auto filter = HilbertFirWinIV<float, TIME_DOMAIN>(376, windows::hamming);
+	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
+	const auto imaginarySignal = Convolution(filter, testSignal, convolution::central);
+	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
+	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.01f);
+	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
+}
