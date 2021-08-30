@@ -29,7 +29,9 @@ void Decimate(SignalR&& output,
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Decimate(const SignalT& input, size_t rate) {
-	SignalT output((input.Size() + rate - 1) / rate);
+	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
+	constexpr auto domain = signal_traits<SignalT>::domain;
+	Signal<T, domain> output((input.Size() + rate - 1) / rate);
 	Decimate(output, input, rate);
 	return output;
 }
@@ -59,7 +61,9 @@ void Expand(SignalR&& output,
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Expand(const SignalT& input, size_t rate) {
-	SignalT output(input.Size() * rate);
+	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
+	constexpr auto domain = signal_traits<SignalT>::domain;
+	Signal<T, domain> output(input.Size() * rate);
 	Expand(output, input, rate);
 	return output;
 }

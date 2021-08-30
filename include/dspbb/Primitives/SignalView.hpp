@@ -44,15 +44,11 @@ public:
 	reverse_iterator rend() { return reverse_iterator{ first }; }
 	const_reverse_iterator rend() const { return const_reverse_iterator{ first }; }
 	const_reverse_iterator crend() const { return const_reverse_iterator{ first }; }
-
-	T& Front();
-	const T& Front() const;
-	T& Back();
-	const T& Back() const;
-	T& operator[](size_type index);
-	const T& operator[](size_type index) const;
-	T* Data();
-	const T* Data() const;
+	
+	T& Front() const;
+	T& Back() const;
+	T& operator[](size_type index) const;
+	T* Data() const;
 
 	size_type Size() const;
 	size_type Length() const;
@@ -100,29 +96,18 @@ SignalView<T, Domain>::SignalView(Iter first, size_t size) {
 	this->last = this->first + size;
 }
 
-template <class T, eSignalDomain Domain>
-T& SignalView<T, Domain>::Front() { return *first; }
 
 template <class T, eSignalDomain Domain>
-const T& SignalView<T, Domain>::Front() const { return *first; }
+T& SignalView<T, Domain>::Front() const { return *first; }
 
 template <class T, eSignalDomain Domain>
-T& SignalView<T, Domain>::Back() { return *(last - 1); }
+T& SignalView<T, Domain>::Back() const { return *(last - 1); }
 
 template <class T, eSignalDomain Domain>
-const T& SignalView<T, Domain>::Back() const { return *(last - 1); }
+T& SignalView<T, Domain>::operator[](size_type index) const { return first[index]; }
 
 template <class T, eSignalDomain Domain>
-T& SignalView<T, Domain>::operator[](size_type index) { return first[index]; }
-
-template <class T, eSignalDomain Domain>
-const T& SignalView<T, Domain>::operator[](size_type index) const { return first[index]; }
-
-template <class T, eSignalDomain Domain>
-T* SignalView<T, Domain>::Data() { return std::addressof(*first); }
-
-template <class T, eSignalDomain Domain>
-const T* SignalView<T, Domain>::Data() const { return std::addressof(*first); }
+T* SignalView<T, Domain>::Data() const { return std::addressof(*first); }
 
 template <class T, eSignalDomain Domain>
 typename SignalView<T, Domain>::size_type SignalView<T, Domain>::Size() const { return size_type(last - first); }

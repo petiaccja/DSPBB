@@ -98,7 +98,7 @@ More like notes to myself as to what I want to have.
     - ✔️ Expansion (zero-fill)
     - ✔️ Interpolation (polyphase)
     - ✔️ Arbitrary resampling (polyphase)
-  - ❌️ Hilbert filter
+  - ✔️ Hilbert filter
   - ❌️ Wavelets
     - ❌️ DWT
     - ❌️ CWT

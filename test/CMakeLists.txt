@@ -15,13 +15,13 @@ target_sources(UnitTest
 		Test_Signal.cpp
 		Test_SignalView.cpp
 		Test_SignalArithmetic.cpp
-		Test_WindowFunctions.cpp
-		
+		Test_WindowFunctions.cpp		
 		Test_Algorithm.cpp
 		Test_Arithmetic.cpp
 		Test_Statistics.cpp
 		Test_Functions.cpp
-		Test_Kernels.cpp)
+		Test_Kernels.cpp 
+		Test_Hilbert.cpp)
 
 find_package(Catch2 REQUIRED)
 
