@@ -35,7 +35,7 @@ TEST_CASE("Expand", "[Interpolation]") {
 
 TEST_CASE("Polyphase interpolation", "[Interpolation]") {
 	constexpr int numFilters = 3;
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / numFilters, 31, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(31, Lowpass(1.0f / numFilters), Windowed(windows::hamming));
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
 
@@ -56,7 +56,7 @@ TEST_CASE("Polyphase interpolation", "[Interpolation]") {
 
 TEST_CASE("Polyphase resampling replicate convolution full", "[Interpolation]") {
 	constexpr int numFilters = 4;
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / numFilters, 31, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(31, Lowpass(1.0f / numFilters), Windowed(windows::hamming));
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseDecompose(scratch, filter, numFilters);
 
@@ -75,7 +75,7 @@ TEST_CASE("Polyphase resampling replicate convolution full", "[Interpolation]") 
 
 TEST_CASE("Polyphase resampling upsample constant", "[Interpolation]") {
 	constexpr int numFilters = 4;
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / numFilters, 31, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(31, Lowpass(1.0f / numFilters), Windowed(windows::hamming));
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
 
@@ -91,7 +91,7 @@ TEST_CASE("Polyphase resampling upsample constant", "[Interpolation]") {
 
 TEST_CASE("Polyphase resampling upsample ramp", "[Interpolation]") {
 	constexpr int numFilters = 4;
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / numFilters, 31, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(31, Lowpass(1.0f / numFilters), Windowed(windows::hamming));
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
 
@@ -113,7 +113,7 @@ TEST_CASE("Polyphase resampling downsample ramp mild", "[Interpolation]") {
 	constexpr int numFilters = 4;
 	const std::pair<uint64_t, uint64_t> ratio = { 11, 7 };
 	const float ratioReal = float(ratio.first) / float(ratio.second);
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / ratioReal / numFilters, 31, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(31, Lowpass(1.0f / ratioReal / numFilters), Windowed(windows::hamming));
 
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
@@ -136,7 +136,7 @@ TEST_CASE("Polyphase resampling downsample ramp strong", "[Interpolation]") {
 	constexpr int numFilters = 4;
 	const std::pair<uint64_t, uint64_t> ratio = { 39, 7 };
 	const float ratioReal = float(ratio.first) / float(ratio.second);
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / ratioReal / numFilters, 31, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(31, Lowpass(1.0f / ratioReal / numFilters), Windowed(windows::hamming));
 
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
@@ -157,7 +157,7 @@ TEST_CASE("Polyphase resampling downsample ramp strong", "[Interpolation]") {
 
 TEST_CASE("Polyphase resampling shift ramp", "[Interpolation]") {
 	constexpr int numFilters = 2;
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / numFilters, 63, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(63, Lowpass(1.0f / numFilters), Windowed(windows::hamming));
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
 
@@ -174,7 +174,7 @@ TEST_CASE("Polyphase resampling shift ramp", "[Interpolation]") {
 
 TEST_CASE("Polyphase resampling returned offset", "[Interpolation]") {
 	constexpr int numFilters = 5;
-	const TimeSignal<float> filter = FirLowpassWin<float, TIME_DOMAIN>(1.0f / numFilters, 63, windows::hamming);
+	const TimeSignal<float> filter = FirFilter<float, TIME_DOMAIN>(63, Lowpass(1.0f / numFilters), Windowed(windows::hamming));
 	TimeSignal<float> scratch(filter.Size());
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
 
