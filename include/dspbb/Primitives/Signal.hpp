@@ -43,7 +43,7 @@ public:
 	Signal() = default;
 	explicit Signal(size_type count, const T& value = {});
 	Signal(const Signal&) = default;
-	Signal(Signal&&) noexcept(std::is_nothrow_move_constructible<storage_type>::value) = default;
+	Signal(Signal&&) noexcept = default;
 	Signal(std::initializer_list<T> ilist);
 	template <class U>
 	Signal(const Signal<U, Domain>& other);
@@ -52,7 +52,7 @@ public:
 	Signal(Iter first, Iter last) : m_samples(first, last) {}
 
 	Signal& operator=(const Signal&) = default;
-	Signal& operator=(Signal&&) noexcept(std::is_nothrow_move_assignable<storage_type>::value) = default;
+	Signal& operator=(Signal&&) noexcept = default;
 	template <class U>
 	Signal& operator=(const Signal<U, Domain>&);
 
