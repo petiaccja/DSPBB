@@ -29,9 +29,6 @@ static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>&&>
 
 constexpr std::array<size_t, 2> sizes = { 1, 137 };
 
-// clang-format off
-#define MAKE_COMPOUND_OPERATOR(OPERATOR) OPERATOR=
-// clang-format on
 
 #define TEST_SIGNAL_BINARY_OPERATOR(NAME, OPERATOR)                                                              \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal binary " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_COMPLEX) { \
@@ -66,7 +63,7 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 		}                                                                                                        \
 	}
 
-#define TEST_SIGNAL_COMPOUND_OPERATOR(NAME, OPERATOR)                                                           \
+#define TEST_SIGNAL_COMPOUND_OPERATOR(NAME, OPERATOR, VERIFY_OPERATOR)                                          \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal compound " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_REAL) { \
 		for (auto size : sizes) {                                                                               \
 			SECTION(std::string("Size ") + std::to_string(size)) {                                              \
@@ -79,17 +76,17 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 				auto a2 = a;                                                                                    \
 				auto a3 = a;                                                                                    \
 				const auto b = RandomPositiveSignal<TestType1>(size);                                           \
-				a0 MAKE_COMPOUND_OPERATOR(OPERATOR) b;                                                          \
-				AsView(a1) MAKE_COMPOUND_OPERATOR(OPERATOR) b;                                                  \
-				a2 MAKE_COMPOUND_OPERATOR(OPERATOR) AsView(b);                                                  \
-				AsView(a3) MAKE_COMPOUND_OPERATOR(OPERATOR) AsView(b);                                          \
+				a0 OPERATOR b;                                                                                  \
+				AsView(a1) OPERATOR b;                                                                          \
+				a2 OPERATOR AsView(b);                                                                          \
+				AsView(a3) OPERATOR AsView(b);                                                                  \
                                                                                                                 \
 				size_t numEqual0 = 0;                                                                           \
 				size_t numEqual1 = 0;                                                                           \
 				size_t numEqual2 = 0;                                                                           \
 				size_t numEqual3 = 0;                                                                           \
 				for (size_t i = 0; i < size; ++i) {                                                             \
-					const auto expected = ApproxComplex(a[i] OPERATOR b[i]);                                    \
+					const auto expected = ApproxComplex(a[i] VERIFY_OPERATOR b[i]);                             \
 					numEqual0 += size_t(a0[i] == expected);                                                     \
 					numEqual1 += size_t(a1[i] == expected);                                                     \
 					numEqual2 += size_t(a2[i] == expected);                                                     \
@@ -139,7 +136,7 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 	}
 
 
-#define TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR(NAME, OPERATOR)                                                           \
+#define TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR(NAME, OPERATOR, VERIFY_OPERATOR)                                          \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal compound scalar " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_REAL) { \
 		for (auto size : sizes) {                                                                                      \
 			SECTION(std::string("Size ") + std::to_string(size)) {                                                     \
@@ -150,13 +147,13 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 				auto a0 = a;                                                                                           \
 				auto a1 = a;                                                                                           \
 				const auto b = TestType1(size);                                                                        \
-				a0 MAKE_COMPOUND_OPERATOR(OPERATOR) b;                                                                 \
-				AsView(a1) MAKE_COMPOUND_OPERATOR(OPERATOR) b;                                                         \
+				a0 OPERATOR b;                                                                                         \
+				AsView(a1) OPERATOR b;                                                                                 \
                                                                                                                        \
 				size_t numEqual0 = 0;                                                                                  \
 				size_t numEqual1 = 0;                                                                                  \
 				for (size_t i = 0; i < size; ++i) {                                                                    \
-					const auto expected = ApproxComplex(a[i] OPERATOR b);                                              \
+					const auto expected = ApproxComplex(a[i] VERIFY_OPERATOR b);                                       \
 					numEqual0 += size_t(a0[i] == expected);                                                            \
 					numEqual1 += size_t(a1[i] == expected);                                                            \
 				}                                                                                                      \
@@ -171,17 +168,17 @@ TEST_SIGNAL_BINARY_OPERATOR("divide", /)
 TEST_SIGNAL_BINARY_OPERATOR("add", +)
 TEST_SIGNAL_BINARY_OPERATOR("subtract", -)
 
-TEST_SIGNAL_COMPOUND_OPERATOR("multiply", *)
-TEST_SIGNAL_COMPOUND_OPERATOR("divide", /)
-TEST_SIGNAL_COMPOUND_OPERATOR("add", +)
-TEST_SIGNAL_COMPOUND_OPERATOR("subtract", -)
+TEST_SIGNAL_COMPOUND_OPERATOR("multiply", *=, *)
+TEST_SIGNAL_COMPOUND_OPERATOR("divide", /=, /)
+TEST_SIGNAL_COMPOUND_OPERATOR("add", +=, +)
+TEST_SIGNAL_COMPOUND_OPERATOR("subtract", -=, -)
 
 TEST_SIGNAL_BINARY_SCALAR_OPERATOR("multiply", *)
 TEST_SIGNAL_BINARY_SCALAR_OPERATOR("divide", /)
 TEST_SIGNAL_BINARY_SCALAR_OPERATOR("add", +)
 TEST_SIGNAL_BINARY_SCALAR_OPERATOR("subtract", -)
 
-TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("multiply", *)
-TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("divide", /)
-TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("add", +)
-TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("subtract", -)
+TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("multiply", *=, *)
+TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("divide", /=, /)
+TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("add", +=, +)
+TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR("subtract", -=, -)
