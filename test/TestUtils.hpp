@@ -75,21 +75,21 @@ public:
 		return !operator==(rhs, lhs);
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
 	ApproxComplex& epsilon(T const& newEpsilon) {
-		const double epsilonAsDouble = static_cast<std::complex<double>>(newEpsilon);
+		const double epsilonAsDouble = static_cast<double>(newEpsilon);
 		m_epsilon = epsilonAsDouble;
 		return *this;
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
 	ApproxComplex& margin(T const& newMargin) {
 		const double marginAsDouble = static_cast<double>(newMargin);
 		m_margin = marginAsDouble;
 		return *this;
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
 	ApproxComplex& scale(T const& newScale) {
 		m_scale = static_cast<double>(newScale);
 		return *this;
