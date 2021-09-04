@@ -60,7 +60,7 @@ public:
 	SignalView SubSignal(size_type offset) const;
 	SignalView SubSignal(size_type offset, size_type count) const;
 
-protected:
+private:
 	iterator first = nullptr, last = nullptr;
 };
 
