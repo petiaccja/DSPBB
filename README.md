@@ -3,6 +3,8 @@
 
 ![Build](https://github.com/petiaccja/DSPBB/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/petiaccja/DSPBB/branch/master/graph/badge.svg?token=8A2I59KJ5H)](https://codecov.io/gh/petiaccja/DSPBB)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=petiaccja_DSPBB&metric=alert_status)](https://sonarcloud.io/dashboard?id=petiaccja_DSPBB)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=petiaccja_DSPBB&metric=coverage)](https://sonarcloud.io/dashboard?id=petiaccja_DSPBB)
 
 I couldn't really find a **low-level digital signal processing** (DSP) library that is 
 - **free** (BSD, MIT)
