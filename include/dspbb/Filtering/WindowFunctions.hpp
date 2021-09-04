@@ -44,8 +44,7 @@ template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0
 void HammingWindow(SignalR&& out) {
 	using R = typename signal_traits<std::decay_t<SignalR>>::type;
 	using U = remove_complex_t<R>;
-
-	const U N = U(out.Length());
+	
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	Cos(out, out);
 	out *= U(-0.46);
@@ -259,7 +258,7 @@ namespace windows {
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
-			return GaussianWindow<T, Domain>(length, m_sigma);
+			return GaussianWindow<T, Domain>(length, T(m_sigma));
 		}
 		template <class T>
 		Gaussian sigma(T sigma) const {

@@ -5,10 +5,10 @@
 using namespace dspbb;
 
 TEST_CASE("Reduce", "[Kernels]") {
-	std::array<float, 100> a;
+	std::array<double, 100> a;
 	std::iota(a.begin(), a.end(), 1);
-	const auto sum = Reduce(a.data(), a.size(), 1000.f, [](const auto& a, const auto& b) { return a + b; });
-	REQUIRE(sum == Approx(6050.f));
+	const auto sum = Reduce(a.data(), a.size(), 1000.0, [](const auto& a, const auto& b) { return a + b; });
+	REQUIRE(sum == Approx(6050.0));
 }
 
 TEST_CASE("ReduceVectorized", "[Kernels]") {

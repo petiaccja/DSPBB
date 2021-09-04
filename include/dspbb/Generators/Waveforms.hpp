@@ -16,11 +16,12 @@ namespace impl {
 	template <class SignalR, class WaveFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 	void GenericWave(SignalR&& output, uint64_t sampleRate, double frequency, double phase, WaveFunc waveFunc) {
 		using R = typename signal_traits<std::decay_t<SignalR>>::type;
+		using T = remove_complex_t<R>;
 		size_t idx = 0;
 		for (auto& v : output) {
 			const double time = double(idx) / double(sampleRate);
 			const double totalPhase = 2.0 * pi_v<double> * time * frequency + phase;
-			v = static_cast<R>(waveFunc(totalPhase));
+			v = R(T(waveFunc(totalPhase)));
 			++idx;
 		}
 	}
@@ -28,13 +29,14 @@ namespace impl {
 	template <class SignalR, class WaveFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 	void GenericChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, double endFrequency, double phase, WaveFunc waveFunc) {
 		using R = typename signal_traits<std::decay_t<SignalR>>::type;
+		using T = remove_complex_t<R>;
 		const double length = double(output.Size()) / double(sampleRate);
 		size_t idx = 0;
 		for (auto& v : output) {
 			const double time = double(idx) / double(sampleRate);
 			// Integrate the linear function frequency(time).
 			const double totalPhase = 2.0 * pi_v<double> * (time * startFrequency + time * time / 2.0 * (endFrequency - startFrequency) / length) + phase;
-			v = static_cast<R>(waveFunc(totalPhase));
+			v = R(T(waveFunc(totalPhase)));
 			++idx;
 		}
 	}
