@@ -60,7 +60,6 @@ auto Norm(const SignalT& signal) {
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Max(const SignalT& signal) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	assert(!signal.Empty());
 	return ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return math_functions::max(a, b); });
 }
@@ -68,7 +67,6 @@ auto Max(const SignalT& signal) {
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Min(const SignalT& signal) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	assert(!signal.Empty());
 	return ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return math_functions::min(a, b); });
 }
@@ -84,7 +82,12 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 	const auto m2 = [](const auto& a, auto mean) { const auto d = a - mean; return d*d; };
 	const auto m3 = [](const auto& a, auto mean) { const auto d = a - mean; return d*d*d; };
 	const auto m4 = [](const auto& a, auto mean) { const auto d = a - mean; return d*d*d*d; };
-	const auto mg = [](const auto& a, auto mean, auto k) { const auto d = a - mean; return d * math_functions::pow(math_functions::abs(d), decltype(d)(k-1)); };
+	const auto mg = [](const auto& a, auto mean, auto k) {
+		using T = decltype(mean); // Must be a scalar.
+		using V = std::decay_t<decltype(a)>; // May be SIMD vector type.
+		const auto d = a - mean;
+		return d * math_functions::pow(math_functions::abs(d), V(T(k) - T(1)));
+	};
 
 	const T den = T(signal.Size());
 
@@ -254,7 +257,6 @@ auto Correlation(const SignalT& a, const SignalU& b) {
 	assert(a.Size() == b.Size());
 	return Covariance(a, b) / (StandardDeviation(a) * StandardDeviation(b));
 }
-
 
 
 

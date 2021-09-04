@@ -7,7 +7,6 @@ using namespace dspbb;
 
 
 constexpr int sampleRate = 44100;
-constexpr int length = 4410;
 constexpr float frequency = 89.f;
 const float cycle = sampleRate / frequency;
 
@@ -110,7 +109,7 @@ TEST_CASE("Chirp phase", "[Generators]") {
 	const double startFrequency = 1150.;
 	const double endFrequency = 2320.;
 	const uint64_t sampleRate = 44100;
-	impl::GenericChirp(s, sampleRate, startFrequency, endFrequency, phase, [](float phase) { return phase; });
+	impl::GenericChirp(s, sampleRate, startFrequency, endFrequency, phase, [](const auto& phase) { return phase; });
 	REQUIRE(s[0] == Approx(phase));
 	REQUIRE(*(s.begin() + 1) - *(s.begin()) == Approx(2 * pi_v<double> * startFrequency / sampleRate).epsilon(0.01f));
 	REQUIRE(*(s.end() - 1) - *(s.end() - 2) == Approx(2 * pi_v<double> * endFrequency / sampleRate).epsilon(0.01f));

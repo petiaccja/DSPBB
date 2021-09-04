@@ -16,7 +16,9 @@ auto LinSpace(SignalR&& output,
 			  bool inclusive = true) {
 	using R = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
 	const auto count = output.Size();
-	std::iota(output.begin(), output.end(), size_t(0));
+	for (size_t i = 0; i<count; ++i) {
+		output[i] = R(i);
+	}
 	const R scale = (end - start) / R(std::max(intptr_t(1), intptr_t(count) - intptr_t(inclusive)));
 	const R offset = start;
 	output *= scale;
