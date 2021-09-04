@@ -63,6 +63,22 @@ void FirFilter(SignalR& out, const BandstopDesc<U>& responseDesc, const MethodDe
 	ComplementaryResponse(out, out);
 }
 
+// Hilbert
+
+template <class SignalR, class MethodDesc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void FirFilter(SignalR& out, const HilbertDesc&, const MethodDesc& methodDesc) {
+	if (out.Size() % 2 == 0) {
+		const size_t halfbandSize = out.Size() * 2 - 1;
+		SignalR halfband(halfbandSize);
+		FirFilter(halfband, Lowpass(0.5f), methodDesc);
+		HalfbandToHilbertEven(out, halfband);
+	}
+	else {
+		FirFilter(out, Lowpass(0.5f), methodDesc);
+		HalfbandToHilbertOdd(out, out);
+	}
+}
+
 //------------------------------------------------------------------------------
 // Out-of-place wrapper.
 //------------------------------------------------------------------------------

@@ -21,7 +21,7 @@ target_sources(UnitTest
 		Test_Statistics.cpp
 		Test_Functions.cpp
 		Test_Kernels.cpp 
-		Test_Hilbert.cpp)
+		)
 
 find_package(Catch2 REQUIRED)
 

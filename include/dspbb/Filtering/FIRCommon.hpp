@@ -38,6 +38,8 @@ struct ArbitraryFuncDesc {
 	Func response;
 };
 
+struct HilbertDesc {};
+
 
 template <class T>
 auto Lowpass(T cutoff) {
@@ -64,6 +66,9 @@ auto Arbitrary(Func response) {
 	return ArbitraryFuncDesc<Func>{ std::move(response) };
 }
 
+inline auto Hilbert() {
+	return HilbertDesc{};
+}
 
 //------------------------------------------------------------------------------
 // Method description
