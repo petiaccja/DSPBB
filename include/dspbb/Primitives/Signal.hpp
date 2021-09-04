@@ -46,7 +46,7 @@ public:
 	Signal(Signal&&) noexcept = default;
 	Signal(std::initializer_list<T> ilist);
 	template <class U>
-	Signal(const Signal<U, Domain>& other);
+	explicit Signal(const Signal<U, Domain>& other);
 	Signal(size_type count, const T* data);
 	template <class Iter, std::enable_if_t<std::is_convertible<decltype(*std::declval<Iter>()), T>::value, int> = 0>
 	Signal(Iter first, Iter last) : m_samples(first, last) {}

@@ -1,7 +1,6 @@
-#include <dspbb/Primitives/Signal.hpp>
-
 #include <catch2/catch.hpp>
 #include <complex>
+#include <dspbb/Primitives/Signal.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;
@@ -42,9 +41,9 @@ TEST_CASE("Signal - Element access", "[Signal]") {
 TEST_CASE("Signal - Conversion construct", "[Signal]") {
 	TimeSignal<float> s = { 1, 2, 3 };
 	TimeSignal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
-	TimeSignal<double> d = s;
-	TimeSignal<std::complex<double>> cd = c;
-	TimeSignal<std::complex<double>> cs = s;
+	TimeSignal<double> d{ s };
+	TimeSignal<std::complex<double>> cd{ c };
+	TimeSignal<std::complex<double>> cs{ s };
 	for (int i = 0; i < 3; ++i) {
 		REQUIRE(d[i] == float(i) + 1.f);
 		REQUIRE(cs[i] == double(i) + 1.0);
@@ -163,7 +162,7 @@ TEST_CASE("Signal - Erase range", "[Signal]") {
 
 TEST_CASE("Signal - Append (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s1 = { 1, 2, 3 };
-	TimeSignal<float> s2 = { 4, 5, 6 };
+	TimeSignal<std::complex<float>> s2 = { 4, 5, 6 };
 	s1.Append(s2);
 	REQUIRE(s2.Size() == 3);
 	REQUIRE(s1.Size() == 6);
@@ -174,7 +173,7 @@ TEST_CASE("Signal - Append (complex)", "[Signal]") {
 
 TEST_CASE("Signal - Prepend (complex)", "[Signal]") {
 	TimeSignal<std::complex<float>> s1 = { 1, 2, 3 };
-	TimeSignal<float> s2 = { 4, 5, 6 };
+	TimeSignal<std::complex<float>> s2 = { 4, 5, 6 };
 	s1.Prepend(s2);
 	REQUIRE(s2.Size() == 3);
 	REQUIRE(s1.Size() == 6);
