@@ -20,13 +20,13 @@ public:
 public:
 	SignalView() = default;
 
-	template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int> = 0>
-	SignalView(Signal<Q, Domain>& signal);
-	template <class Q, std::enable_if_t<std::is_convertible<const Q*, T*>::value, int> = 0>
-	SignalView(const Signal<Q, Domain>& signal);
-	template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int> = 0>
+	template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value && std::is_same<std::remove_cv_t<Q>, std::remove_cv_t<T>>::value, int> = 0>
+	explicit SignalView(Signal<Q, Domain>& signal);
+	template <class Q, std::enable_if_t<std::is_convertible<const Q*, T*>::value && std::is_same<std::remove_cv_t<Q>, std::remove_cv_t<T>>::value, int> = 0>
+	explicit SignalView(const Signal<Q, Domain>& signal);
+	template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value && std::is_same<std::remove_cv_t<Q>, std::remove_cv_t<T>>::value, int> = 0>
 	SignalView(const SignalView<Q, Domain>& signal);
-	
+
 	template <class Iter, std::enable_if_t<std::is_convertible<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>::value, int> = 0>
 	SignalView(Iter first, Iter last);
 	template <class Iter, std::enable_if_t<std::is_convertible<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>::value, int> = 0>
@@ -44,7 +44,7 @@ public:
 	reverse_iterator rend() { return reverse_iterator{ first }; }
 	const_reverse_iterator rend() const { return const_reverse_iterator{ first }; }
 	const_reverse_iterator crend() const { return const_reverse_iterator{ first }; }
-	
+
 	T& Front() const;
 	T& Back() const;
 	T& operator[](size_type index) const;
@@ -65,19 +65,19 @@ protected:
 };
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int>>
+template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value && std::is_same<std::remove_cv_t<Q>, std::remove_cv_t<T>>::value, int>>
 SignalView<T, Domain>::SignalView(Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_convertible<const Q*, T*>::value, int>>
+template <class Q, std::enable_if_t<std::is_convertible<const Q*, T*>::value && std::is_same<std::remove_cv_t<Q>, std::remove_cv_t<T>>::value, int>>
 SignalView<T, Domain>::SignalView(const Signal<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value, int>>
+template <class Q, std::enable_if_t<std::is_convertible<Q*, T*>::value && std::is_same<std::remove_cv_t<Q>, std::remove_cv_t<T>>::value, int>>
 SignalView<T, Domain>::SignalView(const SignalView<Q, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
