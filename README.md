@@ -78,13 +78,17 @@ More like notes to myself as to what I want to have.
   - ✔️ Convolution
   - ✔️ FFT
   - ❔️ FIR filtering
-    - ✔️ Window method
-    - ❌️ Least-squares method
-    - ❌️ Parks-McClellan method
-    - ✔️ Low-pass
-    - ✔️ High-pass
-    - ✔️ Band-pass
-    - ✔️ Arbitrary response
+    - Methods:
+      - ✔️ Window method
+      - ❌️ Least-squares method
+      - ❌️ Parks-McClellan method
+    - Types:
+      - ✔️ Low-pass
+      - ✔️ High-pass
+      - ✔️ Band-pass
+      - ✔️ Band-stop
+      - ✔️ Arbitrary response
+      - ✔️ Hilbert
     - ❌️ Quality assessment tools
   - ❌️ IIR filtering
     - ❌️ Butterworth
@@ -98,7 +102,6 @@ More like notes to myself as to what I want to have.
     - ✔️ Expansion (zero-fill)
     - ✔️ Interpolation (polyphase)
     - ✔️ Arbitrary resampling (polyphase)
-  - ✔️ Hilbert filter
   - ❌️ Wavelets
     - ❌️ DWT
     - ❌️ CWT

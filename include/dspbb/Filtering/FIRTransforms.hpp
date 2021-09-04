@@ -1,13 +1,45 @@
 #pragma once
 
-#include <dspbb/Filtering/FIR.hpp>
-#include <dspbb/Filtering/Interpolation.hpp>
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalTraits.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
+
+#include "../Primitives/SignalTraits.hpp"
 
 
 namespace dspbb {
+
+
+template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+void MirrorResponse(SignalR&& mirrored, const SignalT& filter) {
+	assert(mirrored.Size() == filter.Size());
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	T sign = T(1);
+	for (size_t i = 0; i < filter.Size(); ++i, sign *= T(-1)) {
+		mirrored[i] = R(sign * filter[i]);
+	}
+}
+
+template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+void ComplementaryResponse(SignalR&& complementary, const SignalT& filter) {
+	assert(filter.Size() % 2 == 1);
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	Multiply(complementary, filter, T(-1));
+	complementary[complementary.Size() / 2] += R(1);
+}
+
+template <class SignalR, class SignalT, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+void ShiftResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency) {
+	U offset = static_cast<U>(filter.Size() / 2);
+	U scale = pi_v<U> * normalizedFrequency;
+	const size_t size = filter.Size();
+	for (size_t i = 0; i < size / 2; ++i) {
+		const U x = (U(i) - offset) * scale;
+		const U c = std::cos(x);
+		moved[i] = c * filter[i];
+		moved[size - i - 1] = c * filter[size - i - 1];
+	}
+	moved *= typename signal_traits<SignalT>::type(2);
+}
 
 
 namespace impl {
@@ -25,8 +57,9 @@ namespace impl {
 
 
 template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
-void HilbertFirFromHalfbandIII(SignalR& out, const SignalT& halfband) {
+void HalfbandToHilbertOdd(SignalR& out, const SignalT& halfband) {
 	assert(halfband.Size() % 2 == 1);
+	assert(out.Size() == halfband.Size());
 
 	using impl::kernelSize;
 	using R = typename std::decay_t<SignalR>::value_type;
@@ -62,9 +95,9 @@ void HilbertFirFromHalfbandIII(SignalR& out, const SignalT& halfband) {
 }
 
 template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HilbertFirFromHalfbandIV(SignalR& out, const SignalT& halfband) {
-	assert(out.Size() * 2 - 1 == halfband.Size());
+void HalfbandToHilbertEven(SignalR& out, const SignalT& halfband) {
 	assert(out.Size() % 2 == 0);
+	assert(out.Size() * 2 - 1 == halfband.Size());
 
 	using impl::kernelSize;
 	using R = typename std::decay_t<SignalR>::value_type;
@@ -108,64 +141,5 @@ void HilbertFirFromHalfbandIV(SignalR& out, const SignalT& halfband) {
 		Decimate(SignalView<R, Domain>{ out.begin() + (tap + 1) / 2, (lastChunkSize + 1) / 2 }, scratch.SubSignal(0, lastChunkSize), 2);
 	}
 }
-
-
-template <class SignalR, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HilbertFirWinIII(SignalR& out, WindowFunc windowFunc = windows::hamming) {
-	FirLowpassWin(out, 0.5, windowFunc);
-	HilbertFirFromHalfbandIII(out, out);
-}
-
-template <class SignalR, class SignalT, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HilbertFirWinIII(SignalR& out, const SignalT& window) {
-	FirLowpassWin(out, 0.5, window);
-	HilbertFirFromHalfbandIII(out, out);
-}
-
-template <class T, eSignalDomain Domain, class WindowFunc>
-auto HilbertFirWinIII(size_t taps, WindowFunc windowFunc = windows::hamming) {
-	auto out = FirLowpassWin<T, Domain>(0.5, taps, windowFunc);
-	HilbertFirFromHalfbandIII(out, out);
-	return out;
-}
-
-template <class T, eSignalDomain Domain, class SignalT, class WindowFunc>
-auto HilbertFirWinIII(size_t taps, const SignalT& window) {
-	auto out = FirLowpassWin<T, Domain>(0.5, taps, window);
-	HilbertFirFromHalfbandIII(out, out);
-	return out;
-}
-
-
-
-template <class SignalR, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HilbertFirWinIV(SignalR& out, WindowFunc windowFunc = windows::hamming) {
-	FirLowpassWin(out, 0.5, windowFunc);
-	HilbertFirFromHalfbandIV(out, out);
-}
-
-template <class SignalR, class SignalT, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HilbertFirWinIV(SignalR& out, const SignalT& window) {
-	FirLowpassWin(out, 0.5, window);
-	HilbertFirFromHalfbandIV(out, out);
-}
-
-template <class T, eSignalDomain Domain, class WindowFunc>
-auto HilbertFirWinIV(size_t taps, WindowFunc windowFunc = windows::hamming) {
-	const auto halfband = FirLowpassWin<T, Domain>(0.5, 2 * taps - 1, windowFunc);
-	Signal<T, Domain> out(taps);
-	HilbertFirFromHalfbandIV(out, halfband);
-	return out;
-}
-
-template <class T, eSignalDomain Domain, class SignalT, class WindowFunc>
-auto HilbertFirWinIV(size_t taps, const SignalT& window) {
-	const auto halfband = FirLowpassWin<T, Domain>(0.5, 2 * taps - 1, window);
-	Signal<T, Domain> out(taps);
-	HilbertFirFromHalfbandIV(out, halfband);
-	return out;
-}
-
-
 
 } // namespace dspbb
