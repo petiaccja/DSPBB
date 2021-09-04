@@ -104,23 +104,6 @@ TEST_CASE("Complex-complex central", "[Convolution]") {
 	}
 }
 
-
-/*
-TEST_CASE("Different types", "[Convolution]") {
-	TimeSignal<float> u{ ur.begin(), ur.end() };
-	TimeSignal<std::complex<double>> v{ vr.begin(), vr.end() };
-	TimeSignal<std::complex<double>> expected = { urvr_central.begin(), urvr_central.end() };
-
-	auto result = Convolution(u, v, convolution::central);
-
-	REQUIRE(result.Length() == expected.Length());
-	for (size_t i = 0; i < expected.Length(); ++i) {
-		REQUIRE(result[i] == expected[i]);
-	}
-}
-*/
-
-
 TEST_CASE("Real-world signal", "[Convolution]") {
 	TimeSignal<float> u;
 	TimeSignal<float> v;

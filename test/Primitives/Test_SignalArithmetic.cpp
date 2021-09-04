@@ -1,4 +1,4 @@
-#include "TestUtils.hpp"
+#include "../TestUtils.hpp"
 
 #include <catch2/catch.hpp>
 #include <dspbb/Primitives/Signal.hpp>
@@ -26,6 +26,77 @@ static_assert(!is_mutable_signal_v<SignalView<const float, TIME_DOMAIN>&&>, "");
 static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>>, "");
 static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>&>, "");
 static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>&&>, "");
+
+
+
+//------------------------------------------------------------------------------
+// Operators
+//------------------------------------------------------------------------------
+/*
+const TimeSignal<float> s1 = { 1, 2, 3 };
+const TimeSignal<float> s2 = { 7, 4, 5 };
+const float c1 = 5;
+
+#define TEST_CASE_VIEW_OPERATOR(NAME, OPERATOR)                             \
+	TEST_CASE("SignalView operator " NAME, "[SignalView]") { \
+		const auto expected = s1 OPERATOR s2;                               \
+		const auto v1 = s1 OPERATOR AsConstView(s2);                        \
+		const auto v2 = AsConstView(s1) OPERATOR s2;                        \
+		const auto v3 = AsConstView(s1) OPERATOR AsConstView(s2);           \
+		for (size_t i = 0; i < s1.Size(); ++i) {                            \
+			REQUIRE(expected[i] == Approx(v1[i]));                          \
+			REQUIRE(expected[i] == Approx(v2[i]));                          \
+			REQUIRE(expected[i] == Approx(v3[i]));                          \
+		}                                                                   \
+	}
+
+#define TEST_CASE_VIEW_OPERATOR_SCALAR(NAME, OPERATOR)                                    \
+	TEST_CASE("SignalView operator scalar " NAME, "[SignalView]") { \
+		const auto expected1 = c1 OPERATOR s1;                                     \
+		const auto v1 = c1 OPERATOR AsConstView(s1);                               \
+		const auto expected2 = s1 OPERATOR c1;                                     \
+		const auto v2 = AsConstView(s1) OPERATOR c1;                               \
+		for (size_t i = 0; i < s1.Size(); ++i) {                                   \
+			REQUIRE(expected1[i] == Approx(v1[i]));                                \
+			REQUIRE(expected2[i] == Approx(v2[i]));                                \
+		}                                                                          \
+	}
+
+
+TEST_CASE_VIEW_OPERATOR("multiply", *)
+TEST_CASE_VIEW_OPERATOR("add", +)
+TEST_CASE_VIEW_OPERATOR("subtract", -)
+TEST_CASE_VIEW_OPERATOR("divide", /)
+
+TEST_CASE_VIEW_OPERATOR_SCALAR("multiply", *)
+TEST_CASE_VIEW_OPERATOR_SCALAR("add", +)
+TEST_CASE_VIEW_OPERATOR_SCALAR("subtract", -)
+TEST_CASE_VIEW_OPERATOR_SCALAR("divide", /)
+*/
+
+
+
+#define NAME "multiply"
+#define OPERATOR *
+
+#define TEST_SIGNAL_BINARY_OPERATOR(NAME, OPERATOR)                                                        \
+	TEMPLATE_PRODUCT_TEST_CASE("Signal binary", "[Signal Arithmetic]", std::tuple, TYPES_BINARY_COMPLEX) { \
+		constexpr size_t count = 1;                                                                        \
+                                                                                                           \
+		using TestType0 = std::tuple_element_t<0, TestType>;                                               \
+		using TestType1 = std::tuple_element_t<1, TestType>;                                               \
+                                                                                                           \
+		const auto a = RandomPositiveSignal<TestType0>(count);                                             \
+		const auto b = RandomPositiveSignal<TestType1>(count);                                             \
+		const auto r = a OPERATOR b;                                                                       \
+                                                                                                           \
+		size_t numEqual = 0;                                                                               \
+		for (size_t i = 0; i < count; ++i) {                                                               \
+			numEqual += size_t(r[i] == ApproxComplex(a[i] OPERATOR b[i]));                                 \
+		}                                                                                                  \
+		REQUIRE(numEqual == count);                                                                        \
+	}
+
 
 template <class T>
 constexpr T a0 = static_cast<T>(3.5f);

@@ -2,6 +2,8 @@
 
 #include <catch2/catch.hpp>
 #include <complex>
+#include <dspbb/Primitives/Signal.hpp>
+#include <random>
 
 
 #define TYPES_COMPLEX          \
@@ -101,3 +103,15 @@ private:
 	double m_scale;
 	std::complex<double> m_value;
 };
+
+
+template <class T>
+dspbb::TimeSignal<T> RandomPositiveSignal(size_t size) {
+	thread_local std::mt19937 rne(772537547);
+	thread_local std::uniform_real_distribution<float> rng(1, 2);
+	dspbb::TimeSignal<T> s;
+	for (size_t i =0; i<size; ++i) {
+		s.PushBack(rng(rne));
+	}
+	return s;
+}

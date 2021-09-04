@@ -12,9 +12,9 @@ target_sources(UnitTest
 		Test_Interpolation.cpp
 		Test_OverlapAdd.cpp
 		Test_Polyphase.cpp
-		Test_Signal.cpp
-		Test_SignalView.cpp
-		Test_SignalArithmetic.cpp
+		"Primitives/Test_Signal.cpp"
+		"Primitives/Test_SignalView.cpp"
+		"Primitives/Test_SignalArithmetic.cpp"
 		Test_WindowFunctions.cpp		
 		Test_Algorithm.cpp
 		Test_Arithmetic.cpp
