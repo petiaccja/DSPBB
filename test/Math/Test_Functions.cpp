@@ -6,30 +6,30 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
-namespace std {
 template <class T>
 auto iden(T arg) {
 	return arg;
 }
-} // namespace std
 
 
 #define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                    \
 	TEST_CASE(NAME " real", "[Functions]") {                            \
+		using namespace std;                                            \
 		const TimeSignal<float> signal = { 1, 8, 2, 5, 3, 6, 3, 6, 4 }; \
 		const auto applied = FUNC(signal);                              \
 		for (size_t i = 0; i < signal.Size(); ++i) {                    \
-			REQUIRE(Approx(applied[i]) == std::STDFUNC(signal[i]));     \
+			REQUIRE(Approx(applied[i]) == STDFUNC(signal[i]));          \
 		}                                                               \
 	}
 
 
 #define TEST_CASE_FUNCTION_CPLX(NAME, FUNC, STDFUNC)                                   \
 	TEST_CASE(NAME " complex", "[Functions]") {                                        \
+		using namespace std;                                                           \
 		const TimeSignal<std::complex<float>> csignal = { -1.f + 0.7if, 8.f + 2.6if }; \
 		const auto capplied = FUNC(csignal);                                           \
 		for (size_t i = 0; i < csignal.Size(); ++i) {                                  \
-			REQUIRE(std::abs(capplied[i] - std::STDFUNC(csignal[i])) < 0.0001f);       \
+			REQUIRE(std::abs(capplied[i] - STDFUNC(csignal[i])) < 0.0001f);            \
 		}                                                                              \
 	}
 
