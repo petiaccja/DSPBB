@@ -70,7 +70,7 @@ void FlatTopWindow(SignalR&& out) {
 
 	LinSpace(out, U(0), U(out.Size() - 1), true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
 		k = c0
 			+ c1 * std::cos(preSize1 * kreal)
 			+ c2 * std::cos(preSize2 * kreal)
@@ -103,7 +103,7 @@ void BlackmanWindow(SignalR&& out) {
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
 		k = U(0.42) - U(0.5) * std::cos(kreal) + U(0.08) * std::cos(2 * kreal);
 	});
 }
@@ -114,7 +114,7 @@ void BlackmanHarrisWindow(SignalR&& out) {
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		U kreal = *reinterpret_cast<const U*>(&k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
 		k = U(0.35875) - U(0.48829) * std::cos(kreal) + U(0.14128) * std::cos(2 * kreal) + U(-0.01168) * std::cos(3 * kreal);
 	});
 }

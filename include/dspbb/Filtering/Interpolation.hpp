@@ -148,7 +148,7 @@ std::pair<int64_t, uint64_t> Resample(SignalR&& output,
 		const int64_t polyphaseFraction = commonFraction * polyphase.numFilters % commonRate;
 
 		const int64_t inputIndex = commonSample / commonRate - polyphase[polyphaseIndex].Size() + 1;
-		const int64_t inputIndexNext = commonSample / commonRate - polyphase[polyphaseIndexNext].Size() + 1 + (polyphaseIndexNext == 0);
+		const int64_t inputIndexNext = commonSample / commonRate - int64_t(polyphase[polyphaseIndexNext].Size()) + 1 + int64_t(polyphaseIndexNext == 0);
 
 		int64_t inputIndexClamped = std::max(inputIndex, int64_t(0));
 		int64_t inputIndexClampedNext = std::max(inputIndexNext, int64_t(0));
