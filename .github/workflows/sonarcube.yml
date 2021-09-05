@@ -15,6 +15,8 @@ jobs:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: seanmiddleditch/gha-setup-ninja@v3
       - uses: seanmiddleditch/gha-setup-vsdevenv@master
         with:
