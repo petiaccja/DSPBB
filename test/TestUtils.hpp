@@ -73,15 +73,13 @@ public:
 
 	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
 	ApproxComplex& epsilon(T const& newEpsilon) {
-		const double epsilonAsDouble = static_cast<double>(newEpsilon);
-		m_epsilon = epsilonAsDouble;
+		m_epsilon = static_cast<double>(newEpsilon);
 		return *this;
 	}
 
 	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
 	ApproxComplex& margin(T const& newMargin) {
-		const double marginAsDouble = static_cast<double>(newMargin);
-		m_margin = marginAsDouble;
+		m_margin = static_cast<double>(newMargin);
 		return *this;
 	}
 
