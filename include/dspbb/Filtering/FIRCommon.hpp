@@ -77,6 +77,8 @@ inline auto Hilbert() {
 // Method description
 //------------------------------------------------------------------------------
 
+// Window method description
+
 template <class Func>
 struct WindowMethodFuncDesc {
 	Func windowFunc;
@@ -98,5 +100,31 @@ auto Windowed(const SignalT& windowCoefficients) {
 	constexpr auto Domain = signal_traits<SignalT>::domain;
 	return WindowMethodCoeffDesc<T, Domain>{ AsConstView(windowCoefficients) };
 }
+
+// Least squares method description.
+
+template <class T>
+struct LeastSquaresMethodParamDesc {
+	T transitionBandwidth;
+	T passbandWeight;
+	T stopbandWeight;
+};
+
+template <class WeightFunc>
+struct LeastSquaresMethodFuncDesc {
+	WeightFunc weightFunction;
+};
+
+template <class T = float>
+auto LeastSquares(T transitionBandwidth = 0.0f, T passbandWeight = T(1.0), T stopbandWeight = T(1.0)) {
+	return LeastSquaresMethodParamDesc<T>{ transitionBandwidth, passbandWeight, stopbandWeight };
+}
+
+template <class WeightFunc, class = std::result_of_t<WeightFunc(float)>>
+auto LeastSquares(WeightFunc weightFunc) {
+	return LeastSquaresMethodFuncDesc<WeightFunc>{ std::move(weightFunc) };
+}
+
+
 
 } // namespace dspbb

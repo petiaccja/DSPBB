@@ -123,6 +123,25 @@ TEST_CASE("Windowed arbitrary filter", "[FirFilter]") {
 }
 
 
+TEST_CASE("Least Squares Lowpass", "[FirFilter]") {
+	constexpr size_t numTaps = 255;
+	static constexpr float cutoff = 3800.f;
+	const auto normalizedCutoff = NormalizedFrequency(cutoff, sampleRate);
+
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(normalizedCutoff), LeastSquares(normalizedCutoff * 0.05f));
+	REQUIRE(IsSymmetric(impulse));
+	REQUIRE(Sum(impulse) == Approx(1));
+	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.Size() == numTaps);
+
+	const float passResponse = MeasureResponse(sampleRate, cutoff * 0.85f, impulse);
+	const float stopResponse = MeasureResponse(sampleRate, cutoff * 1.15f, impulse);
+
+	REQUIRE(passResponse > 0.95f);
+	REQUIRE(passResponse < 1.05f);
+	REQUIRE(stopResponse < 0.05f);
+}
+
 TEST_CASE("Highpass", "[FirFilter]") {
 	constexpr size_t numTaps = 255;
 	static constexpr float cutoff = 3800.f;
