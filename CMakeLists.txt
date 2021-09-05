@@ -39,6 +39,7 @@ include(conan.cmake)
 conan_cmake_configure(
 	REQUIRES
 		xsimd/7.4.9
+		eigen/3.4.0
 		catch2/2.13.4
 	GENERATORS cmake_find_package
 )
