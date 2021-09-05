@@ -44,11 +44,7 @@ using BinaryDiff = decltype(std::declval<T>() - std::declval<U>());
 
 class ApproxComplex {
 public:
-	explicit ApproxComplex(std::complex<double> value)
-		: m_epsilon(std::numeric_limits<float>::epsilon() * 100),
-		  m_margin(0.0),
-		  m_scale(0.0),
-		  m_value(value) {}
+	explicit ApproxComplex(std::complex<double> value) : m_value(value) {}
 
 	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
 	explicit ApproxComplex(T const& value) : ApproxComplex(static_cast<std::complex<double>>(value)) {}
@@ -98,9 +94,9 @@ public:
 	std::string toString() const;
 
 private:
-	double m_epsilon;
-	double m_margin;
-	double m_scale;
+	double m_epsilon = std::numeric_limits<float>::epsilon() * 100.0;
+	double m_margin = 0.0;
+	double m_scale = 0.0;
 	std::complex<double> m_value;
 };
 
@@ -110,7 +106,7 @@ dspbb::TimeSignal<T> RandomPositiveSignal(size_t size) {
 	thread_local std::mt19937 rne(772537547);
 	thread_local std::uniform_real_distribution<float> rng(1, 2);
 	dspbb::TimeSignal<T> s;
-	for (size_t i =0; i<size; ++i) {
+	for (size_t i = 0; i < size; ++i) {
 		s.PushBack(rng(rne));
 	}
 	return s;
