@@ -108,8 +108,7 @@ TEST_CASE("Chirp phase", "[Generators]") {
 	const double phase = 1.55;
 	const double startFrequency = 1150.;
 	const double endFrequency = 2320.;
-	const uint64_t sampleRate = 44100;
-	impl::GenericChirp(s, sampleRate, startFrequency, endFrequency, phase, [](const auto& phase) { return phase; });
+	impl::GenericChirp(s, sampleRate, startFrequency, endFrequency, phase, [](const auto& passThrough) { return passThrough; });
 	REQUIRE(s[0] == Approx(phase));
 	REQUIRE(*(s.begin() + 1) - *(s.begin()) == Approx(2 * pi_v<double> * startFrequency / sampleRate).epsilon(0.01f));
 	REQUIRE(*(s.end() - 1) - *(s.end() - 2) == Approx(2 * pi_v<double> * endFrequency / sampleRate).epsilon(0.01f));
