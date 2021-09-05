@@ -29,8 +29,8 @@ void ComplementaryResponse(SignalR&& complementary, const SignalT& filter) {
 
 template <class SignalR, class SignalT, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 void ShiftResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency) {
-	U offset = static_cast<U>(filter.Size() / 2);
-	U scale = pi_v<U> * normalizedFrequency;
+	const auto offset = static_cast<U>(filter.Size() / 2);
+	const U scale = pi_v<U> * normalizedFrequency;
 	const size_t size = filter.Size();
 	for (size_t i = 0; i < size / 2; ++i) {
 		const U x = (U(i) - offset) * scale;

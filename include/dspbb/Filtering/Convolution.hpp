@@ -28,7 +28,8 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 		return 0;
 	}
 	const auto& mm = std::minmax(lengthU, lengthV);
-	const auto &shorter = mm.first, longer = mm.second;
+	const auto& shorter = mm.first;
+	const auto& longer = mm.second;
 	return longer - shorter + 1;
 }
 
@@ -40,7 +41,8 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 		return 0;
 	}
 	const auto& mm = std::minmax(lengthU, lengthV);
-	const auto &shorter = mm.first, longer = mm.second;
+	const auto& shorter = mm.first;
+	const auto& longer = mm.second;
 	return longer + shorter - 1;
 }
 

@@ -39,7 +39,7 @@ void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, const SignalW& window) 
 	const T offset = T(coefficients.Size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.Size();
-	for (size_t i = 0; i < coefficients.Size() / 2; ++i) {
+	for (size_t i = 0; i < size / 2; ++i) {
 		const T x = (T(i) - offset) * scale;
 		const T sinc = std::sin(x) / x;
 		coefficients[i] = sinc;

@@ -56,7 +56,7 @@ auto PolyphaseDecompose(SignalR&& output, const SignalT& filter, size_t numFilte
 	assert(output.Data() != filter.Data());
 
 	PolyphaseDecomposition<typename signal_traits<std::decay_t<SignalR>>::type, signal_traits<std::decay_t<SignalR>>::domain> view{
-		output,
+		AsView(output),
 		numFilters,
 	};
 

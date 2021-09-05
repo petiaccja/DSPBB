@@ -6,7 +6,7 @@ using namespace dspbb;
 
 auto MakeRamp(size_t size) {
 	TimeSignal<float> signal;
-	for (size_t i = 0; i < 150; ++i) {
+	for (size_t i = 0; i < size; ++i) {
 		signal.PushBack(float(i));
 	}
 	return signal;

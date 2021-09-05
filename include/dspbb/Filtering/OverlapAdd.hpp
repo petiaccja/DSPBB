@@ -39,15 +39,15 @@ namespace impl {
 			return InverseFourierTransformR(fft, fftSize);
 		}
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::false_type, std::true_type, size_t fftSize) {
+		auto InvertChunk(const SpectrumT& fft, std::false_type, std::true_type, size_t) {
 			return InverseFourierTransformC(fft);
 		}
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::true_type, std::false_type, size_t fftSize) {
+		auto InvertChunk(const SpectrumT& fft, std::true_type, std::false_type, size_t) {
 			return InverseFourierTransformC(fft);
 		}
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::true_type, std::true_type, size_t fftSize) {
+		auto InvertChunk(const SpectrumT& fft, std::true_type, std::true_type, size_t) {
 			return InverseFourierTransformC(fft);
 		}
 
