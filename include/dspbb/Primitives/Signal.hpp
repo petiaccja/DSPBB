@@ -26,6 +26,7 @@ class Signal {
 	template <class U, eSignalDomain DomainB>
 	friend class Signal;
 	using storage_type = std::vector<T>;
+
 public:
 	using value_type = T;
 	using pointer = T*;
@@ -48,7 +49,7 @@ public:
 	template <class U>
 	explicit Signal(const Signal<U, Domain>& other);
 	Signal(size_type count, const T* data);
-	template <class Iter, std::enable_if_t<std::is_convertible<decltype(*std::declval<Iter>()), T>::value, int> = 0>
+	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter>()), T>, int> = 0>
 	Signal(Iter first, Iter last) : m_samples(first, last) {}
 
 	Signal& operator=(const Signal&) = default;

@@ -11,7 +11,7 @@ class Signal;
 template <class T, eSignalDomain Domain>
 class SignalView;
 
-}
+} // namespace dspbb
 
 namespace dspbb {
 
@@ -57,16 +57,6 @@ struct signal_traits<SignalView<T, Domain>> {
 	static constexpr auto domain = Domain;
 };
 
-
-template <class...>
-struct conjunction_compat : std::true_type {};
-template <class B1>
-struct conjunction_compat<B1> : B1 {};
-template <class B1, class... Bn>
-struct conjunction_compat<B1, Bn...>
-	: std::conditional_t<bool(B1::value), conjunction_compat<Bn...>, B1> {};
-
-
 template <class... Signals>
 struct is_same_domain {
 	static constexpr bool compare() { return true; }
@@ -76,7 +66,7 @@ struct is_same_domain {
 	static constexpr bool compare() {
 		return signal_traits<H1>::domain == signal_traits<H2>::domain && compare<H2, Tail...>();
 	}
-	template <class... Signals_, std::enable_if_t<conjunction_compat<is_signal_like<Signals_>...>::value, int> = 0>
+	template <class... Signals_, std::enable_if_t<std::conjunction_v<is_signal_like<Signals_>...>, int> = 0>
 	static constexpr bool test(int) {
 		return compare<Signals_...>();
 	}
@@ -94,11 +84,11 @@ template <class Signal>
 struct is_mutable_signal {
 	template <class Signal_, std::enable_if_t<is_signal_v<std::decay_t<Signal_>>, int> = 0>
 	static constexpr bool test(int) {
-		return !std::is_const<std::remove_reference_t<Signal_>>::value;
+		return !std::is_const_v<std::remove_reference_t<Signal_>>;
 	}
 	template <class SignalView_, std::enable_if_t<is_signal_view_v<std::decay_t<SignalView_>>, int> = 0>
 	static constexpr bool test(int) {
-		return !std::is_const<typename signal_traits<std::decay_t<SignalView_>>::type>::value;
+		return !std::is_const_v<typename signal_traits<std::decay_t<SignalView_>>::type>;
 	}
 	template <class Signal_>
 	static constexpr bool test(...) {

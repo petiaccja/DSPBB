@@ -1,5 +1,8 @@
 #pragma once
 
+#include <type_traits>
+#include "../Primitives/Signal.hpp"
+
 
 namespace dspbb {
 
@@ -84,7 +87,7 @@ struct WindowMethodCoeffDesc {
 	SignalView<const T, Domain> windowCoefficients;
 };
 
-template <class Func, class = std::result_of_t<Func(SignalView<float, TIME_DOMAIN>)>>
+template <class Func, std::enable_if_t<std::is_invocable_v<Func, SignalView<float, TIME_DOMAIN>>, int> = 0>
 auto Windowed(Func windowFunction) {
 	return WindowMethodFuncDesc<Func>{ std::move(windowFunction) };
 }

@@ -53,7 +53,7 @@ void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, const SignalW& window) 
 }
 
 
-template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0, class = std::result_of_t<WindowFunc(Signal<float, TIME_DOMAIN>)>>
+template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && std::is_invocable_v<WindowFunc, Signal<float, TIME_DOMAIN>>, int> = 0>
 void FirArbitraryWin(SignalR& out, const ResponseFunc& response, WindowFunc windowFunc) {
 	assert(out.Size() % 2 == 1);
 	using R = typename signal_traits<SignalR>::type;
