@@ -60,7 +60,7 @@ constexpr bool is_complex_v = is_complex<T>::value;
 
 template <class T>
 struct remove_complex : impl::remove_complex_h<std::remove_cv_t<T>> {
-	using type = add_cv_conditional_t<typename impl::remove_complex_h<std::remove_cv_t<T>>::type, std::is_const<T>::value, std::is_volatile<T>::value>;
+	using type = add_cv_conditional_t<typename impl::remove_complex_h<std::remove_cv_t<T>>::type, std::is_const_v<T>, std::is_volatile_v<T>>;
 };
 
 template <class T>

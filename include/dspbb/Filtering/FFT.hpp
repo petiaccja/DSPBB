@@ -111,15 +111,15 @@ auto InverseFourierTransformR(const Spectrum<std::complex<T>>& fft, size_t size 
 	return InverseFourierTransformR(AsConstView(fft), size);
 }
 
-template <class T, class Integral, std::enable_if_t<std::is_integral<Integral>::value, int>  = 0>
+template <class T, class Integral, std::enable_if_t<std::is_integral_v<Integral>, int>  = 0>
 TimeSignal<T> InverseFourierTransformR(SpectrumView<const std::complex<T>> fft, Integral size) {
-	static_assert(!std::is_same<std::decay_t<Integral>, bool>::value, "Don't use bool here, that overload has been replaced.");
+	static_assert(!std::is_same_v<std::decay_t<Integral>, bool>, "Don't use bool here, that overload has been replaced.");
 	return InverseFourierTransformR(fft, (size_t)size);
 }
 
-template <class T, class Integral, std::enable_if_t<std::is_integral<Integral>::value, int> = 0>
+template <class T, class Integral, std::enable_if_t<std::is_integral_v<Integral>, int> = 0>
 auto InverseFourierTransformR(const Spectrum<std::complex<T>>& fft, Integral size) {
-	static_assert(!std::is_same<std::decay_t<Integral>, bool>::value, "Don't use bool here, that overload has been replaced.");
+	static_assert(!std::is_same_v<std::decay_t<Integral>, bool>, "Don't use bool here, that overload has been replaced.");
 	return InverseFourierTransformR(fft, (size_t)size);
 }
 

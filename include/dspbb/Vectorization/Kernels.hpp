@@ -24,7 +24,7 @@ struct is_unary_vectorized {
 			  class Op_ = Op,
 			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
-								   && std::is_same<xsimd::simd_type<R_>, std::result_of_t<Op(xsimd::simd_type<T_>)>>::value,
+								   && std::is_same_v<xsimd::simd_type<R_>, std::invoke_result_t<Op, xsimd::simd_type<T_>>>,
 							   int> = 0>
 	constexpr static bool get(int) { return true; }
 	static constexpr bool value = get(0);
@@ -38,7 +38,7 @@ struct is_reduce_vectorized {
 			  class Op_ = Op,
 			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
-								   && std::is_convertible<std::result_of_t<Op(xsimd::simd_type<R_>, xsimd::simd_type<T_>)>, xsimd::simd_type<R_>>::value,
+								   && std::is_convertible_v<std::invoke_result_t<Op, xsimd::simd_type<R_>, xsimd::simd_type<T_>>, xsimd::simd_type<R_>>,
 							   int> = 0>
 	constexpr static bool get(int) { return true; }
 	static constexpr bool value = get(0);
@@ -53,7 +53,7 @@ struct is_map_reduce_vectorized {
 			  class MapOp_ = MapOp,
 			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
-								   && std::is_convertible<std::result_of_t<ReduceOp(xsimd::simd_type<R_>, std::result_of_t<MapOp(xsimd::simd_type<T_>)>)>, xsimd::simd_type<R_>>::value,
+								   && std::is_convertible_v<std::invoke_result_t<ReduceOp, xsimd::simd_type<R_>, std::invoke_result_t<MapOp, xsimd::simd_type<T_>>>, xsimd::simd_type<R_>>,
 							   int> = 0>
 	constexpr static bool get(int) { return true; }
 	static constexpr bool value = get(0);
@@ -70,7 +70,7 @@ struct is_inner_product_vectorized {
 			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<U_>::size
-								   && std::is_convertible<std::result_of_t<ReduceOp(xsimd::simd_type<R_>, std::result_of_t<ProductOp_(xsimd::simd_type<T_>, xsimd::simd_type<U_>)>)>, xsimd::simd_type<R_>>::value,
+								   && std::is_convertible_v<std::invoke_result_t<ReduceOp, xsimd::simd_type<R_>, std::invoke_result_t<ProductOp_, xsimd::simd_type<T_>, xsimd::simd_type<U_>>>, xsimd::simd_type<R_>>,
 							   int> = 0>
 	constexpr static bool get(int) { return true; }
 	static constexpr bool value = get(0);
@@ -89,7 +89,7 @@ void BinaryOperation(R* out, const T* a, const U* b, size_t length, Op op) {
 	}
 }
 
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer<T>::value, int> = 0>
+template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
 void BinaryOperation(R* out, const T& a, const U* b, size_t length, Op op) {
 	const R* last = out + length;
 	for (; out != last; ++out, ++b) {
@@ -97,7 +97,7 @@ void BinaryOperation(R* out, const T& a, const U* b, size_t length, Op op) {
 	}
 }
 
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer<T>::value, int> = 0>
+template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
 void BinaryOperation(R* out, const T* a, const U& b, size_t length, Op op) {
 	const R* last = out + length;
 	for (; out != last; ++out, ++a) {
@@ -124,7 +124,7 @@ void BinaryOperationVectorized(T* out, const T* a, const T* b, size_t length, Op
 	BinaryOperation(out, a, b, length - vlength, op);
 }
 
-template <class T, class Op, std::enable_if_t<!std::is_pointer<T>::value && is_vectorized<T>::value, int> = 0>
+template <class T, class Op, std::enable_if_t<!std::is_pointer_v<T> && is_vectorized<T>::value, int> = 0>
 void BinaryOperationVectorized(T* out, const T& a, const T* b, size_t length, Op op) {
 	using V = xsimd::simd_type<T>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
@@ -143,7 +143,7 @@ void BinaryOperationVectorized(T* out, const T& a, const T* b, size_t length, Op
 	BinaryOperation(out, a, b, length - vlength, op);
 }
 
-template <class T, class Op, std::enable_if_t<!std::is_pointer<T>::value && is_vectorized<T>::value, int> = 0>
+template <class T, class Op, std::enable_if_t<!std::is_pointer_v<T> && is_vectorized<T>::value, int> = 0>
 void BinaryOperationVectorized(T* out, const T* a, const T& b, size_t length, Op op) {
 	using V = xsimd::simd_type<T>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
@@ -168,12 +168,12 @@ void BinaryOperationVectorized(R* out, const T* a, const U* b, size_t length, Op
 	BinaryOperation(out, a, b, length, op);
 }
 
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer<T>::value, int> = 0>
+template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
 void BinaryOperationVectorized(R* out, const T& a, const U* b, size_t length, Op op) {
 	BinaryOperation(out, a, b, length, op);
 }
 
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer<T>::value, int> = 0>
+template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
 void BinaryOperationVectorized(R* out, const T* a, const U& b, size_t length, Op op) {
 	BinaryOperation(out, a, b, length, op);
 }

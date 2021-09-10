@@ -46,44 +46,44 @@ class ApproxComplex {
 public:
 	explicit ApproxComplex(std::complex<double> value) : m_value(value) {}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
 	explicit ApproxComplex(T const& value) : ApproxComplex(static_cast<std::complex<double>>(value)) {}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
 	friend bool operator==(const T& lhs, ApproxComplex const& rhs) {
 		auto lhs_v = static_cast<std::complex<double>>(lhs);
 		return Catch::Detail::Approx(rhs.m_value.real()).epsilon(rhs.m_epsilon).margin(rhs.m_margin).scale(rhs.m_scale) == lhs_v.real()
 			   && Catch::Detail::Approx(rhs.m_value.imag()).epsilon(rhs.m_epsilon).margin(rhs.m_margin).scale(rhs.m_scale) == lhs_v.imag();
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
 	friend bool operator==(ApproxComplex const& lhs, const T& rhs) {
 		return operator==(rhs, lhs);
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
 	friend bool operator!=(T const& lhs, ApproxComplex const& rhs) {
 		return !operator==(lhs, rhs);
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<std::complex<double>, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
 	friend bool operator!=(ApproxComplex const& lhs, T const& rhs) {
 		return !operator==(rhs, lhs);
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<double, T>>::type>
 	ApproxComplex& epsilon(T const& newEpsilon) {
 		m_epsilon = static_cast<double>(newEpsilon);
 		return *this;
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<double, T>>::type>
 	ApproxComplex& margin(T const& newMargin) {
 		m_margin = static_cast<double>(newMargin);
 		return *this;
 	}
 
-	template <typename T, typename = typename std::enable_if<std::is_constructible<double, T>::value>::type>
+	template <typename T, typename = typename std::enable_if<std::is_constructible_v<double, T>>::type>
 	ApproxComplex& scale(T const& newScale) {
 		m_scale = static_cast<double>(newScale);
 		return *this;
