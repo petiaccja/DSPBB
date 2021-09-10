@@ -4,7 +4,6 @@
 #include <dspbb/Primitives/Signal.hpp>
 #include <dspbb/Primitives/SignalTraits.hpp>
 #include <dspbb/Primitives/SignalView.hpp>
-#include <dspbb/Utility/Algorithm.hpp>
 #include <dspbb/Vectorization/MathFunctions.hpp>
 #include <type_traits>
 

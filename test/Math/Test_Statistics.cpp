@@ -1,7 +1,6 @@
 #include <catch2/catch.hpp>
 #include <complex>
 #include <dspbb/Math/Statistics.hpp>
-#include <dspbb/Utility/Algorithm.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

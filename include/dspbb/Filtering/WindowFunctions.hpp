@@ -4,7 +4,6 @@
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
-#include "../Utility/Algorithm.hpp"
 #include "../Utility/Numbers.hpp"
 #include "../Utility/TypeTraits.hpp"
 
