@@ -15,20 +15,23 @@ struct MethodTagLeastSquares {};
 constexpr MethodTagWindowed WINDOWED;
 constexpr MethodTagLeastSquares LEAST_SQUARES;
 
-template <class Method, class... Args>
+template <class Method, class... Params>
 struct LowpassDesc;
 
-template <class Method, class... Args>
+template <class Method, class... Params>
 struct HighpassDesc;
 
-template <class Method, class... Args>
+template <class Method, class... Params>
 struct BandpassDesc;
 
-template <class Method, class... Args>
+template <class Method, class... Params>
 struct BandstopDesc;
 
 template <class Method, class... Params>
 struct ArbitraryDesc;
+
+template <class Method, class... Params>
+struct HilbertDesc;
 
 inline auto DefaultWeight = [](auto f) { return decltype(f)(1); };
 inline auto DefaultResponse = [](auto f) { return decltype(f)(1); };
@@ -99,6 +102,21 @@ struct ArbitraryDesc<MethodTagWindowed, ResponseFunc, WindowType> {
 	}
 };
 
+template <class WindowType>
+struct HilbertDesc<MethodTagWindowed, WindowType> {
+	WindowType window;
+	
+	template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
+	[[nodiscard]] auto Window(NewWindowType windowNew) {
+		return HilbertDesc<MethodTagWindowed, NewWindowType>{ std::move(windowNew) };
+	}
+	template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
+	[[nodiscard]] auto Window(const NewWindowType& windowNew) {
+		const auto view = AsView(windowNew);
+		return HilbertDesc<MethodTagWindowed, decltype(view)>{ view };
+	}
+};
+
 template <class T, class WindowType>
 struct LowpassDesc<MethodTagWindowed, T, WindowType>
 	: SplitDescWindowed<LowpassDesc, T, WindowType> {};
@@ -135,6 +153,12 @@ template <>
 struct ArbitraryDesc<MethodTagWindowed>
 	: ArbitraryDesc<MethodTagWindowed, decltype(DefaultResponse), windows::Hamming> {
 	ArbitraryDesc() : ArbitraryDesc<MethodTagWindowed, decltype(DefaultResponse), windows::Hamming>{ DefaultResponse, windows::hamming } {}
+};
+
+template <>
+struct HilbertDesc<MethodTagWindowed>
+	: HilbertDesc<MethodTagWindowed, windows::Hamming> {
+	HilbertDesc() : HilbertDesc<MethodTagWindowed, windows::Hamming>{ windows::hamming } {}
 };
 
 
@@ -187,6 +211,14 @@ struct BandDescLeastSquares {
 	}
 };
 
+template <class ParamType>
+struct HilbertDesc<MethodTagLeastSquares, ParamType> {
+	ParamType bandwidth = ParamType(1.0);
+	
+	[[nodiscard]] auto Bandwidth(ParamType bandwidthNew) {
+		return HilbertDesc<MethodTagLeastSquares, ParamType>{ bandwidthNew };
+	}
+};
 
 template <template <typename, typename...> class Desc>
 struct SplitDescLeastSquares<Desc, void> {
@@ -274,6 +306,10 @@ struct ArbitraryDesc<MethodTagLeastSquares>
 	ArbitraryDesc() : ArbitraryDesc<MethodTagLeastSquares, decltype(DefaultResponse), decltype(DefaultWeight)>{ DefaultResponse, DefaultWeight } {}
 };
 
+template <>
+struct HilbertDesc<MethodTagLeastSquares>
+	: HilbertDesc<MethodTagLeastSquares, float> {};
+
 //------------------------------------------------------------------------------
 // Factory functions
 //------------------------------------------------------------------------------
@@ -301,6 +337,11 @@ auto Bandstop(Method) {
 template <class Method>
 auto Arbitrary(Method) {
 	return ArbitraryDesc<Method>{};
+}
+
+template <class Method>
+auto Hilbert(Method) {
+	return HilbertDesc<Method>{};
 }
 
 

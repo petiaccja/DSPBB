@@ -97,6 +97,20 @@ TEST_CASE("Arbitrary windowed function", "[FIR Descs]") {
 	REQUIRE(Max(window) == Approx(1));
 }
 
+TEST_CASE("Hilbert windowed view", "[FIR Descs]") {
+	const auto desc = Hilbert(WINDOWED).Window(winWindow);
+	REQUIRE(desc.window.Size() == 3);
+	REQUIRE(desc.window[0] == 1);
+}
+
+TEST_CASE("Hilbert windowed function", "[FIR Descs]") {
+	const auto desc = Hilbert(WINDOWED).Window(windows::blackman);
+	Signal<float, TIME_DOMAIN> window(3);
+	desc.window(window);
+	REQUIRE(window.Size() == 3);
+	REQUIRE(Max(window) == Approx(1));
+}
+
 //------------------------------------------------------------------------------
 // Least Squares
 //------------------------------------------------------------------------------
@@ -168,4 +182,9 @@ TEST_CASE("Arbitrary least squares", "[FIR Descs]") {
 	REQUIRE(desc.responseFunc(0.3f) == Approx(1.0f));
 	REQUIRE(desc.weightFunc(0.4f) == Approx(1.0f));
 	REQUIRE(desc.weightFunc(0.6f) == Approx(0.5f));
+}
+
+TEST_CASE("Hilbert least squares", "[FIR Descs]") {
+	const auto desc = Hilbert(LEAST_SQUARES).Bandwidth(0.95f);
+	REQUIRE(desc.bandwidth == Approx(0.95f));
 }
