@@ -82,14 +82,14 @@ TEST_CASE("Band stop windowed function", "[FIR Descs]") {
 }
 
 TEST_CASE("Arbitrary windowed view", "[FIR Descs]") {
-	const auto desc = Arbitrary(WINDOWED).Response([](float f) { return 1.f; }).Window(winWindow);
+	const auto desc = Arbitrary(WINDOWED).Response([](float) { return 1.f; }).Window(winWindow);
 	REQUIRE(desc.responseFunc(0.3f) == Approx(1.0f));
 	REQUIRE(desc.window.Size() == 3);
 	REQUIRE(desc.window[0] == 1);
 }
 
 TEST_CASE("Arbitrary windowed function", "[FIR Descs]") {
-	const auto desc = Arbitrary(WINDOWED).Response([](float f) { return 1.f; }).Window(windows::blackman);
+	const auto desc = Arbitrary(WINDOWED).Response([](float) { return 1.f; }).Window(windows::blackman);
 	REQUIRE(desc.responseFunc(0.3f) == Approx(1.0f));
 	Signal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
@@ -164,7 +164,7 @@ TEST_CASE("Band stop least squares", "[FIR Descs]") {
 }
 
 TEST_CASE("Arbitrary least squares", "[FIR Descs]") {
-	const auto desc = Arbitrary(LEAST_SQUARES).Response([](float f) { return 1.f; }).Weight([](float f) { return f < 0.5f ? 1.0f : 0.5f; });
+	const auto desc = Arbitrary(LEAST_SQUARES).Response([](float) { return 1.f; }).Weight([](float f) { return f < 0.5f ? 1.0f : 0.5f; });
 	REQUIRE(desc.responseFunc(0.3f) == Approx(1.0f));
 	REQUIRE(desc.weightFunc(0.4f) == Approx(1.0f));
 	REQUIRE(desc.weightFunc(0.6f) == Approx(0.5f));
