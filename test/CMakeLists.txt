@@ -15,13 +15,11 @@ target_sources(UnitTest
 		"Primitives/Test_Signal.cpp"
 		"Primitives/Test_SignalView.cpp"
 		"Primitives/Test_SignalArithmetic.cpp"
-		"Filtering/Test_WindowFunctions.cpp"		
-		
-		
+		"Filtering/Test_WindowFunctions.cpp"
 		"Math/Test_Statistics.cpp"
 		"Math/Test_Functions.cpp"
 		"Vectorization/Test_Kernels.cpp" 
-		)
+		"Filtering/FIR/Test_FIRDescs.cpp")
 
 find_package(Catch2 REQUIRED)
 
