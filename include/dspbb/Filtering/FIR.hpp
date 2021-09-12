@@ -161,7 +161,7 @@ auto TranslateHilbert2HalfbandDesc(const HilbertDesc<MethodTagWindowed, WindowTy
 
 template <class ParamType>
 auto TranslateHilbert2HalfbandDesc(const HilbertDesc<MethodTagLeastSquares, ParamType>& desc) {
-	const ParamType transitionBand = (ParamType(1) - desc.bandwidth) / ParamType(2);
+	const ParamType transitionBand = desc.transition;
 	return Lowpass(LEAST_SQUARES).Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand);
 }
 

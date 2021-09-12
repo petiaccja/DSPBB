@@ -41,6 +41,20 @@ namespace impl {
 		return coefficientMatrix;
 	}
 
+	struct Functor {
+		float operator()(float f) const { return 1.0f; }
+	};
+
+	template <class T, class Func>
+	auto WeightMatrix(size_t gridSize, const Func& weight) {
+		Eigen::DiagonalMatrix<T, Eigen::Dynamic> weightMatrix;
+		weightMatrix.resize(gridSize);
+		for (size_t i = 0; i < gridSize; ++i) {
+			weightMatrix.diagonal()(i) = weight(T(i) / T(gridSize - 1));
+		}
+		return weightMatrix;
+	}
+
 	template <class T, class Func>
 	auto ResponseVector(size_t gridSize, const Func& response) {
 		Eigen::Matrix<T, Eigen::Dynamic, 1> responseVector;
@@ -63,17 +77,18 @@ void FirLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, WeightFu
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = remove_complex_t<R>;
 
-	const size_t L = (coefficients.Size() + 1) / 2;
-	const size_t N = gridSize == 0 ? 4 * L : std::min(L, gridSize);
+	const size_t filterLength = (coefficients.Size() + 1) / 2;
+	gridSize = gridSize == 0 ? 4 * filterLength : std::min(filterLength, gridSize);
 
-	auto coefficientMatrix = impl::CoefficientMatrix<T>(L, N);
-	const auto responseVector = impl::ResponseVector<T>(N, responseFunc);
+	const auto coefficientMatrix = impl::CoefficientMatrix<T>(filterLength, gridSize);
+	const auto weightMatrix = impl::WeightMatrix<T>(gridSize, weightFunc);
+	const auto responseVector = impl::ResponseVector<T>(gridSize, responseFunc);
 
-	Eigen::CompleteOrthogonalDecomposition<decltype(coefficientMatrix)> decomp{ coefficientMatrix };
-	const Eigen::VectorX<T> halfFilter = decomp.solve(responseVector);
-	for (size_t i = 0; i < L; ++i) {
-		coefficients[i] = halfFilter(L - i - 1);
-		coefficients[i + L - 1] = halfFilter[i];
+	Eigen::CompleteOrthogonalDecomposition<Eigen::MatrixX<T>> decomp{ weightMatrix * coefficientMatrix };
+	const Eigen::VectorX<T> halfFilter = decomp.solve(weightMatrix * responseVector);
+	for (size_t i = 0; i < filterLength; ++i) {
+		coefficients[i] = halfFilter(filterLength - i - 1);
+		coefficients[i + filterLength - 1] = halfFilter[i];
 	}
 }
 

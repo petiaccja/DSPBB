@@ -185,6 +185,6 @@ TEST_CASE("Arbitrary least squares", "[FIR Descs]") {
 }
 
 TEST_CASE("Hilbert least squares", "[FIR Descs]") {
-	const auto desc = Hilbert(LEAST_SQUARES).Bandwidth(0.95f);
-	REQUIRE(desc.bandwidth == Approx(0.95f));
+	const auto desc = Hilbert(LEAST_SQUARES).TransitionWidth(0.95f);
+	REQUIRE(desc.transition == Approx(0.95f));
 }

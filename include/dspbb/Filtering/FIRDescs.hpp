@@ -209,9 +209,9 @@ struct BandDescLeastSquares {
 
 template <class ParamType>
 struct HilbertDesc<MethodTagLeastSquares, ParamType> {
-	ParamType bandwidth = ParamType(1.0);
+	ParamType transition = ParamType(1.0);
 	
-	[[nodiscard]] auto Bandwidth(ParamType bandwidthNew) {
+	[[nodiscard]] auto TransitionWidth(ParamType bandwidthNew) {
 		return HilbertDesc<MethodTagLeastSquares, ParamType>{ bandwidthNew };
 	}
 };
