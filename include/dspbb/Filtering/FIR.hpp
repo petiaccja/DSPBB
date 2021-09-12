@@ -1,10 +1,12 @@
 #pragma once
 
+#include "FIRCommon.hpp"
 #include "FIRDescs.hpp"
 #include "FIRLeastSquares.hpp"
 #include "FIRTransforms.hpp"
 #include "FIRWindowed.hpp"
-#include "FIRCommon.hpp"
+
+#include <algorithm>
 
 
 namespace dspbb {
@@ -68,6 +70,82 @@ void FirFilter(SignalR& out, const HilbertDesc<MethodTagWindowed, WindowType>& d
 // Least-squares method
 //------------------------------------------------------------------------------
 
+template <class T>
+T Smoothstep(const T& x) {
+	const float c = std::clamp(x, T(0), T(1));
+	return T(3) * c * c - T(2) * c * c * c;
+}
+
+template <class ParamType>
+auto TranslateLeastSquares(const LowpassDesc<MethodTagLeastSquares, ParamType> desc) {
+	const auto response = [=](ParamType f) {
+		return Smoothstep((f - desc.cutoffEnd) / (desc.cutoffBegin - desc.cutoffEnd));
+	};
+	const auto weight = [=](ParamType f) {
+		return f <= desc.cutoffBegin ? desc.weightLow :
+			   f <= desc.cutoffEnd	 ? desc.weightTransition :
+										 desc.weightHigh;
+	};
+	return std::make_tuple(response, weight);
+}
+
+template <class ParamType>
+auto TranslateLeastSquares(const HighpassDesc<MethodTagLeastSquares, ParamType> desc) {
+	const auto response = [=](ParamType f) {
+		return Smoothstep((f - desc.cutoffBegin) / (desc.cutoffEnd - desc.cutoffBegin));
+	};
+	const auto weight = [=](ParamType f) {
+		return f <= desc.cutoffBegin ? desc.weightLow :
+			   f <= desc.cutoffEnd	 ? desc.weightTransition :
+										 desc.weightHigh;
+	};
+	return std::make_tuple(response, weight);
+}
+
+template <class ParamType>
+auto TranslateLeastSquares(const BandpassDesc<MethodTagLeastSquares, ParamType> desc) {
+	const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
+	const auto response = [=](ParamType f) {
+		return f < fmid ? Smoothstep((f - desc.cutoffBegin1) / (desc.cutoffEnd1 - desc.cutoffBegin1)) :
+							Smoothstep((f - desc.cutoffEnd2) / (desc.cutoffBegin2 - desc.cutoffEnd2));
+	};
+	const auto weight = [=](ParamType f) {
+		return f <= desc.cutoffBegin1 ? desc.weightLow :
+			   f <= desc.cutoffEnd1	  ? desc.weightTransition1 :
+			   f <= desc.cutoffBegin2 ? desc.weightMid :
+			   f <= desc.cutoffEnd2	  ? desc.weightTransition2 :
+										  desc.weightHigh;
+	};
+	return std::make_tuple(response, weight);
+}
+
+template <class ParamType>
+auto TranslateLeastSquares(const BandstopDesc<MethodTagLeastSquares, ParamType> desc) {
+	const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
+	const auto response = [=](ParamType f) {
+		return f < fmid ? Smoothstep((f - desc.cutoffEnd1) / (desc.cutoffBegin1 - desc.cutoffEnd1)) :
+							Smoothstep((f - desc.cutoffBegin2) / (desc.cutoffEnd2 - desc.cutoffBegin2));
+	};
+	const auto weight = [=](ParamType f) {
+		return f <= desc.cutoffBegin1 ? desc.weightLow :
+			   f <= desc.cutoffEnd1	  ? desc.weightTransition1 :
+			   f <= desc.cutoffBegin2 ? desc.weightMid :
+			   f <= desc.cutoffEnd2	  ? desc.weightTransition2 :
+										  desc.weightHigh;
+	};
+	return std::make_tuple(response, weight);
+}
+
+template <class ResponseFunc, class WeightFunc>
+auto TranslateLeastSquares(const ArbitraryDesc<MethodTagLeastSquares, ResponseFunc, WeightFunc> desc) {
+	return std::make_tuple(desc.responseFunc, desc.weightFunc);
+}
+
+template <class SignalR, template <typename, typename...> class Desc, class... Params>
+void FirFilter(SignalR&& out, const Desc<MethodTagLeastSquares, Params...>& desc) {
+	const auto [response, weight] = TranslateLeastSquares(desc);
+	FirLeastSquares(out, response, weight);
+}
 
 
 

@@ -64,7 +64,7 @@ void FirLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, WeightFu
 	using T = remove_complex_t<R>;
 
 	const size_t L = (coefficients.Size() + 1) / 2;
-	const size_t N = gridSize == 0 ? L : std::min(L, gridSize);
+	const size_t N = gridSize == 0 ? 4 * L : std::min(L, gridSize);
 
 	auto coefficientMatrix = impl::CoefficientMatrix<T>(L, N);
 	const auto responseVector = impl::ResponseVector<T>(N, responseFunc);

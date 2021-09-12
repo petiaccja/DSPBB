@@ -182,95 +182,91 @@ TEST_CASE("Windowed methods equal", "[FirFilter]") {
 // Least squares method
 //------------------------------------------------------------------------------
 
+TEST_CASE("Least squares low-pass", "[FirFilter]") {
+	constexpr size_t numTaps = 255;
+	static constexpr float cutoffBegin = 0.28f;
+	static constexpr float cutoffEnd = 0.32f;
+
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(LEAST_SQUARES).Cutoff(cutoffBegin, cutoffEnd));
+	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(IsSymmetric(impulse));
+	REQUIRE(Sum(impulse) == Approx(1).margin(0.01));
+
+	RequireResponse(impulse, { { cutoffBegin - 0.01f, 1.0f }, { cutoffEnd + 0.01f, 0.0f } });
+}
+
+TEST_CASE("Least squares high-pass", "[FirFilter]") {
+	constexpr size_t numTaps = 255;
+	static constexpr float cutoffBegin = 0.28f;
+	static constexpr float cutoffEnd = 0.32f;
+
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(LEAST_SQUARES).Cutoff(cutoffBegin, cutoffEnd));
+	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(IsSymmetric(impulse));
+	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
+
+	RequireResponse(impulse, { { cutoffBegin - 0.04f, 0.0f }, { cutoffEnd + 0.04f, 1.0f } });
+}
+
+
+TEST_CASE("Least squares band-pass", "[FirFilter]") {
+	constexpr size_t numTaps = 255;
+	static constexpr float bandLowBegin = 0.28f;
+	static constexpr float bandLowEnd = 0.32f;
+	static constexpr float bandHighBegin = 0.58f;
+	static constexpr float bandHighEnd = 0.65f;
+
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(LEAST_SQUARES).Cutoff(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
+	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(IsSymmetric(impulse));
+	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
+
+	RequireResponse(impulse, {
+								 { bandLowBegin - 0.01f, 0.0f },
+								 { bandLowEnd + 0.01f, 1.0f },
+								 { bandHighBegin - 0.01f, 1.0f },
+								 { bandHighEnd + 0.01f, 0.0f },
+							 });
+}
+
+TEST_CASE("Least squares band-stop", "[FirFilter]") {
+	constexpr size_t numTaps = 255;
+	static constexpr float bandLowBegin = 0.28f;
+	static constexpr float bandLowEnd = 0.32f;
+	static constexpr float bandHighBegin = 0.58f;
+	static constexpr float bandHighEnd = 0.65f;
+
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(LEAST_SQUARES).Cutoff(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
+	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(IsSymmetric(impulse));
+	REQUIRE(Sum(impulse) == Approx(1.0).margin(0.01));
+
+	RequireResponse(impulse, {
+								 { bandLowBegin - 0.01f, 1.0f },
+								 { bandLowEnd + 0.01f, 0.0f },
+								 { bandHighBegin - 0.01f, 0.0f },
+								 { bandHighEnd + 0.01f, 1.0f },
+							 });
+}
+
+TEST_CASE("Least squares arbitrary", "[FirFilter]") {
+	constexpr size_t numTaps = 255;
+
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Arbitrary(LEAST_SQUARES).Response(TestArbitraryResponse));
+	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(IsSymmetric(impulse));
+
+	RequireResponse(impulse, {
+								 { 0.12f, TestArbitraryResponse(0.12f) },
+								 { 0.12f, TestArbitraryResponse(0.12f) },
+								 { 0.32f, TestArbitraryResponse(0.32f) },
+								 { 0.67f, TestArbitraryResponse(0.67f) },
+								 { 0.88f, TestArbitraryResponse(0.88f) },
+							 });
+}
+
 
 /*
-TEST_CASE("Windowed arbitrary filter", "[FirFilter]") {
-	constexpr size_t numTaps = 255;
-	constexpr std::array<float, 4> amplitudes = { 1.0f, 0.2f, 0.6f, 1.2f };
-	constexpr std::array<float, 4> frequencies = { 0.0625f, 0.1875f, 0.375f, 0.75f };
-
-	const auto impulse1 = FirFilter<float, TIME_DOMAIN>(numTaps, Arbitrary(WINDOWED).Response(response).Window(windows::hamming));
-	const auto impulse2 = FirFilter<float, TIME_DOMAIN>(numTaps, Arbitrary(WINDOWED).Response(response).Window(windows::hamming.operator()<float, TIME_DOMAIN>(numTaps)));
-	REQUIRE(IsSymmetric(impulse1));
-	REQUIRE(impulse1.Size() == numTaps);
-	REQUIRE(impulse2.Size() == numTaps);
-	REQUIRE(Max(Abs(impulse1 - impulse2)) < 1e-4f);
-
-	for (size_t i = 0; i < amplitudes.size(); ++i) {
-		const auto response = MeasureResponse(sampleRate, frequencies[i] * sampleRate / 2.0f, impulse1);
-		REQUIRE(response == Approx(amplitudes[i]).margin(0.05f));
-	}
-}
-
-TEST_CASE("Highpass", "[FirFilter]") {
-	constexpr size_t numTaps = 255;
-	static constexpr float cutoff = 3800.f;
-	const auto normalizedCutoff = NormalizedFrequency(cutoff, sampleRate);
-
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(normalizedCutoff), Windowed(windows::hamming));
-	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) < 1e-4f);
-	REQUIRE(impulse.Size() == numTaps);
-
-	const float passResponse = MeasureResponse(sampleRate, cutoff * 1.15f, impulse);
-	const float stopResponse = MeasureResponse(sampleRate, cutoff * 0.85f, impulse);
-
-	REQUIRE(passResponse > 0.95f);
-	REQUIRE(passResponse < 1.05f);
-	REQUIRE(stopResponse < 0.05f);
-}
-
-TEST_CASE("Bandpass", "[FirFilter]") {
-	constexpr size_t numTaps = 255;
-	static constexpr float bandLow = 3800.f;
-	static constexpr float bandHigh = 14500.f;
-	const auto normalizedLow = NormalizedFrequency(bandLow, sampleRate);
-	const auto normalizedHigh = NormalizedFrequency(bandHigh, sampleRate);
-
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(normalizedLow, normalizedHigh), Windowed(windows::hamming));
-	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) < 1e-3f);
-	REQUIRE(impulse.Size() == numTaps);
-
-	const float lowStopResponse = MeasureResponse(sampleRate, bandLow * 0.9f, impulse);
-	const float lowPassResponse = MeasureResponse(sampleRate, bandLow * 1.1f, impulse);
-	const float highPassResponse = MeasureResponse(sampleRate, bandHigh * 0.9f, impulse);
-	const float highStopResponse = MeasureResponse(sampleRate, bandHigh * 1.1f, impulse);
-
-	REQUIRE(highPassResponse > 0.95f);
-	REQUIRE(highPassResponse < 1.05f);
-	REQUIRE(highStopResponse < 0.05f);
-	REQUIRE(lowPassResponse > 0.95f);
-	REQUIRE(lowPassResponse < 1.05f);
-	REQUIRE(lowStopResponse < 0.05f);
-}
-
-
-TEST_CASE("Bandstop", "[FirFilter]") {
-	constexpr size_t numTaps = 255;
-	static constexpr float bandLow = 3800.f;
-	static constexpr float bandHigh = 14500.f;
-	const auto normalizedLow = NormalizedFrequency(bandLow, sampleRate);
-	const auto normalizedHigh = NormalizedFrequency(bandHigh, sampleRate);
-
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(normalizedLow, normalizedHigh), Windowed(windows::hamming));
-	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(1).epsilon(0.005f));
-	REQUIRE(impulse.Size() == numTaps);
-
-	const float lowPassResponse = MeasureResponse(sampleRate, bandLow * 0.9f, impulse);
-	const float lowStopResponse = MeasureResponse(sampleRate, bandLow * 1.1f, impulse);
-	const float highStopResponse = MeasureResponse(sampleRate, bandHigh * 0.9f, impulse);
-	const float highPassResponse = MeasureResponse(sampleRate, bandHigh * 1.1f, impulse);
-
-	REQUIRE(highPassResponse > 0.95f);
-	REQUIRE(highPassResponse < 1.05f);
-	REQUIRE(highStopResponse < 0.05f);
-	REQUIRE(lowPassResponse > 0.95f);
-	REQUIRE(lowPassResponse < 1.05f);
-	REQUIRE(lowStopResponse < 0.05f);
-}
-
 TEST_CASE("Hilbert odd form", "[Hilbert]") {
 	const auto filter = FirFilter<float, TIME_DOMAIN>(247, Hilbert(), Windowed(windows::hamming));
 	REQUIRE(filter.Size() == 247);
