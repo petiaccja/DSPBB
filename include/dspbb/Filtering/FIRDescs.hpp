@@ -102,7 +102,7 @@ struct ArbitraryDesc<MethodTagWindowed, ResponseFunc, WindowType> {
 template <class WindowType>
 struct HilbertDesc<MethodTagWindowed, WindowType> {
 	WindowType window;
-	
+
 	template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
 	[[nodiscard]] auto Window(NewWindowType windowNew) {
 		return HilbertDesc<MethodTagWindowed, NewWindowType>{ std::move(windowNew) };
@@ -169,16 +169,12 @@ struct SplitDescLeastSquares {
 	ParamType weightLow = ParamType(1.0);
 	ParamType weightTransition = ParamType(0.0);
 	ParamType weightHigh = ParamType(1.0);
-	bool smooth = false;
 
 	[[nodiscard]] auto Cutoff(ParamType begin, ParamType end) {
-		return Desc<MethodTagLeastSquares, ParamType>{ { begin, end, weightLow, weightTransition, weightHigh, smooth } };
+		return Desc<MethodTagLeastSquares, ParamType>{ { begin, end, weightLow, weightTransition, weightHigh } };
 	}
 	[[nodiscard]] auto Weight(ParamType low, ParamType transition, ParamType high) {
-		return Desc<MethodTagLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, low, transition, high, smooth } };
-	}
-	[[nodiscard]] auto Smooth(bool enable) {
-		return Desc<MethodTagLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, weightLow, weightTransition, weightHigh, enable } };
+		return Desc<MethodTagLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, low, transition, high } };
 	}
 };
 
@@ -193,24 +189,19 @@ struct BandDescLeastSquares {
 	ParamType weightMid = ParamType(1.0);
 	ParamType weightTransition2 = ParamType(0.0);
 	ParamType weightHigh = ParamType(1.0);
-	bool smooth1 = false;
-	bool smooth2 = false;
 
 	[[nodiscard]] auto Band(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
-		return Desc<MethodTagLeastSquares, ParamType>{ { begin1, end1, begin2, end2, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh, smooth1, smooth2 } };
+		return Desc<MethodTagLeastSquares, ParamType>{ { begin1, end1, begin2, end2, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh } };
 	}
 	[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {
-		return Desc<MethodTagLeastSquares, ParamType>{ { cutoffBegin1, cutoffEnd1, cutoffBegin2, cutoffEnd2, low, transition1, mid, transition2, high, smooth1, smooth2 } };
-	}
-	[[nodiscard]] auto Smooth(bool enable1, bool enable2) {
-		return Desc<MethodTagLeastSquares, ParamType>{ { cutoffBegin1, cutoffEnd1, cutoffBegin2, cutoffEnd2, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh, enable1, enable2 } };
+		return Desc<MethodTagLeastSquares, ParamType>{ { cutoffBegin1, cutoffEnd1, cutoffBegin2, cutoffEnd2, low, transition1, mid, transition2, high } };
 	}
 };
 
 template <class ParamType>
 struct HilbertDesc<MethodTagLeastSquares, ParamType> {
 	ParamType transition = ParamType(1.0);
-	
+
 	[[nodiscard]] auto TransitionWidth(ParamType bandwidthNew) {
 		return HilbertDesc<MethodTagLeastSquares, ParamType>{ bandwidthNew };
 	}
@@ -226,10 +217,6 @@ struct SplitDescLeastSquares<Desc, void> {
 	[[nodiscard]] auto Weight(ParamType low, ParamType transition, ParamType high) {
 		return Desc<MethodTagLeastSquares, ParamType>{}.Weight(low, transition, high);
 	}
-	template <class ParamType>
-	[[nodiscard]] auto Smooth(bool enable) {
-		return Desc<MethodTagLeastSquares, ParamType>{}.Smooth(enable);
-	}
 };
 
 template <template <typename, typename...> class Desc>
@@ -241,10 +228,6 @@ struct BandDescLeastSquares<Desc, void> {
 	template <class ParamType>
 	[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {
 		return Desc<MethodTagLeastSquares, ParamType>{}.Weight(low, transition1, mid, transition2, high);
-	}
-	template <class ParamType>
-	[[nodiscard]] auto Smooth(bool enable1, bool enable2) {
-		return Desc<MethodTagLeastSquares, ParamType>{}.Smooth(enable1, enable2);
 	}
 };
 
