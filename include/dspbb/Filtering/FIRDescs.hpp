@@ -55,9 +55,8 @@ struct SplitDescWindowed {
 		return Desc<MethodTagWindowed, ParamType, NewWindowType>{ { std::move(cutoff), std::move(windowNew) } };
 	}
 	template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-	[[nodiscard]] auto Window(const NewWindowType& windowNew) {
-		const auto view = AsView(windowNew);
-		return Desc<MethodTagWindowed, ParamType, decltype(view)>{ { std::move(cutoff), view } };
+	[[nodiscard]] auto Window(NewWindowType windowNew) {
+		return Desc<MethodTagWindowed, ParamType, NewWindowType>{ { std::move(cutoff), std::move(windowNew) } };
 	}
 };
 
@@ -76,9 +75,8 @@ struct BandDescWindowed {
 		return Desc<MethodTagWindowed, ParamType, NewWindowType>{ { std::move(low), std::move(high), std::move(windowNew) } };
 	}
 	template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-	[[nodiscard]] auto Window(const NewWindowType& windowNew) {
-		const auto view = AsView(windowNew);
-		return Desc<MethodTagWindowed, ParamType, decltype(view)>{ { std::move(low), std::move(high), view } };
+	[[nodiscard]] auto Window(NewWindowType windowNew) {
+		return Desc<MethodTagWindowed, ParamType, NewWindowType>{ { std::move(low), std::move(high), std::move(windowNew) } };
 	}
 };
 
@@ -96,9 +94,8 @@ struct ArbitraryDesc<MethodTagWindowed, ResponseFunc, WindowType> {
 		return ArbitraryDesc<MethodTagWindowed, ResponseFunc, NewWindowType>{ std::move(responseFunc), std::move(windowNew) };
 	}
 	template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-	[[nodiscard]] auto Window(const NewWindowType& windowNew) {
-		const auto view = AsView(windowNew);
-		return ArbitraryDesc<MethodTagWindowed, ResponseFunc, decltype(view)>{ std::move(responseFunc), view };
+	[[nodiscard]] auto Window(NewWindowType windowNew) {
+		return ArbitraryDesc<MethodTagWindowed, ResponseFunc, NewWindowType>{ std::move(responseFunc), std::move(windowNew) };
 	}
 };
 
@@ -111,9 +108,8 @@ struct HilbertDesc<MethodTagWindowed, WindowType> {
 		return HilbertDesc<MethodTagWindowed, NewWindowType>{ std::move(windowNew) };
 	}
 	template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-	[[nodiscard]] auto Window(const NewWindowType& windowNew) {
-		const auto view = AsView(windowNew);
-		return HilbertDesc<MethodTagWindowed, decltype(view)>{ view };
+	[[nodiscard]] auto Window(NewWindowType windowNew) {
+		return HilbertDesc<MethodTagWindowed, NewWindowType>{ std::move(windowNew) };
 	}
 };
 
