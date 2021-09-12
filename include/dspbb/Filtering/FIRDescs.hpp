@@ -196,7 +196,7 @@ struct BandDescLeastSquares {
 	bool smooth1 = false;
 	bool smooth2 = false;
 
-	[[nodiscard]] auto Cutoff(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
+	[[nodiscard]] auto Band(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
 		return Desc<MethodTagLeastSquares, ParamType>{ { begin1, end1, begin2, end2, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh, smooth1, smooth2 } };
 	}
 	[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {
@@ -235,8 +235,8 @@ struct SplitDescLeastSquares<Desc, void> {
 template <template <typename, typename...> class Desc>
 struct BandDescLeastSquares<Desc, void> {
 	template <class ParamType>
-	[[nodiscard]] auto Cutoff(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
-		return Desc<MethodTagLeastSquares, ParamType>{}.Cutoff(begin1, end1, begin2, end2);
+	[[nodiscard]] auto Band(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
+		return Desc<MethodTagLeastSquares, ParamType>{}.Band(begin1, end1, begin2, end2);
 	}
 	template <class ParamType>
 	[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {

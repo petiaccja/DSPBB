@@ -228,7 +228,7 @@ TEST_CASE("Least squares band-pass", "[FIR]") {
 	static constexpr float bandHighBegin = 0.58f;
 	static constexpr float bandHighEnd = 0.65f;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(LEAST_SQUARES).Cutoff(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
@@ -248,7 +248,7 @@ TEST_CASE("Least squares band-stop", "[FIR]") {
 	static constexpr float bandHighBegin = 0.58f;
 	static constexpr float bandHighEnd = 0.65f;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(LEAST_SQUARES).Cutoff(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 	REQUIRE(Sum(impulse) == Approx(1.0).margin(0.01));

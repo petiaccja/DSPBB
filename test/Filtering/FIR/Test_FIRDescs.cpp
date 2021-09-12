@@ -148,7 +148,7 @@ TEST_CASE("High pass least squares", "[FIR Descs]") {
 }
 
 TEST_CASE("Band pass least squares", "[FIR Descs]") {
-	const auto desc = Bandpass(LEAST_SQUARES).Cutoff(lsBegin1, lsEnd1, lsBegin2, lsEnd2).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh).Smooth(lsSmooth1, lsSmooth2);
+	const auto desc = Bandpass(LEAST_SQUARES).Band(lsBegin1, lsEnd1, lsBegin2, lsEnd2).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh).Smooth(lsSmooth1, lsSmooth2);
 	REQUIRE(desc.cutoffBegin1 == lsBegin1);
 	REQUIRE(desc.cutoffEnd1 == lsEnd1);
 	REQUIRE(desc.cutoffBegin2 == lsBegin2);
@@ -163,7 +163,7 @@ TEST_CASE("Band pass least squares", "[FIR Descs]") {
 }
 
 TEST_CASE("Band stop least squares", "[FIR Descs]") {
-	const auto desc = Bandstop(LEAST_SQUARES).Cutoff(lsBegin1, lsEnd1, lsBegin2, lsEnd2).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh).Smooth(lsSmooth1, lsSmooth2);
+	const auto desc = Bandstop(LEAST_SQUARES).Band(lsBegin1, lsEnd1, lsBegin2, lsEnd2).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh).Smooth(lsSmooth1, lsSmooth2);
 	REQUIRE(desc.cutoffBegin1 == lsBegin1);
 	REQUIRE(desc.cutoffEnd1 == lsEnd1);
 	REQUIRE(desc.cutoffBegin2 == lsBegin2);
