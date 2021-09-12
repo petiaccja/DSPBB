@@ -17,38 +17,38 @@ namespace dspbb {
 
 // Lowpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const LowpassDesc<MethodTagWindowed, ParamType, WindowType>& responseDesc) {
-	FirLowpassWin(out, responseDesc.cutoff, responseDesc.window);
+void FirFilter(SignalR&& out, const LowpassDesc<MethodTagWindowed, ParamType, WindowType>& desc) {
+	FirLowpassWin(out, desc.cutoff, desc.window);
 }
 
 
 // Highpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const HighpassDesc<MethodTagWindowed, ParamType, WindowType>& responseDesc) {
-	FirFilter(out, Lowpass(WINDOWED).Cutoff(responseDesc.cutoff).Window(responseDesc.window));
+void FirFilter(SignalR&& out, const HighpassDesc<MethodTagWindowed, ParamType, WindowType>& desc) {
+	FirFilter(out, Lowpass(WINDOWED).Cutoff(desc.cutoff).Window(desc.window));
 	ComplementaryResponse(out, out);
 }
 
 // Bandpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const BandpassDesc<MethodTagWindowed, ParamType, WindowType>& responseDesc) {
-	const ParamType bandWidth = responseDesc.high - responseDesc.low;
-	const ParamType bandCenter = (responseDesc.high + responseDesc.low) / ParamType(2);
-	FirFilter(out, Lowpass(WINDOWED).Cutoff(bandWidth / ParamType(2)).Window(responseDesc.window));
+void FirFilter(SignalR&& out, const BandpassDesc<MethodTagWindowed, ParamType, WindowType>& desc) {
+	const ParamType bandWidth = desc.high - desc.low;
+	const ParamType bandCenter = (desc.high + desc.low) / ParamType(2);
+	FirFilter(out, Lowpass(WINDOWED).Cutoff(bandWidth / ParamType(2)).Window(desc.window));
 	ShiftResponse(out, out, bandCenter);
 }
 
 // Bandstop
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const BandstopDesc<MethodTagWindowed, ParamType, WindowType>& responseDesc) {
-	FirFilter(out, Bandpass(WINDOWED).Band(responseDesc.low, responseDesc.high).Window(responseDesc.window));
+void FirFilter(SignalR&& out, const BandstopDesc<MethodTagWindowed, ParamType, WindowType>& desc) {
+	FirFilter(out, Bandpass(WINDOWED).Band(desc.low, desc.high).Window(desc.window));
 	ComplementaryResponse(out, out);
 }
 
 // Arbitrary
 template <class SignalR, class ResponseFunc, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const ArbitraryDesc<MethodTagWindowed, ResponseFunc, WindowType>& responseDesc) {
-	FirArbitraryWin(out, responseDesc.responseFunc, responseDesc.window);
+void FirFilter(SignalR&& out, const ArbitraryDesc<MethodTagWindowed, ResponseFunc, WindowType>& desc) {
+	FirArbitraryWin(out, desc.responseFunc, desc.window);
 }
 
 //------------------------------------------------------------------------------
@@ -61,68 +61,84 @@ T Smoothstep(const T& x) {
 	return T(3) * c * c - T(2) * c * c * c;
 }
 
+template <class F, class Desc>
+auto LeastSquaresSplitWeight(F frequency, const Desc& desc) {
+	if (frequency <= desc.cutoffBegin) {
+		return desc.weightLow;
+	}
+	if (frequency <= desc.cutoffEnd) {
+		return desc.weightTransition;
+	}
+	return desc.weightHigh;
+}
+
+template <class F, class Desc>
+auto LeastSquaresBandWeight(F frequency, const Desc& desc) {
+	if (frequency <= desc.cutoffBegin1) {
+		return desc.weightLow;
+	}
+	if (frequency <= desc.cutoffEnd1) {
+		return desc.weightTransition1;
+	}
+	if (frequency <= desc.cutoffBegin2) {
+		return desc.weightMid;
+	}
+	if (frequency <= desc.cutoffEnd2) {
+		return desc.weightTransition2;
+	}
+	return desc.weightHigh;
+}
+
 template <class ParamType>
-auto TranslateLeastSquares(const LowpassDesc<MethodTagLeastSquares, ParamType> desc) {
-	const auto response = [=](ParamType f) {
+auto TranslateLeastSquares(const LowpassDesc<MethodTagLeastSquares, ParamType>& desc) {
+	const auto response = [desc](ParamType f) {
 		return Smoothstep((f - desc.cutoffEnd) / (desc.cutoffBegin - desc.cutoffEnd));
 	};
-	const auto weight = [=](ParamType f) {
-		return f <= desc.cutoffBegin ? desc.weightLow :
-			   f <= desc.cutoffEnd	 ? desc.weightTransition :
-										 desc.weightHigh;
+	const auto weight = [desc](ParamType f) {
+		return LeastSquaresSplitWeight(f, desc);
 	};
 	return std::make_tuple(response, weight);
 }
 
 template <class ParamType>
-auto TranslateLeastSquares(const HighpassDesc<MethodTagLeastSquares, ParamType> desc) {
-	const auto response = [=](ParamType f) {
+auto TranslateLeastSquares(const HighpassDesc<MethodTagLeastSquares, ParamType>& desc) {
+	const auto response = [desc](ParamType f) {
 		return Smoothstep((f - desc.cutoffBegin) / (desc.cutoffEnd - desc.cutoffBegin));
 	};
-	const auto weight = [=](ParamType f) {
-		return f <= desc.cutoffBegin ? desc.weightLow :
-			   f <= desc.cutoffEnd	 ? desc.weightTransition :
-										 desc.weightHigh;
+	const auto weight = [desc](ParamType f) {
+		return LeastSquaresSplitWeight(f, desc);
 	};
 	return std::make_tuple(response, weight);
 }
 
 template <class ParamType>
-auto TranslateLeastSquares(const BandpassDesc<MethodTagLeastSquares, ParamType> desc) {
+auto TranslateLeastSquares(const BandpassDesc<MethodTagLeastSquares, ParamType>& desc) {
 	const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
-	const auto response = [=](ParamType f) {
+	const auto response = [desc, fmid](ParamType f) {
 		return f < fmid ? Smoothstep((f - desc.cutoffBegin1) / (desc.cutoffEnd1 - desc.cutoffBegin1)) :
 							Smoothstep((f - desc.cutoffEnd2) / (desc.cutoffBegin2 - desc.cutoffEnd2));
 	};
-	const auto weight = [=](ParamType f) {
-		return f <= desc.cutoffBegin1 ? desc.weightLow :
-			   f <= desc.cutoffEnd1	  ? desc.weightTransition1 :
-			   f <= desc.cutoffBegin2 ? desc.weightMid :
-			   f <= desc.cutoffEnd2	  ? desc.weightTransition2 :
-										  desc.weightHigh;
+	const auto weight = [desc](ParamType f) {
+		return LeastSquaresBandWeight(f, desc);
 	};
 	return std::make_tuple(response, weight);
 }
 
 template <class ParamType>
-auto TranslateLeastSquares(const BandstopDesc<MethodTagLeastSquares, ParamType> desc) {
+auto TranslateLeastSquares(const BandstopDesc<MethodTagLeastSquares, ParamType>& desc) {
 	const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
-	const auto response = [=](ParamType f) {
+	const auto response = [desc, fmid](ParamType f) {
 		return f < fmid ? Smoothstep((f - desc.cutoffEnd1) / (desc.cutoffBegin1 - desc.cutoffEnd1)) :
 							Smoothstep((f - desc.cutoffBegin2) / (desc.cutoffEnd2 - desc.cutoffBegin2));
 	};
-	const auto weight = [=](ParamType f) {
-		return f <= desc.cutoffBegin1 ? desc.weightLow :
-			   f <= desc.cutoffEnd1	  ? desc.weightTransition1 :
-			   f <= desc.cutoffBegin2 ? desc.weightMid :
-			   f <= desc.cutoffEnd2	  ? desc.weightTransition2 :
-										  desc.weightHigh;
+	const auto weight = [desc](ParamType f) {
+		return LeastSquaresBandWeight(f, desc);
 	};
 	return std::make_tuple(response, weight);
 }
 
 template <class ResponseFunc, class WeightFunc>
-auto TranslateLeastSquares(const ArbitraryDesc<MethodTagLeastSquares, ResponseFunc, WeightFunc> desc) {
+auto TranslateLeastSquares(const ArbitraryDesc<MethodTagLeastSquares, ResponseFunc, WeightFunc>& desc) {
 	return std::make_tuple(desc.responseFunc, desc.weightFunc);
 }
 
@@ -150,12 +166,12 @@ auto TranslateHilbert2HalfbandDesc(const HilbertDesc<MethodTagLeastSquares, Para
 }
 
 template <class SignalR, class Method, class... Params, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const HilbertDesc<Method, Params...>& desc) {
+void FirFilter(SignalR&& out, const HilbertDesc<Method, Params...>& desc) {
 	const auto halfbandDesc = TranslateHilbert2HalfbandDesc(desc);
 
 	if (out.Size() % 2 == 0) {
 		const size_t halfbandSize = out.Size() * 2 - 1;
-		SignalR halfband(halfbandSize);
+		std::decay_t<SignalR> halfband(halfbandSize);
 		FirFilter(halfband, halfbandDesc);
 		HalfbandToHilbertEven(out, halfband);
 	}
