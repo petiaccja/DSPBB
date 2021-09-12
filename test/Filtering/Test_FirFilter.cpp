@@ -60,7 +60,7 @@ auto MeasureResponse(float frequency, const SignalT& filter) {
 }
 
 template <class SignalT>
-void RequireResponse(const SignalT& impulse, std::vector<std::pair<float, float>> desired, double margin = 0.03) {
+void RequireResponse(const SignalT& impulse, const std::vector<std::pair<float, float>>& desired, double margin = 0.03) {
 	for (const auto& [frequency, desiredResponse] : desired) {
 		const auto actualResponse = MeasureResponse(frequency, impulse);
 		REQUIRE(actualResponse == Approx(desiredResponse).margin(margin));

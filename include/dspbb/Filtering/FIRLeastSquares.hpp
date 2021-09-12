@@ -41,10 +41,6 @@ namespace impl {
 		return coefficientMatrix;
 	}
 
-	struct Functor {
-		float operator()(float f) const { return 1.0f; }
-	};
-
 	template <class T, class Func>
 	auto WeightMatrix(size_t gridSize, const Func& weight) {
 		Eigen::DiagonalMatrix<T, Eigen::Dynamic> weightMatrix;
