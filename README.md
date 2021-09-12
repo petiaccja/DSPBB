@@ -81,7 +81,7 @@ More like notes to myself as to what I want to have.
   - ❔️ FIR filtering
     - Methods:
       - ✔️ Window method
-      - ❌️ Least-squares method
+      - ✔️ Least-squares method
       - ❌️ Parks-McClellan method
     - Types:
       - ✔️ Low-pass
