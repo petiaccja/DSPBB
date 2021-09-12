@@ -152,6 +152,19 @@ TEST_CASE("Windowed arbitrary", "[FirFilter]") {
 							 });
 }
 
+TEST_CASE("Windowed hilbert magnitude", "[Hilbert]") {
+	const auto odd = FirFilter<float, TIME_DOMAIN>(377, Hilbert(WINDOWED).Window(windows::blackman));
+	const auto even = FirFilter<float, TIME_DOMAIN>(376, Hilbert(WINDOWED).Window(windows::blackman));
+
+	std::vector<std::pair<float, float>> required = {
+		{ 0.1f, 1.0f },
+		{ 0.5f, 1.0f },
+		{ 0.9f, 1.0f },
+	};
+	RequireResponse(odd, required);
+	RequireResponse(even, required);
+}
+
 TEST_CASE("Windowed methods equal", "[FirFilter]") {
 	constexpr size_t numTaps = 127;
 	constexpr float cutoff = 0.3f;
@@ -175,7 +188,6 @@ TEST_CASE("Windowed methods equal", "[FirFilter]") {
 	REQUIRE(Max(Abs(bp1 - bp2)) < 1e-4f);
 	REQUIRE(Max(Abs(bs1 - bs2)) < 1e-4f);
 }
-
 
 
 //------------------------------------------------------------------------------
@@ -265,14 +277,35 @@ TEST_CASE("Least squares arbitrary", "[FirFilter]") {
 							 });
 }
 
-TEST_CASE("Hilbert - Reminder: add implementation and tests with new system!", "[FirFilter]") {
-	REQUIRE(false);
+TEST_CASE("Least squares hilbert magnitude", "[Hilbert]") {
+	const float bandwidth = 0.94f;
+	const auto odd = FirFilter<float, TIME_DOMAIN>(377, Hilbert(LEAST_SQUARES).Bandwidth(bandwidth));
+	const auto even = FirFilter<float, TIME_DOMAIN>(376, Hilbert(LEAST_SQUARES).Bandwidth(bandwidth));
+
+	std::vector<std::pair<float, float>> requiredOdd = {
+		{ 0.031f, 1.0f },
+		{ 0.5f, 1.0f },
+		{ 0.969f, 1.0f },
+	};
+	std::vector<std::pair<float, float>> requiredEven = {
+		{ 0.062f, 1.0f },
+		{ 0.5f, 1.0f },
+		{ 0.999f, 1.0f },
+	};
+	RequireResponse(odd, requiredOdd, 0.01);
+	RequireResponse(even, requiredEven, 0.01);
+	
+	REQUIRE(MeasureResponse(0.020f, odd) < 0.9f);
+	REQUIRE(MeasureResponse(0.040f, even) < 0.9f);
+	REQUIRE(MeasureResponse(0.980f, odd) < 0.9f);
 }
 
+//------------------------------------------------------------------------------
+// Hilbert band transform special checks
+//------------------------------------------------------------------------------
 
-/*
 TEST_CASE("Hilbert odd form", "[Hilbert]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(247, Hilbert(), Windowed(windows::hamming));
+	const auto filter = FirFilter<float, TIME_DOMAIN>(247, Hilbert(WINDOWED));
 	REQUIRE(filter.Size() == 247);
 	REQUIRE(IsAntiSymmetric(filter));
 	const auto nonZeroSamples = Decimate(filter, 2);
@@ -286,7 +319,7 @@ TEST_CASE("Hilbert odd form", "[Hilbert]") {
 }
 
 TEST_CASE("Hilbert even form", "[Hilbert]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(246, Hilbert(), Windowed(windows::hamming));
+	const auto filter = FirFilter<float, TIME_DOMAIN>(246, Hilbert(WINDOWED));
 	REQUIRE(filter.Size() == 246);
 	REQUIRE(IsAntiSymmetric(filter));
 	REQUIRE(Min(Abs(filter)) > 0.0f);
@@ -297,7 +330,7 @@ TEST_CASE("Hilbert even form", "[Hilbert]") {
 }
 
 TEST_CASE("Hilbert odd small form", "[Hilbert]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(19, Hilbert(), Windowed(windows::hamming));
+	const auto filter = FirFilter<float, TIME_DOMAIN>(19, Hilbert(WINDOWED));
 	REQUIRE(filter.Size() == 19);
 	REQUIRE(IsAntiSymmetric(filter));
 	const auto nonZeroSamples = Decimate(filter, 2);
@@ -311,7 +344,7 @@ TEST_CASE("Hilbert odd small form", "[Hilbert]") {
 }
 
 TEST_CASE("Hilbert even small form", "[Hilbert]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(10, Hilbert(), Windowed(windows::hamming));
+	const auto filter = FirFilter<float, TIME_DOMAIN>(10, Hilbert(WINDOWED));
 	REQUIRE(filter.Size() == 10);
 	REQUIRE(IsAntiSymmetric(filter));
 	REQUIRE(Min(Abs(filter)) > 0.0f);
@@ -322,9 +355,9 @@ TEST_CASE("Hilbert even small form", "[Hilbert]") {
 }
 
 
-TEST_CASE("Hilbert odd response", "[Hilbert]") {
+TEST_CASE("Hilbert odd phase shift", "[Hilbert]") {
 	constexpr size_t testSignalSize = 4096;
-	const auto filter = FirFilter<float, TIME_DOMAIN>(377, Hilbert(), Windowed(windows::hamming));
+	const auto filter = FirFilter<float, TIME_DOMAIN>(377, Hilbert(WINDOWED));
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
 	const auto imaginarySignal = Convolution(filter, testSignal, convolution::central);
 	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
@@ -332,13 +365,12 @@ TEST_CASE("Hilbert odd response", "[Hilbert]") {
 	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
 }
 
-TEST_CASE("Hilbert even response", "[Hilbert]") {
+TEST_CASE("Hilbert even phase shift", "[Hilbert]") {
 	constexpr size_t testSignalSize = 4096;
-	const auto filter = FirFilter<float, TIME_DOMAIN>(376, Hilbert(), Windowed(windows::hamming));
+	const auto filter = FirFilter<float, TIME_DOMAIN>(376, Hilbert(WINDOWED));
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
 	const auto imaginarySignal = Convolution(filter, testSignal, convolution::central);
 	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
 	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.01f);
 	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
 }
-*/

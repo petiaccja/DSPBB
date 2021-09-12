@@ -51,21 +51,6 @@ void FirFilter(SignalR& out, const ArbitraryDesc<MethodTagWindowed, ResponseFunc
 	FirArbitraryWin(out, responseDesc.responseFunc, responseDesc.window);
 }
 
-// Hilbert
-template <class SignalR, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR& out, const HilbertDesc<MethodTagWindowed, WindowType>& desc) {
-	if (out.Size() % 2 == 0) {
-		const size_t halfbandSize = out.Size() * 2 - 1;
-		SignalR halfband(halfbandSize);
-		FirFilter(halfband, Lowpass(WINDOWED).Cutoff(0.5f).Window(desc.window));
-		HalfbandToHilbertEven(out, halfband);
-	}
-	else {
-		FirFilter(out, Lowpass(WINDOWED).Cutoff(0.5f).Window(desc.window));
-		HalfbandToHilbertOdd(out, out);
-	}
-}
-
 //------------------------------------------------------------------------------
 // Least-squares method
 //------------------------------------------------------------------------------
@@ -142,12 +127,43 @@ auto TranslateLeastSquares(const ArbitraryDesc<MethodTagLeastSquares, ResponseFu
 }
 
 template <class SignalR, template <typename, typename...> class Desc, class... Params>
-void FirFilter(SignalR&& out, const Desc<MethodTagLeastSquares, Params...>& desc) {
+auto FirFilter(SignalR&& out, const Desc<MethodTagLeastSquares, Params...>& desc)
+	-> decltype(void(TranslateLeastSquares(desc))) {
 	const auto [response, weight] = TranslateLeastSquares(desc);
 	FirLeastSquares(out, response, weight);
 }
 
 
+//------------------------------------------------------------------------------
+// Hilbert
+//------------------------------------------------------------------------------
+
+template <class WindowType>
+auto TranslateHilbert2HalfbandDesc(const HilbertDesc<MethodTagWindowed, WindowType>& desc) {
+	return Lowpass(WINDOWED).Cutoff(0.5f).Window(desc.window);
+}
+
+template <class ParamType>
+auto TranslateHilbert2HalfbandDesc(const HilbertDesc<MethodTagLeastSquares, ParamType>& desc) {
+	const ParamType transitionBand = (ParamType(1) - desc.bandwidth) / ParamType(2);
+	return Lowpass(LEAST_SQUARES).Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand);
+}
+
+template <class SignalR, class Method, class... Params, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void FirFilter(SignalR& out, const HilbertDesc<Method, Params...>& desc) {
+	const auto halfbandDesc = TranslateHilbert2HalfbandDesc(desc);
+
+	if (out.Size() % 2 == 0) {
+		const size_t halfbandSize = out.Size() * 2 - 1;
+		SignalR halfband(halfbandSize);
+		FirFilter(halfband, halfbandDesc);
+		HalfbandToHilbertEven(out, halfband);
+	}
+	else {
+		FirFilter(out, halfbandDesc);
+		HalfbandToHilbertOdd(out, out);
+	}
+}
 
 //------------------------------------------------------------------------------
 // Out-of-place wrapper.
