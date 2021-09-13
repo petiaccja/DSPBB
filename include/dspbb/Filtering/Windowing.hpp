@@ -43,7 +43,7 @@ template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0
 void HammingWindow(SignalR&& out) {
 	using R = typename signal_traits<std::decay_t<SignalR>>::type;
 	using U = remove_complex_t<R>;
-	
+
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	Cos(out, out);
 	out *= U(-0.46);

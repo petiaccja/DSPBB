@@ -5,8 +5,8 @@ target_sources(UnitTest PRIVATE main.cpp)
 
 target_sources(UnitTest 
 	PRIVATE
-		"Filtering/Test_Convolution.cpp"
-		"Filtering/Test_FFT.cpp"
+		"Math/Test_Convolution.cpp"
+		"Math/Test_FFT.cpp"
 		"Filtering/Test_FirFilter.cpp"
 		"Generators/Test_Generators.cpp"
 		"Filtering/Test_Interpolation.cpp"
@@ -15,10 +15,10 @@ target_sources(UnitTest
 		"Primitives/Test_Signal.cpp"
 		"Primitives/Test_SignalView.cpp"
 		"Primitives/Test_SignalArithmetic.cpp"
-		"Filtering/Test_WindowFunctions.cpp"
+		"Filtering/Test_Windowing.cpp"
 		"Math/Test_Statistics.cpp"
 		"Math/Test_Functions.cpp"
-		"Vectorization/Test_Kernels.cpp" 
+		"ComputeKernels/Test_Kernels.cpp" 
 		"Filtering/FIR/Test_FIRDescs.cpp")
 
 find_package(Catch2 REQUIRED)

@@ -1,9 +1,10 @@
 #pragma once
 
+#include "../Primitives/Signal.hpp"
+#include "../Utility/Numbers.hpp"
+#include "../Utility/TypeTraits.hpp"
+
 #include <cstdint>
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Utility/Numbers.hpp>
-#include <dspbb/Utility/TypeTraits.hpp>
 #include <type_traits>
 
 

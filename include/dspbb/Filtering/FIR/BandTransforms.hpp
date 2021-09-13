@@ -1,10 +1,10 @@
 #pragma once
 
+#include "../../Primitives/SignalTraits.hpp"
+#include "../../Utility/Numbers.hpp"
 
-#include "../Primitives/SignalTraits.hpp"
 
-
-namespace dspbb {
+namespace dspbb::fir {
 
 
 template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
@@ -142,4 +142,4 @@ void HalfbandToHilbertEven(SignalR& out, const SignalT& halfband) {
 	}
 }
 
-} // namespace dspbb
+} // namespace dspbb::fir

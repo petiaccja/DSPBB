@@ -3,7 +3,6 @@
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
-#include "Convolution.hpp"
 #include "FIR.hpp"
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../ComputeKernels/Arithmetic.hpp"
 #include "SignalTraits.hpp"
-#include <dspbb/Math/Arithmetic.hpp>
 
 
 namespace dspbb {
@@ -36,21 +36,21 @@ template <class SignalR, class SignalT, class SignalU>
 auto Multiply(SignalR&& r, const SignalT& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
-	Multiply(r.Data(), a.Data(), b.Data(), r.Length());
+	kernels::Multiply(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Multiply(SignalR&& r, const T& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
-	Multiply(r.Data(), a, b.Data(), r.Length());
+	kernels::Multiply(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Multiply(SignalR&& r, const SignalT& a, const U& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
-	Multiply(r.Data(), a.Data(), b, r.Length());
+	kernels::Multiply(r.Data(), a.Data(), b, r.Length());
 }
 
 
@@ -58,21 +58,21 @@ template <class SignalR, class SignalT, class SignalU>
 auto Divide(SignalR&& r, const SignalT& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
-	Divide(r.Data(), a.Data(), b.Data(), r.Length());
+	kernels::Divide(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Divide(SignalR&& r, const T& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
-	Divide(r.Data(), a, b.Data(), r.Length());
+	kernels::Divide(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Divide(SignalR&& r, const SignalT& a, const U& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
-	Divide(r.Data(), a.Data(), b, r.Length());
+	kernels::Divide(r.Data(), a.Data(), b, r.Length());
 }
 
 
@@ -80,21 +80,21 @@ template <class SignalR, class SignalT, class SignalU>
 auto Add(SignalR&& r, const SignalT& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
-	Add(r.Data(), a.Data(), b.Data(), r.Length());
+	kernels::Add(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Add(SignalR&& r, const T& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
-	Add(r.Data(), a, b.Data(), r.Length());
+	kernels::Add(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Add(SignalR&& r, const SignalT& a, const U& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
-	Add(r.Data(), a.Data(), b, r.Length());
+	kernels::Add(r.Data(), a.Data(), b, r.Length());
 }
 
 
@@ -102,21 +102,21 @@ template <class SignalR, class SignalT, class SignalU>
 auto Subtract(SignalR&& r, const SignalT& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT, SignalU>, void> {
 	CheckSizes(r, a, b);
-	Subtract(r.Data(), a.Data(), b.Data(), r.Length());
+	kernels::Subtract(r.Data(), a.Data(), b.Data(), r.Length());
 }
 
 template <class SignalR, class T, class SignalU>
 auto Subtract(SignalR&& r, const T& a, const SignalU& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalU> && !is_signal_like_v<T>, void> {
 	CheckSizes(r, b);
-	Subtract(r.Data(), a, b.Data(), r.Length());
+	kernels::Subtract(r.Data(), a, b.Data(), r.Length());
 }
 
 template <class SignalR, class SignalT, class U>
 auto Subtract(SignalR&& r, const SignalT& a, const U& b)
 	-> std::enable_if_t<is_mutable_signal_v<SignalR&> && is_same_domain_v<SignalR, SignalT> && !is_signal_like_v<U>, void> {
 	CheckSizes(r, a);
-	Subtract(r.Data(), a.Data(), b, r.Length());
+	kernels::Subtract(r.Data(), a.Data(), b, r.Length());
 }
 
 

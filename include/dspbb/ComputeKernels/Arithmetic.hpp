@@ -1,10 +1,9 @@
 #pragma once
 
-#include <dspbb/Vectorization/Kernels.hpp>
+#include "VectorizedAlgorithms.hpp"
 
 
-namespace dspbb {
-
+namespace dspbb::kernels {
 
 //------------------------------------------------------------------------------
 // Vector-vector operations.

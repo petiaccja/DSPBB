@@ -1,6 +1,6 @@
 #include <array>
 #include <catch2/catch.hpp>
-#include <dspbb/Filtering/Convolution.hpp>
+#include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Filtering/FIR.hpp>
 #include <dspbb/Filtering/Interpolation.hpp>
 #include <dspbb/Generators/Waveforms.hpp>

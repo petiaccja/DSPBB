@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Convolution.hpp"
-#include "FFT.hpp"
+#include "../Math/Convolution.hpp"
+#include "../Math/FFT.hpp"
 
 
 namespace dspbb {
@@ -85,7 +85,7 @@ auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t chunkSize, 
 		auto frequencyChunk = impl::ola::MakeFrequencyChunk(paddedChunk, is_complex_t, is_complex_u);
 		frequencyChunk *= frequencyFilter;
 		const auto filteredChunk = impl::ola::InvertChunk(frequencyChunk, is_complex_t, is_complex_u, fftSize);
-		
+
 		const intptr_t outFirstRaw = intptr_t(i) - intptr_t(offset);
 		const intptr_t outLast = std::min(outFirstRaw + intptr_t(fftSize), intptr_t(rView.Size()));
 		const intptr_t outFirst = std::max(intptr_t(0), outFirstRaw);

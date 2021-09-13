@@ -1,6 +1,5 @@
 #include <catch2/catch.hpp>
-#include <algorithm>
-#include <dspbb/Filtering/WindowFunctions.hpp>
+#include <dspbb/Filtering/Windowing.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
@@ -199,4 +198,3 @@ TEST_CASE("Gaussian complex", "[WindowFunctions]") {
 	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.37f).margin(0.01f));
 	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
 }
-
