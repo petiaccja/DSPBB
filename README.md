@@ -26,6 +26,7 @@ More like notes to myself as to what I want to have.
 
 - ❌️ No dependencies
   - ❌️ XSimd is optional
+  - ❌️ Eigen is optional
   - ✔️ PocketFFT included
 - ✔️ Vectorization
 - ❔️ Embedded-friendly
