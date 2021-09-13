@@ -1,8 +1,7 @@
 #pragma once
 
-#include "WindowFunctions.hpp"
-#include "dspbb/Primitives/Signal.hpp"
-#include "dspbb/Primitives/SignalView.hpp"
+#include "../../Primitives/Signal.hpp"
+#include "../WindowFunctions.hpp"
 
 #include <type_traits>
 

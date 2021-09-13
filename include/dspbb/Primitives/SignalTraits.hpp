@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Signal.hpp"
-#include "SignalView.hpp"
-
 namespace dspbb {
 
 enum class eSignalDomain;

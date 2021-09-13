@@ -1,7 +1,6 @@
 #pragma once
 
-
-#include "../Primitives/SignalTraits.hpp"
+#include "../../Primitives/SignalTraits.hpp"
 
 
 namespace dspbb {

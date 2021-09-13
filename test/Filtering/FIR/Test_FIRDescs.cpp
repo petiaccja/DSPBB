@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include <dspbb/Filtering/FIRDescs.hpp>
+#include <dspbb/Filtering/FIR.hpp>
 
 
 using namespace dspbb;

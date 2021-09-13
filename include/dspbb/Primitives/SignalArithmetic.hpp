@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../Math/Arithmetic.hpp"
 #include "SignalTraits.hpp"
-#include <dspbb/Math/Arithmetic.hpp>
 
 
 namespace dspbb {

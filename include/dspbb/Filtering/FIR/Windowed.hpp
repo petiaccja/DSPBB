@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../Math/Functions.hpp"
-#include "../Math/Statistics.hpp"
-#include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalView.hpp"
-#include "../Utility/Numbers.hpp"
-#include "FFT.hpp"
-#include "WindowFunctions.hpp"
+#include "../../Math/Functions.hpp"
+#include "../../Math/Statistics.hpp"
+#include "../../Primitives/Signal.hpp"
+#include "../../Primitives/SignalView.hpp"
+#include "../../Utility/Numbers.hpp"
+#include "../FFT.hpp"
+#include "../WindowFunctions.hpp"
 
 
 namespace dspbb {

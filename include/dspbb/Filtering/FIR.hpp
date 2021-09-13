@@ -1,10 +1,10 @@
 #pragma once
 
-#include "FIRCommon.hpp"
-#include "FIRDescs.hpp"
-#include "FIRLeastSquares.hpp"
-#include "FIRTransforms.hpp"
-#include "FIRWindowed.hpp"
+#include "FIR/BandTransforms.hpp"
+#include "FIR/Descs.hpp"
+#include "FIR/LeastSquares.hpp"
+#include "FIR/Utility.hpp"
+#include "FIR/Windowed.hpp"
 
 #include <algorithm>
 
