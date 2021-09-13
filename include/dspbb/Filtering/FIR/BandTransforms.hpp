@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Primitives/SignalTraits.hpp"
+#include "../../Utility/Numbers.hpp"
 
 
 namespace dspbb::fir {
@@ -141,4 +142,4 @@ void HalfbandToHilbertEven(SignalR& out, const SignalT& halfband) {
 	}
 }
 
-} // namespace dspbb
+} // namespace dspbb::fir
