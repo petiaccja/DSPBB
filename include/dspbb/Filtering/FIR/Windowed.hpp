@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../Math/Functions.hpp"
 #include "../../Math/Statistics.hpp"
 #include "../../Primitives/Signal.hpp"
 #include "../../Primitives/SignalView.hpp"
@@ -9,7 +8,7 @@
 #include "../WindowFunctions.hpp"
 
 
-namespace dspbb {
+namespace dspbb::fir {
 
 template <class SignalR, class U, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
 void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, WindowFunc windowFunc) {

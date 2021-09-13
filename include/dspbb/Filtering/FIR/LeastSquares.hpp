@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../../Primitives/Signal.hpp"
+#include "../../Primitives/SignalTraits.hpp"
 #include "../../Utility/Numbers.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/QR>
 
-namespace dspbb {
+namespace dspbb::fir {
 
 
 namespace impl {

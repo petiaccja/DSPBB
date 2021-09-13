@@ -18,7 +18,7 @@ namespace dspbb {
 // Lowpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void FirFilter(SignalR&& out, const impl::LowpassDesc<impl::MethodTagWindowed, ParamType, WindowType>& desc) {
-	FirLowpassWin(out, desc.cutoff, desc.window);
+	fir::FirLowpassWin(out, desc.cutoff, desc.window);
 }
 
 // Highpass
@@ -47,7 +47,7 @@ void FirFilter(SignalR&& out, const impl::BandstopDesc<impl::MethodTagWindowed, 
 // Arbitrary
 template <class SignalR, class ResponseFunc, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void FirFilter(SignalR&& out, const impl::ArbitraryDesc<impl::MethodTagWindowed, ResponseFunc, WindowType>& desc) {
-	FirArbitraryWin(out, desc.responseFunc, desc.window);
+	fir::FirArbitraryWin(out, desc.responseFunc, desc.window);
 }
 
 //------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ template <class SignalR, template <typename, typename...> class Desc, class... P
 auto FirFilter(SignalR&& out, const Desc<impl::MethodTagLeastSquares, Params...>& desc)
 	-> decltype(void(TranslateLeastSquares(desc))) {
 	const auto [response, weight] = TranslateLeastSquares(desc);
-	FirLeastSquares(out, response, weight);
+	fir::FirLeastSquares(out, response, weight);
 }
 
 
