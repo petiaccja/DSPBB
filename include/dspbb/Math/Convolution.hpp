@@ -50,7 +50,7 @@ namespace impl {
 	template <class R, class T, class U, eSignalDomain Domain>
 	auto ConvolutionOrdered(SignalView<R, Domain> r, SignalView<const T, Domain> u, SignalView<const U, Domain> v, size_t offset) {
 		const size_t len = r.Length();
-		Convolution(r.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, len);
+		kernels::Convolution(r.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, len);
 	}
 } // namespace impl
 

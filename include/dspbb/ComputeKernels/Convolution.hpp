@@ -5,7 +5,7 @@
 #include <utility>
 
 
-namespace dspbb {
+namespace dspbb::kernels {
 
 
 template <class R, class U, class V>

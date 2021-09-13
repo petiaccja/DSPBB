@@ -3,7 +3,7 @@
 #include "VectorizedAlgorithms.hpp"
 
 
-namespace dspbb {
+namespace dspbb::kernels {
 
 //------------------------------------------------------------------------------
 // Vector-vector operations.

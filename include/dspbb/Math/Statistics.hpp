@@ -15,7 +15,7 @@ namespace dspbb {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Sum(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return ReduceVectorized(signal.Data(), signal.Size(), T(0), [](const auto& a, const auto& b) { return a + b; });
+	return kernels::ReduceVectorized(signal.Data(), signal.Size(), T(0), [](const auto& a, const auto& b) { return a + b; });
 }
 
 
@@ -29,7 +29,7 @@ auto Mean(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto SumSquare(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return MapReduceVectorized(
+	return kernels::MapReduceVectorized(
 		signal.Data(),
 		signal.Size(),
 		T(0),
@@ -59,14 +59,14 @@ auto Norm(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Max(const SignalT& signal) {
 	assert(!signal.Empty());
-	return ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return math_functions::max(a, b); });
+	return kernels::ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::max(a, b); });
 }
 
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Min(const SignalT& signal) {
 	assert(!signal.Empty());
-	return ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return math_functions::min(a, b); });
+	return kernels::ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::min(a, b); });
 }
 
 
@@ -84,7 +84,7 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 		using T = decltype(mean); // Must be a scalar.
 		using V = std::decay_t<decltype(a)>; // May be SIMD vector type.
 		const auto d = a - mean;
-		return d * math_functions::pow(math_functions::abs(d), V(T(k) - T(1)));
+		return d * kernels::math_functions::pow(kernels::math_functions::abs(d), V(T(k) - T(1)));
 	};
 
 	const T den = T(signal.Size());
@@ -92,10 +92,10 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 	switch (k) {
 		case 0: return T(0);
 		case 1: return T(0);
-		case 2: return MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m2](const auto& a) { return m2(a, mean); }) / den;
-		case 3: return MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m3](const auto& a) { return m3(a, mean); }) / den;
-		case 4: return MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m4](const auto& a) { return m4(a, mean); }) / den;
-		default: return MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, mg, k](const auto& a) { return mg(a, mean, k); }) / den;
+		case 2: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m2](const auto& a) { return m2(a, mean); }) / den;
+		case 3: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m3](const auto& a) { return m3(a, mean); }) / den;
+		case 4: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m4](const auto& a) { return m4(a, mean); }) / den;
+		default: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, mg, k](const auto& a) { return mg(a, mean, k); }) / den;
 	}
 }
 
@@ -226,7 +226,7 @@ auto Covariance(const SignalT& a, const SignalU& b, U amean, U bmean) {
 	assert(a.Size() == b.Size());
 	const auto size = a.Size();
 	using R = decltype(std::declval<typename SignalT::value_type>() * std::declval<typename SignalU::value_type>());
-	return InnerProduct(
+	return kernels::InnerProduct(
 			   a.Data(),
 			   b.Data(),
 			   size,

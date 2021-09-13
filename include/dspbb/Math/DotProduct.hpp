@@ -16,7 +16,7 @@ auto DotProduct(const SignalT& a, const SignalU& b) {
 	using T = typename SignalT::value_type;
 	using U = typename SignalU::value_type;
 	using R = decltype(std::declval<T>() * std::declval<U>());
-	return InnerProductVectorized(
+	return kernels::InnerProductVectorized(
 		a.Data(),
 		b.Data(),
 		a.Size(),
@@ -31,12 +31,12 @@ auto DotProduct(const SignalT& a, const SignalU& b) {
 	using T = typename SignalT::value_type;
 	using U = typename SignalU::value_type;
 	using R = decltype(std::declval<T>() * std::declval<U>());
-	return InnerProductVectorized(
+	return kernels::InnerProductVectorized(
 		a.Data(),
 		b.Data(),
 		a.Size(),
 		R(remove_complex_t<R>(0)),
-		[](const auto& a, const auto& b) { return a * math_functions::conj(b); },
+		[](const auto& a, const auto& b) { return a * kernels::math_functions::conj(b); },
 		[](const auto& acc, const auto& x) { return acc + x; });
 }
 

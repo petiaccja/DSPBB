@@ -6,7 +6,7 @@
 #include <xsimd/xsimd.hpp>
 #pragma warning(pop)
 
-namespace dspbb {
+namespace dspbb::kernels {
 namespace math_functions {
 	// Exponential
 	using std::exp;

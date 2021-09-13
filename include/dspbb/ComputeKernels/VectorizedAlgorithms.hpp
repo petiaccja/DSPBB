@@ -8,7 +8,7 @@
 #include <numeric>
 
 
-namespace dspbb {
+namespace dspbb::kernels {
 
 
 template <class T>
