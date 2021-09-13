@@ -68,7 +68,7 @@ namespace impl {
 
 
 template <class SignalR, class ResponseFunc, class WeightFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, WeightFunc weightFunc, size_t gridSize = 0) {
+void KernelLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, WeightFunc weightFunc, size_t gridSize = 0) {
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = remove_complex_t<R>;
 

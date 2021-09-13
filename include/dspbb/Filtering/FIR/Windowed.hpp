@@ -11,7 +11,7 @@
 namespace dspbb::fir {
 
 template <class SignalR, class U, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
-void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, WindowFunc windowFunc) {
+void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, WindowFunc windowFunc) {
 	assert(coefficients.Size() % 2 == 1);
 	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
 	const T offset = T(coefficients.Size() / 2);
@@ -30,7 +30,7 @@ void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, WindowFunc windowFunc) 
 
 
 template <class SignalR, class U, class SignalW, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalW>, int> = 0>
-void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, const SignalW& window) {
+void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, const SignalW& window) {
 	assert(coefficients.Size() % 2 == 1);
 	assert(coefficients.Size() == window.Size());
 
@@ -53,7 +53,7 @@ void FirLowpassWin(SignalR&& coefficients, U cutoffNorm, const SignalW& window) 
 
 
 template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && std::is_invocable_v<WindowFunc, Signal<float, TIME_DOMAIN>>, int> = 0>
-void FirArbitraryWin(SignalR& out, const ResponseFunc& response, WindowFunc windowFunc) {
+void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, WindowFunc windowFunc) {
 	assert(out.Size() % 2 == 1);
 	using R = typename signal_traits<SignalR>::type;
 	using ComplexR = std::complex<remove_complex_t<R>>;
@@ -70,7 +70,7 @@ void FirArbitraryWin(SignalR& out, const ResponseFunc& response, WindowFunc wind
 
 
 template <class SignalR, class ResponseFunc, class SignalW, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalW>, int> = 0>
-void FirArbitraryWin(SignalR& out, const ResponseFunc& response, const SignalW& window) {
+void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, const SignalW& window) {
 	assert(out.Size() % 2 == 1);
 	assert(out.Size() == window.Size());
 
