@@ -1,11 +1,11 @@
 #pragma once
 
+#include "../../Math/FFT.hpp"
 #include "../../Math/Statistics.hpp"
 #include "../../Primitives/Signal.hpp"
 #include "../../Primitives/SignalView.hpp"
 #include "../../Utility/Numbers.hpp"
-#include "../FFT.hpp"
-#include "../WindowFunctions.hpp"
+#include "../Windowing.hpp"
 
 
 namespace dspbb::fir {
@@ -86,4 +86,4 @@ void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, const S
 	Multiply(AsView(out).SubSignal(out.Size() / 2), AsView(impulse).SubSignal(0, impulse.Size() / 2 + 1), AsView(window).SubSignal(window.Size() / 2));
 }
 
-} // namespace dspbb
+} // namespace dspbb::fir

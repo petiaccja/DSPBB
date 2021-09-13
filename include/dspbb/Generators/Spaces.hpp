@@ -1,8 +1,9 @@
 #pragma once
 
+#include "../Math/Functions.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalTraits.hpp"
-#include "../Math/Functions.hpp"
+#include "../Utility/TypeTraits.hpp"
 
 #include <numeric>
 
@@ -16,7 +17,7 @@ auto LinSpace(SignalR&& output,
 			  bool inclusive = true) {
 	using R = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
 	const auto count = output.Size();
-	for (size_t i = 0; i<count; ++i) {
+	for (size_t i = 0; i < count; ++i) {
 		output[i] = R(i);
 	}
 	const R scale = (end - start) / R(std::max(intptr_t(1), intptr_t(count) - intptr_t(inclusive)));
@@ -40,7 +41,7 @@ auto LogSpace(SignalR&& output,
 			  bool inclusive = true) {
 	LinSpace(output, start, end, inclusive);
 	output *= std::log(base);
-	Exp(output, output);	
+	Exp(output, output);
 }
 
 template <class T, eSignalDomain Domain>

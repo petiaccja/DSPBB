@@ -1,10 +1,10 @@
 #pragma once
 
+#include "../ComputeKernels/VectorizedAlgorithms.hpp"
+#include "../ComputeKernels/VectorizedMathFunctions.hpp"
+#include "../Primitives/SignalTraits.hpp"
+
 #include <complex>
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalTraits.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
-#include <dspbb/Vectorization/MathFunctions.hpp>
 #include <type_traits>
 
 
@@ -14,7 +14,7 @@ namespace dspbb {
 #define DSPBB_IMPL_FUNCTION_2_PARAM(NAME, FUNC)                                                                                                                        \
 	template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0> \
 	auto NAME(SignalT&& out, const SignalU& in) {                                                                                                                      \
-		return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](const auto& v) { return math_functions::FUNC(v); });                                          \
+		return UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](const auto& v) { return math_functions::FUNC(v); });                                   \
 	}
 
 #define DSPBB_IMPL_FUNCTION_1_PARAM(NAME, FUNC)                                                  \

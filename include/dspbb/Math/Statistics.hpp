@@ -1,12 +1,10 @@
 #pragma once
 
+#include "../ComputeKernels/VectorizedAlgorithms.hpp"
+#include "../ComputeKernels/VectorizedMathFunctions.hpp"
+#include "../Primitives/SignalTraits.hpp"
+
 #include <cmath>
-#include <dspbb/Math/DotProduct.hpp>
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
-#include <dspbb/Vectorization/Kernels.hpp>
-#include <dspbb/Vectorization/MathFunctions.hpp>
-#include <numeric>
 
 namespace dspbb {
 

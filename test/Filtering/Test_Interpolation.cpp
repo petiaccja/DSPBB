@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include <cmath>
 #include <dspbb/Filtering/Interpolation.hpp>
+#include <dspbb/Math/Convolution.hpp>
 
 using namespace dspbb;
 

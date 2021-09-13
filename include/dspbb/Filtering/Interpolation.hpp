@@ -4,7 +4,7 @@
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalTraits.hpp"
 #include "../Primitives/SignalView.hpp"
-#include "PolyphaseFilter.hpp"
+#include "Polyphase.hpp"
 
 
 namespace dspbb {

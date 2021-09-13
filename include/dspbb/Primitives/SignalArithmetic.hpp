@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Math/Arithmetic.hpp"
+#include "../ComputeKernels/Arithmetic.hpp"
 #include "SignalTraits.hpp"
 
 

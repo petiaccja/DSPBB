@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 #include <dspbb/Utility/Numbers.hpp>
-#include <dspbb/Vectorization/Kernels.hpp>
+#include <dspbb/ComputeKernels/VectorizedAlgorithms.hpp>
 
 using namespace dspbb;
 

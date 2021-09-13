@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <catch2/catch.hpp>
-#include <dspbb/Filtering/FFT.hpp>
+#include <dspbb/Math/FFT.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Math/Functions.hpp>

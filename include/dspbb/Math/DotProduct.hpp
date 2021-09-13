@@ -1,8 +1,10 @@
 #pragma once
 
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
-#include <dspbb/Vectorization/MathFunctions.hpp>
+#include "../ComputeKernels/VectorizedAlgorithms.hpp"
+#include "../ComputeKernels/VectorizedMathFunctions.hpp"
+#include "../Primitives/SignalTraits.hpp"
+#include "../Utility/TypeTraits.hpp"
+
 #include <type_traits>
 
 

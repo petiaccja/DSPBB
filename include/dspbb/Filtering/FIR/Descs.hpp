@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../Primitives/Signal.hpp"
-#include "../WindowFunctions.hpp"
+#include "../Windowing.hpp"
 
 #include <type_traits>
 
