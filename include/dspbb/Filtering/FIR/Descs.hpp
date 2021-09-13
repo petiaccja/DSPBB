@@ -13,12 +13,6 @@ namespace impl {
 	struct MethodTagWindowed {};
 	struct MethodTagLeastSquares {};
 
-} // namespace impl
-
-constexpr impl::MethodTagWindowed WINDOWED;
-constexpr impl::MethodTagLeastSquares LEAST_SQUARES;
-
-namespace impl {
 
 	template <class Method, class... Params>
 	struct LowpassDesc;
@@ -41,14 +35,10 @@ namespace impl {
 	inline auto DefaultWeight = [](auto f) { return decltype(f)(1); };
 	inline auto DefaultResponse = [](auto f) { return decltype(f)(1); };
 
-} // namespace impl
 
-
-//------------------------------------------------------------------------------
-// Windowed descs
-//------------------------------------------------------------------------------
-
-namespace impl {
+	//------------------------------------------------------------------------------
+	// Windowed descs
+	//------------------------------------------------------------------------------
 
 	template <template <typename, typename...> class Desc, class ParamType, class WindowType>
 	struct SplitDescWindowed {
@@ -166,14 +156,9 @@ namespace impl {
 		HilbertDesc() : HilbertDesc<MethodTagWindowed, windows::Hamming>{ windows::hamming } {}
 	};
 
-} // namespace impl
-
-
-//------------------------------------------------------------------------------
-// Least squares descs
-//------------------------------------------------------------------------------
-
-namespace impl {
+	//------------------------------------------------------------------------------
+	// Least squares descs
+	//------------------------------------------------------------------------------
 
 	template <template <typename, typename...> class Desc, class ParamType>
 	struct SplitDescLeastSquares {
@@ -307,6 +292,9 @@ namespace impl {
 //------------------------------------------------------------------------------
 // Factory functions
 //------------------------------------------------------------------------------
+
+constexpr impl::MethodTagWindowed WINDOWED;
+constexpr impl::MethodTagLeastSquares LEAST_SQUARES;
 
 template <class Method>
 auto Lowpass(Method) {
