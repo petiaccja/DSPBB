@@ -7,7 +7,7 @@
 
 I couldn't really find a **low-level digital signal processing** (DSP) library that is 
 - **free** (BSD, MIT)
-- **modern** (C\++14 - C\++20)
+- **modern** (C\++17 - C\++20)
 - **maintained**
 - **nice to use**
 
