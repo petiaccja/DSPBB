@@ -20,6 +20,8 @@ target_sources(UnitTest
 		"Math/Test_Functions.cpp"
 		"ComputeKernels/Test_Kernels.cpp" 
 		"Filtering/FIR/Test_FIRDescs.cpp"
+		"Filtering/Test_IIR.cpp"
+		"Filtering/IIR/Test_DiscretizationTransforms.cpp")
 		"Filtering/Test_FilterParameters.cpp")
 
 find_package(Catch2 REQUIRED)
