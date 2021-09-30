@@ -2,7 +2,7 @@
 
 #include "../../Generators/Spaces.hpp"
 #include "../../Utility/Numbers.hpp"
-#include "PoleZeroSystem.hpp"
+#include "../../LTISystems/PoleZeroSystem.hpp"
 
 
 namespace dspbb {

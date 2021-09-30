@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Math/Polynomials.hpp"
+#include "../Math/Polynomials.hpp"
 #include "PoleZeroSystem.hpp"
 #include "TransferFunctionSystem.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Math/Polynomials.hpp"
-#include "../../Utility/TypeTraits.hpp"
+#include "../Math/Polynomials.hpp"
+#include "../Utility/TypeTraits.hpp"
 #include "System.hpp"
 
 #include <vector>

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "IIR/Butterworth.hpp"
-#include "IIR/DiscretizationTransforms.hpp"
+#include "../LTISystems/DiscretizationTransforms.hpp"
 #include "IIR/Structures.hpp"
-#include "IIR/PoleZeroSystem.hpp"
-#include "IIR/TransferFunctionSystem.hpp"
-#include "IIR/RepresentationTransforms.hpp"
+#include "../LTISystems/PoleZeroSystem.hpp"
+#include "../LTISystems/TransferFunctionSystem.hpp"
+#include "../LTISystems/RepresentationTransforms.hpp"
 #include "IIR/Filter.hpp"

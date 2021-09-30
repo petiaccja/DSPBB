@@ -1,7 +1,7 @@
 #include "../../TestUtils.hpp"
 
 #include <catch2/catch.hpp>
-#include <dspbb/Filtering/IIR/DiscretizationTransforms.hpp>
+#include <dspbb/LTISystems/DiscretizationTransforms.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

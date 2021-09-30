@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Utility/TypeTraits.hpp"
+#include "../Utility/TypeTraits.hpp"
 #include "System.hpp"
 
 #include <numeric>

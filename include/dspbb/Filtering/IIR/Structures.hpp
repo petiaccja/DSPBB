@@ -20,4 +20,7 @@ public:
 	Signal<T, eSignalDomain::DOMAINLESS> state;
 };
 
+template <class T>
+class CascadeForm {};
+
 } // namespace dspbb

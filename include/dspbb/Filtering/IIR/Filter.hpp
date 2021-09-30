@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PoleZeroSystem.hpp"
+#include "../../LTISystems/TransferFunctionSystem.hpp"
 #include "Structures.hpp"
 
 
