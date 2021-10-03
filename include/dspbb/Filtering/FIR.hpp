@@ -17,20 +17,20 @@ namespace dspbb {
 
 // Lowpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR&& out, const impl::LowpassDesc<impl::MethodTagWindowed, ParamType, WindowType>& desc) {
+void FirFilter(SignalR&& out, const impl::LowpassDesc<impl::FirMethodWindowed, ParamType, WindowType>& desc) {
 	fir::KernelWindowedLowpass(out, desc.cutoff, desc.window);
 }
 
 // Highpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR&& out, const impl::HighpassDesc<impl::MethodTagWindowed, ParamType, WindowType>& desc) {
+void FirFilter(SignalR&& out, const impl::HighpassDesc<impl::FirMethodWindowed, ParamType, WindowType>& desc) {
 	FirFilter(out, Lowpass(WINDOWED).Cutoff(desc.cutoff).Window(desc.window));
 	fir::ComplementaryResponse(out, out);
 }
 
 // Bandpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR&& out, const impl::BandpassDesc<impl::MethodTagWindowed, ParamType, WindowType>& desc) {
+void FirFilter(SignalR&& out, const impl::BandpassDesc<impl::FirMethodWindowed, ParamType, WindowType>& desc) {
 	const ParamType bandWidth = desc.high - desc.low;
 	const ParamType bandCenter = (desc.high + desc.low) / ParamType(2);
 	FirFilter(out, Lowpass(WINDOWED).Cutoff(bandWidth / ParamType(2)).Window(desc.window));
@@ -39,14 +39,14 @@ void FirFilter(SignalR&& out, const impl::BandpassDesc<impl::MethodTagWindowed, 
 
 // Bandstop
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR&& out, const impl::BandstopDesc<impl::MethodTagWindowed, ParamType, WindowType>& desc) {
+void FirFilter(SignalR&& out, const impl::BandstopDesc<impl::FirMethodWindowed, ParamType, WindowType>& desc) {
 	FirFilter(out, Bandpass(WINDOWED).Band(desc.low, desc.high).Window(desc.window));
 	fir::ComplementaryResponse(out, out);
 }
 
 // Arbitrary
 template <class SignalR, class ResponseFunc, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FirFilter(SignalR&& out, const impl::ArbitraryDesc<impl::MethodTagWindowed, ResponseFunc, WindowType>& desc) {
+void FirFilter(SignalR&& out, const impl::ArbitraryDesc<impl::FirMethodWindowed, ResponseFunc, WindowType>& desc) {
 	fir::KernelWindowedArbitrary(out, desc.responseFunc, desc.window);
 }
 
@@ -91,7 +91,7 @@ namespace impl {
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::LowpassDesc<impl::MethodTagLeastSquares, ParamType>& desc) {
+	auto TranslateLeastSquares(const impl::LowpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const auto response = [desc](ParamType f) {
 			return Smoothstep((f - desc.cutoffEnd) / (desc.cutoffBegin - desc.cutoffEnd));
 		};
@@ -102,7 +102,7 @@ namespace impl {
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::HighpassDesc<impl::MethodTagLeastSquares, ParamType>& desc) {
+	auto TranslateLeastSquares(const impl::HighpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const auto response = [desc](ParamType f) {
 			return Smoothstep((f - desc.cutoffBegin) / (desc.cutoffEnd - desc.cutoffBegin));
 		};
@@ -113,7 +113,7 @@ namespace impl {
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::BandpassDesc<impl::MethodTagLeastSquares, ParamType>& desc) {
+	auto TranslateLeastSquares(const impl::BandpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
 		const auto response = [desc, fmid](ParamType f) {
 			return f < fmid ? Smoothstep((f - desc.cutoffBegin1) / (desc.cutoffEnd1 - desc.cutoffBegin1)) :
@@ -126,7 +126,7 @@ namespace impl {
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::BandstopDesc<impl::MethodTagLeastSquares, ParamType>& desc) {
+	auto TranslateLeastSquares(const impl::BandstopDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
 		const auto response = [desc, fmid](ParamType f) {
 			return f < fmid ? Smoothstep((f - desc.cutoffEnd1) / (desc.cutoffBegin1 - desc.cutoffEnd1)) :
@@ -139,14 +139,14 @@ namespace impl {
 	}
 
 	template <class ResponseFunc, class WeightFunc>
-	auto TranslateLeastSquares(const impl::ArbitraryDesc<impl::MethodTagLeastSquares, ResponseFunc, WeightFunc>& desc) {
+	auto TranslateLeastSquares(const impl::ArbitraryDesc<impl::FirMethodLeastSquares, ResponseFunc, WeightFunc>& desc) {
 		return std::make_tuple(desc.responseFunc, desc.weightFunc);
 	}
 
 } // namespace impl
 
 template <class SignalR, template <typename, typename...> class Desc, class... Params>
-auto FirFilter(SignalR&& out, const Desc<impl::MethodTagLeastSquares, Params...>& desc)
+auto FirFilter(SignalR&& out, const Desc<impl::FirMethodLeastSquares, Params...>& desc)
 	-> decltype(void(impl::TranslateLeastSquares(desc))) {
 	const auto [response, weight] = impl::TranslateLeastSquares(desc);
 	fir::KernelLeastSquares(out, response, weight);
@@ -160,12 +160,12 @@ auto FirFilter(SignalR&& out, const Desc<impl::MethodTagLeastSquares, Params...>
 namespace impl {
 
 	template <class WindowType>
-	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::MethodTagWindowed, WindowType>& desc) {
+	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::FirMethodWindowed, WindowType>& desc) {
 		return Lowpass(WINDOWED).Cutoff(0.5f).Window(desc.window);
 	}
 
 	template <class ParamType>
-	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::MethodTagLeastSquares, ParamType>& desc) {
+	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType transitionBand = desc.transition;
 		return Lowpass(LEAST_SQUARES).Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand);
 	}
