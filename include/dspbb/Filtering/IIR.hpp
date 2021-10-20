@@ -30,8 +30,8 @@ auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodButterworth,
 
 template <class T, class ParamType>
 void IirFilter(DiscretePoleZeroSystem<T>& out, const impl::LowpassDesc<impl::IirMethodButterworth, ParamType>& desc) {
-	assert(ou.Poles().size() == out.Zeros().size());
-	const size_t order = out.Poles().size();
+	assert(out.zeros.NumRoots() == out.poles.NumRoots());
+	const size_t order = out.poles.NumRoots();
 }
 
 } // namespace dspbb
