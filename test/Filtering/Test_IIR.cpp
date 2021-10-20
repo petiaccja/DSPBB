@@ -2,15 +2,14 @@
 
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/IIR.hpp>
-#include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Math/FFT.hpp>
 #include <iostream>
 
 using namespace dspbb;
 
 TEST_CASE("IIR test", "[IIR]") {
-	constexpr int order = 10;
-	const auto butter = IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.12f));
+	constexpr int order = 7;
+	const auto butter = IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.32f));
 	const auto tf = TransferFunction(butter);
 	
 	Signal<float, TIME_DOMAIN> dirac(250, 0.0f);
