@@ -12,7 +12,7 @@ enum class eSystemDiscretization {
 
 
 template <class T, eSystemDiscretization Discretization>
-struct PoleZeroSystem_2 {
+struct PoleZeroSystem {
 	T gain;
 	FactoredPolynomial<T> zeros;
 	FactoredPolynomial<T> poles;
@@ -23,13 +23,24 @@ struct PoleZeroSystem_2 {
 
 
 template <class T, eSystemDiscretization Discretization>
-struct TransferFunctionSystem_2 {
+struct TransferFunctionSystem {
 	Polynomial<T> numerator;
 	Polynomial<T> denominator;
 
 	std::complex<T> operator()(const std::complex<T>& x) const { return numerator(x) / denominator(x); }
 	T operator()(const T& x) const { return numerator(x) / denominator(x); }
 };
+
+
+template <class T>
+using ContinuousTransferFunctionSystem = TransferFunctionSystem<T, eSystemDiscretization::CONTINUOUS>;
+template <class T>
+using DiscreteTransferFunctionSystem = TransferFunctionSystem<T, eSystemDiscretization::DISCRETE>;
+
+template <class T>
+using ContinuousPoleZeroSystem = PoleZeroSystem<T, eSystemDiscretization::CONTINUOUS>;
+template <class T>
+using DiscretePoleZeroSystem = PoleZeroSystem<T, eSystemDiscretization::DISCRETE>;
 
 
 } // namespace dspbb

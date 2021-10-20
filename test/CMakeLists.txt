@@ -21,7 +21,8 @@ target_sources(UnitTest
 		"ComputeKernels/Test_Kernels.cpp" 
 		"Filtering/FIR/Test_FIRDescs.cpp"
 		"Filtering/Test_IIR.cpp"
-		"Filtering/IIR/Test_DiscretizationTransforms.cpp")
+		"Filtering/IIR/Test_DiscretizationTransforms.cpp"
+		"Math/Test_Polynomials.cpp"
 		"Filtering/Test_FilterParameters.cpp")
 
 find_package(Catch2 REQUIRED)

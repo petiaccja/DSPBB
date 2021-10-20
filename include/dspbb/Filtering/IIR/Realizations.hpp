@@ -56,13 +56,13 @@ template <class T>
 template <class SignalT>
 T DirectFormI<T>::Feed(const T& input, const SignalT& forward, const SignalT& recursive) {
 	using U = std::decay_t<typename SignalT::value_type>;
-	const auto normalization = *--recursive.end();
+	const auto normalization = *recursive.rbegin();
 
 	forwardState[0] = input;
 	std::rotate(forwardState.begin(), ++forwardState.begin(), forwardState.end());
 
 	const auto fwView = SignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
-	const auto recView = SignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), --recursive.end() };
+	const auto recView = SignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
 	const float fwSum = DotProduct(forwardState, fwView);
 	const float recSum = DotProduct(recursiveState, recView);
 	const float out = (fwSum - recSum) / normalization;

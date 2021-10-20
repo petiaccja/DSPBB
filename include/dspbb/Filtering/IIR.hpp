@@ -1,9 +1,8 @@
 #pragma once
 
 #include "../LTISystems/DiscretizationTransforms.hpp"
-#include "../LTISystems/PoleZeroSystem.hpp"
+#include "../LTISystems/System.hpp"
 #include "../LTISystems/RepresentationTransforms.hpp"
-#include "../LTISystems/TransferFunctionSystem.hpp"
 #include "IIR/BandTransforms.hpp"
 #include "IIR/Butterworth.hpp"
 #include "IIR/Descs.hpp"

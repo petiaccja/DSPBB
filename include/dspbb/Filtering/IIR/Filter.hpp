@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../LTISystems/TransferFunctionSystem.hpp"
+#include "../../LTISystems/System.hpp"
 #include "Realizations.hpp"
 
 
@@ -11,7 +11,7 @@ auto Filter(const SignalT& signal, const DiscreteTransferFunctionSystem<U>& filt
 	SignalT r;
 	r.Reserve(signal.Size());
 	for (auto& sample : signal) {
-		r.PushBack(state.Feed(sample, filter.Numerator(), filter.Denominator()));
+		r.PushBack(state.Feed(sample, filter.numerator.Coefficients(), filter.denominator.Coefficients()));
 	}
 	return r;
 }

@@ -24,7 +24,7 @@ TEST_CASE("IIR test", "[IIR]") {
 	padded.Resize(2048, 0.0f);
 	const auto spectrum = Abs(FourierTransform(padded, false));
 
-	REQUIRE(tf.Denominator().size() == order + 1);
+	REQUIRE(tf.denominator.Size() == order + 1);
 	REQUIRE(normalization == Approx(1.0f));
 	REQUIRE(Max(spectrum) == Approx(1.0f));
 }
