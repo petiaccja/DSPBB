@@ -2,8 +2,56 @@
 
 #include <complex>
 #include <vector>
+#include <initializer_list>
 
 namespace dspbb {
+
+template <class T>
+class Polynomial {
+	static_assert(!is_complex_v<T>, "Polynomials can have real coefficients only.");
+
+public:
+	Polynomial() = default;
+	Polynomial(std::initializer_list<T> coefficients);
+	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter>()), T>, int> = 0>
+	Polynomial(Iter firstCoefficient, Iter lastCoefficient);
+
+	SignalView<const T, DOMAINLESS> Coefficients() const;
+	SignalView<T, DOMAINLESS> Coefficients();
+
+	T operator()(const T& x) const;
+	std::complex<T> operator()(const std::complex<T>& x) const;
+
+private:
+	Signal<T, DOMAINLESS> m_coefficients;
+};
+
+
+template <class T>
+class FactoredPolynomial {
+	static_assert(!is_complex_v<T>, "Factored polynomials are templated with real numbers only.");
+
+public:
+	FactoredPolynomial() = default;
+	FactoredPolynomial(std::initializer_list<std::complex<T>> roots);
+	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter>()), std::complex<T>>, int> = 0>
+	FactoredPolynomial(Iter firstRoot, Iter lastRoot);
+
+	SignalView<const T, DOMAINLESS> RealRoots() const;
+	SignalView<const std::complex<T>, DOMAINLESS> ComplexRoots() const;
+	SignalView<T, DOMAINLESS> RealRoots();
+	SignalView<std::complex<T>, DOMAINLESS> ComplexRoots();
+
+	T operator()(const T& x) const;
+	std::complex<T> operator()(const std::complex<T>& x) const;
+
+private:
+	Signal<T, DOMAINLESS> m_mem;
+	SignalView<T, DOMAINLESS> m_real;
+	SignalView<std::complex<T>, DOMAINLESS> m_complex;
+};
+
+
 
 namespace impl {
 	template <class T>
@@ -45,16 +93,6 @@ namespace impl {
 	}
 } // namespace impl
 
-template <class T>
-std::vector<std::complex<T>> ExpandPolynomialComplex(const std::vector<std::complex<T>>& roots) {
-	std::vector<std::complex<T>> coefficients;
-	coefficients.resize(roots.size() + 1, 0.0f);
-	coefficients[0] = 1.0f;
-	for (const auto& root : roots) {
-		impl::MultiplyPolynomialBy1stOrder(coefficients, -root);
-	}
-	return coefficients;
-}
 
 template <class T>
 std::vector<T> ExpandPolynomialReal(const std::vector<std::complex<T>>& roots) {

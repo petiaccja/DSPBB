@@ -3,11 +3,13 @@
 #include "../Math/Polynomials.hpp"
 #include "../Utility/TypeTraits.hpp"
 #include "System.hpp"
+#include "../Primitives/Signal.hpp"
 
 #include <vector>
 
 
 namespace dspbb {
+
 
 template <class T, eSystemDiscretization Discretization>
 class TransferFunctionSystem {

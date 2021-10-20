@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Primitives/Signal.hpp"
 #include "../Utility/TypeTraits.hpp"
 #include "System.hpp"
 
@@ -8,6 +9,7 @@
 
 
 namespace dspbb {
+
 
 template <class T, eSystemDiscretization Discretization>
 struct PoleZeroSystem {
