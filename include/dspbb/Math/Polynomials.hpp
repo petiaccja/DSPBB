@@ -224,7 +224,7 @@ SignalView<std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexRoots() {
 template <class T>
 T FactoredPolynomial<T>::operator()(const T& x) const {
 	const T rp = std::transform_reduce(m_real.begin(), m_real.end(), T(1), std::multiplies<T>{}, [&x](const auto& root) {
-		return root - x;
+		return x - root;
 	});
 	const T cp = std::transform_reduce(m_complex.begin(), m_complex.end(), T(1), std::multiplies<T>{}, [&x](const auto& root) {
 		const auto a = real(root);
