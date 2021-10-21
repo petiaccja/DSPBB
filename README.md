@@ -92,10 +92,22 @@ More like notes to myself as to what I want to have.
       - ✔️ Arbitrary response
       - ✔️ Hilbert
   - ❌️ IIR filtering
-    - ❌️ Butterworth
-    - ❌️ Chebyshev I
-    - ❌️ Chebyshev II
-    - ❌️ Elliptic
+    - Methods:
+      - ❌️ Butterworth
+      - ❌️ Chebyshev I
+      - ❌️ Chebyshev II
+      - ❌️ Elliptic
+    - Types:
+      - ❌️ Low-pass
+      - ❌️ High-pass
+      - ❌️ Band-pass
+      - ❌️ Band-stop
+      - ❌️ Notch
+    - Realizations:
+      - ❌️ Direct form I.
+      - ❌️ Direct form II.
+      - ❌️ Cascaded biquad (I. & II.)
+    - ❌️ Quality assessment tools
   - ✔️ Filter response analysis
     - ✔️ Compute amplitude & phase response
     - ✔️ Classify amplitude response: LP/HP/BP/BS
