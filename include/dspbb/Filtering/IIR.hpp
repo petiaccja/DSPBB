@@ -22,10 +22,10 @@ template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodButterworth, ParamType>& desc) {
 	constexpr T sampleRate = T(1);
 	constexpr T angularLimit = sampleRate * pi_v<T>;
-	const auto s = Butterworth<ParamType>(order);
-	const auto ss = ScaleFrequency(s, pi_v<T> * desc.cutoff);
-	const auto z = BilinearTransform(ss, sampleRate, { T(desc.cutoff) * angularLimit });
-	return z;
+	const auto system = Butterworth<ParamType>(order);
+	const auto scaled = ScaleFrequency(system, pi_v<T> * desc.cutoff);
+	auto discrete = BilinearTransform(scaled, sampleRate, { T(desc.cutoff) * angularLimit });
+	return discrete;
 }
 
 template <class T, class ParamType>
