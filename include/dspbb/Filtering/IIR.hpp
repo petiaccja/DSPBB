@@ -20,12 +20,11 @@ namespace dspbb {
 // Lowpass
 template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodButterworth, ParamType>& desc) {
-	constexpr T sampleRate = T(1);
-	constexpr T angularLimit = sampleRate * pi_v<T>;
-	const auto system = Butterworth<ParamType>(order);
-	const auto scaled = ScaleFrequency(system, pi_v<T> * desc.cutoff);
-	auto discrete = BilinearTransform(scaled, sampleRate, { T(desc.cutoff) * angularLimit });
-	return discrete;
+	constexpr T sampleRate = T(2) / pi_v<T>;
+	const auto analog = Butterworth<ParamType>(order);
+	const auto halfband = BilinearTransform(analog, sampleRate, { 1 });
+	auto filter = Halfband2Lowpass(halfband, desc.cutoff);
+	return filter;
 }
 
 template <class T, class ParamType>

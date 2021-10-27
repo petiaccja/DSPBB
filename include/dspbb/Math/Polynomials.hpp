@@ -47,6 +47,7 @@ public:
 	FactoredPolynomial(Iter firstRoot, Iter lastRoot);
 
 	void Resize(size_t numRealRoots, size_t numComplexPairs, T realValue = T{}, std::complex<T> complexValue = std::complex<T>{});
+	void Regroup(size_t numRealRoots, T realValue = T{}, std::complex<T> complexValue = std::complex<T>{});
 	std::pair<size_t, size_t> Size() const;
 	size_t NumRoots() const { return Size().first + Size().second * 2; }
 	size_t NumRealRoots() const { return Size().first; }
@@ -185,6 +186,33 @@ void FactoredPolynomial<T>::Resize(size_t numRealRoots, size_t numComplexPairs, 
 	m_mem.Resize(numCoeffs);
 	if (currentRealRoots < numRealRoots) {
 		std::move_backward(m_mem.begin() + currentRealRoots, m_mem.begin() + (numCoeffs - numRealRoots), m_mem.end());
+	}
+	m_real = { m_mem.Data(), numRealRoots };
+	m_complex = { reinterpret_cast<std::complex<T>*>(m_mem.Data() + numRealRoots), numComplexPairs };
+	if (currentRealRoots < numRealRoots) {
+		std::fill(m_real.begin() + currentRealRoots, m_real.end(), realValue);
+	}
+	if (currentComplexPairs < numComplexPairs) {
+		std::fill(m_complex.begin() + currentComplexPairs, m_complex.end(), complexValue);
+	}
+}
+
+template <class T>
+void FactoredPolynomial<T>::Regroup(size_t numRealRoots, T realValue, std::complex<T> complexValue) {
+	if (numRealRoots % 2 != NumRoots() % 2) {
+		throw std::invalid_argument("You can't have complex roots that are not conjugate pairs.");
+	}
+	if (numRealRoots > NumRoots()) {
+		throw std::invalid_argument("Regrouping must preserve the total number of roots.");
+	}
+
+	const size_t numComplexPairs = (NumRoots() - numRealRoots) / 2;
+	const auto [currentRealRoots, currentComplexPairs] = Size();
+	if (numRealRoots < currentRealRoots) {
+		std::move(m_mem.begin() + currentRealRoots, m_mem.end(), m_mem.begin() + numRealRoots);
+	}
+	if (currentRealRoots < numRealRoots) {
+		std::move_backward(m_mem.begin() + currentRealRoots, m_mem.begin() + (NumRoots() - numRealRoots), m_mem.end());
 	}
 	m_real = { m_mem.Data(), numRealRoots };
 	m_complex = { reinterpret_cast<std::complex<T>*>(m_mem.Data() + numRealRoots), numComplexPairs };
