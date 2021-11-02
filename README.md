@@ -91,13 +91,18 @@ More like notes to myself as to what I want to have.
       - ✔️ Band-stop
       - ✔️ Arbitrary response
       - ✔️ Hilbert
-    - ❌️ Quality assessment tools
   - ❌️ IIR filtering
     - ❌️ Butterworth
     - ❌️ Chebyshev I
     - ❌️ Chebyshev II
     - ❌️ Elliptic
-    - ❌️ Quality assessment tools
+  - ❔️ Filter analysis
+    - ❌️ Compute amplitude & phase response
+    - ✔️ Classify amplitude response: LP/HP/BP/BS
+    - ✔️ Measure amplitude parameters for LP/HP/BP/BS
+      - ✔️ Transition edges
+      - ✔️ Stopband attenuation
+      - ✔️ Passband ripple
   - ✔️ Polyphase FIR decomposition
   - ✔️ Resampling
     - ✔️ Decimation (every n-th)
