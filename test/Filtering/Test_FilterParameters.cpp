@@ -34,7 +34,7 @@ float Ripple(float x, float scale, float amplitude, float limit = std::numeric_l
 	const float a = amplitude * 2.325f;
 	const float pxs = p * x + 1;
 	if (pxs >= 0.0f) {
-		return a * std::sin(pxs) * std::pow(pxs, 3) / (std::pow(pxs, 4) + 3.0f);
+		return a * std::sin(pxs) * std::pow(pxs, 3.0f) / (std::pow(pxs, 4.0f) + 3.0f);
 	}
 	return 0.0f;
 }
@@ -155,7 +155,7 @@ Spectrum<float> MockSpectrum(size_t size, Func func) {
 }
 
 Spectrum<float> MockSpectrum(size_t size, const std::vector<Band>& bands) {
-	return MockSpectrum(size, [&](float x) { return Response(x, bands); });
+	return MockSpectrum(size, [&bands](float x) { return Response(x, bands); });
 }
 
 //------------------------------------------------------------------------------

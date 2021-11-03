@@ -223,7 +223,7 @@ namespace impl {
 	}
 
 	template <class T>
-	std::optional<T> MeasureBandRipple(const SpectrumView<const T>& band, bool excludeLeft, bool excludeRight, bool passBand) {
+	std::optional<T> MeasureBandRipple(const SpectrumView<const T>& band, bool passBand) {
 		const T target = T(passBand);
 		T maxDifference = T(-1);
 
@@ -280,7 +280,7 @@ namespace impl {
 
 			const auto [edgeFitLeft, edgeFitRight] = impl::FindBandEdgesFit(bandSamples, findLeft, findRight, isPassBand, threshold);
 			const auto [edgeRippleLeft, edgeRippleRight] = impl::FindBandEdgesRipple(bandSamples, findLeft, findRight, isPassBand);
-			const auto ripple = impl::MeasureBandRipple(bandSamples, findLeft, findRight, isPassBand);
+			const auto ripple = impl::MeasureBandRipple(bandSamples, isPassBand);
 			const auto edgeLeft = MinOptional(edgeFitLeft, edgeRippleLeft);
 			const auto edgeRight = MaxOptional(edgeFitRight, edgeRippleRight);
 
@@ -380,7 +380,7 @@ LowpassParameters<T> ParametrizeLowpassFilter(const SpectrumView<const T>& respo
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractLowpassParameters(bands, bandParams);
 	if (!filterParams) {
-		throw std::logic_error("Not a low-pass filter.");
+		throw std::invalid_argument("Not a low-pass filter.");
 	}
 	return filterParams.value();
 }
@@ -391,7 +391,7 @@ HighpassParameters<T> ParametrizeHighpassFilter(const SpectrumView<const T>& res
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractHighpassParameters(bands, bandParams);
 	if (!filterParams) {
-		throw std::logic_error("Not a high-pass filter.");
+		throw std::invalid_argument("Not a high-pass filter.");
 	}
 	return filterParams.value();
 }
@@ -402,7 +402,7 @@ BandpassParameters<T> ParametrizeBandpassFilter(const SpectrumView<const T>& res
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractBandpassParameters(bands, bandParams);
 	if (!filterParams) {
-		throw std::logic_error("Not a band-pass filter.");
+		throw std::invalid_argument("Not a band-pass filter.");
 	}
 	return filterParams.value();
 }
@@ -413,7 +413,7 @@ BandstopParameters<T> ParametrizeBandstopFilter(const SpectrumView<const T>& res
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractBandstopParameters(bands, bandParams);
 	if (!filterParams) {
-		throw std::logic_error("Not a band-stop filter.");
+		throw std::invalid_argument("Not a band-stop filter.");
 	}
 	return filterParams.value();
 }
