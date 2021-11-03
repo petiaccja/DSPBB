@@ -96,8 +96,8 @@ More like notes to myself as to what I want to have.
     - ❌️ Chebyshev I
     - ❌️ Chebyshev II
     - ❌️ Elliptic
-  - ❔️ Filter analysis
-    - ❌️ Compute amplitude & phase response
+  - ✔️ Filter response analysis
+    - ✔️ Compute amplitude & phase response
     - ✔️ Classify amplitude response: LP/HP/BP/BS
     - ✔️ Measure amplitude parameters for LP/HP/BP/BS
       - ✔️ Transition edges
