@@ -24,7 +24,9 @@ target_sources(UnitTest
 		"Filtering/IIR/Test_DiscretizationTransforms.cpp"
 		"Math/Test_Polynomials.cpp"
 		"Filtering/IIR/Test_Kernels.cpp"
-		"Filtering/Test_FilterParameters.cpp")
+		"Filtering/Test_FilterParameters.cpp"
+		"Filtering/IIR/Test_BandTransforms.cpp"
+)
 
 find_package(Catch2 REQUIRED)
 
