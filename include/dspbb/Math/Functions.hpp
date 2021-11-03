@@ -57,7 +57,7 @@ DSPBB_IMPL_FUNCTION(Exp, exp)
 
 template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0>
 auto Pow(SignalT&& out, const SignalU& in, typename signal_traits<std::decay_t<SignalU>>::type power) {
-	return kernels::UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [power](const auto& v) { return kernels::math_functions::pow(v, decltype(v)(power)); });
+	return kernels::UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [power](const auto& v) { return kernels::math_functions::pow(v, static_cast<std::decay_t<decltype(v)>>(power)); });
 }
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Pow(const SignalT& signal, typename signal_traits<std::decay_t<SignalT>>::type power) {
