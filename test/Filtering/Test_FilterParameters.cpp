@@ -18,14 +18,6 @@ float Transition(float x, float from, float to) {
 	return 3 * x_ * x_ - 2 * x_ * x_ * x_;
 }
 
-float Passband() {
-	return 1.0f;
-}
-
-float Stopband() {
-	return 0.0f;
-}
-
 float Ripple(float x, float scale, float amplitude, float limit = std::numeric_limits<float>::infinity()) {
 	if (x > limit) {
 		return 0.0f;
@@ -227,6 +219,18 @@ TEST_CASE("Classify ripple band-stop", "[FilterParameters]") {
 	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
 	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
 	REQUIRE_NOTHROW(ParametrizeBandstopFilter(response));
+}
+
+
+TEST_CASE("Classify distinguish", "[FilterParameters]") {
+	const auto lp = MockSpectrum(1000, lowpassFlat);
+	const auto hp = MockSpectrum(1000, highpassFlat);
+	const auto bp = MockSpectrum(1000, bandpassFlat);
+	const auto bs = MockSpectrum(1000, bandstopFlat);
+	REQUIRE(std::holds_alternative<LowpassParameters<float>>(ParametrizeFilter(lp)));
+	REQUIRE(std::holds_alternative<HighpassParameters<float>>(ParametrizeFilter(hp)));
+	REQUIRE(std::holds_alternative<BandpassParameters<float>>(ParametrizeFilter(bp)));
+	REQUIRE(std::holds_alternative<BandstopParameters<float>>(ParametrizeFilter(bs)));
 }
 
 
