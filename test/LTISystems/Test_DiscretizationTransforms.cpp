@@ -1,5 +1,3 @@
-#include "../../TestUtils.hpp"
-
 #include <catch2/catch.hpp>
 #include <dspbb/LTISystems/DiscretizationTransforms.hpp>
 #include <dspbb/Utility/Numbers.hpp>
