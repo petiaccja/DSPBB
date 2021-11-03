@@ -469,8 +469,11 @@ auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t g
 	Signal<T, TIME_DOMAIN> padded(paddedSize, T(0));
 	std::copy(impulse.begin(), impulse.end(), padded.begin());
 
-	const auto spectrum = FourierTransform(padded, false);
-	return std::make_pair(Abs(spectrum), Arg(spectrum));
+	auto spectrum = FourierTransform(padded, false);
+	auto amplitude = Abs(spectrum);
+	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });
+	auto phase = Arg(spectrum);
+	return std::make_pair(std::move(amplitude), std::move(phase));
 }
 
 template <class T>
@@ -492,8 +495,11 @@ auto FrequencyResponse(const DiscreteTransferFunctionSystem<T>& tf, size_t gridS
 
 	const auto spectrumNum = FourierTransform(num, false);
 	const auto spectrumDen = FourierTransform(den, false);
-	const auto spectrum = spectrumNum / spectrumDen;
-	return std::make_pair(Abs(spectrum), Arg(spectrum));
+	auto spectrum = spectrumNum / spectrumDen;
+	auto amplitude = Abs(spectrum);
+	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });
+	auto phase = Arg(spectrum);
+	return std::make_pair(std::move(amplitude), std::move(phase));
 }
 
 template <class T>
