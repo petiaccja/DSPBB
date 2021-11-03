@@ -22,7 +22,7 @@ template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodButterworth, ParamType>& desc) {
 	constexpr T sampleRate = T(2) / pi_v<T>;
 	const auto analog = Butterworth<ParamType>(order);
-	const auto halfband = BilinearTransform(analog, sampleRate, { 1 });
+	const auto halfband = BilinearTransform(analog, sampleRate, { T(1) });
 	auto filter = Halfband2Lowpass(halfband, desc.cutoff);
 	return filter;
 }

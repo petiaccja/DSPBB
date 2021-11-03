@@ -40,7 +40,7 @@ class FactoredPolynomial {
 
 public:
 	FactoredPolynomial() = default;
-	FactoredPolynomial(FactoredPolynomial&& rhs);
+	FactoredPolynomial(FactoredPolynomial&& rhs) noexcept;
 	FactoredPolynomial(const FactoredPolynomial& rhs);
 	FactoredPolynomial(std::initializer_list<std::complex<T>> roots);
 	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter>()), std::complex<T>>, int> = 0>
@@ -133,7 +133,7 @@ namespace impl {
 } // namespace impl
 
 template <class T>
-FactoredPolynomial<T>::FactoredPolynomial(FactoredPolynomial&& rhs)
+FactoredPolynomial<T>::FactoredPolynomial(FactoredPolynomial&& rhs) noexcept
 	: m_mem{ std::move(rhs.m_mem) },
 	  m_real{ m_mem.Data(), rhs.m_real.Size() },
 	  m_complex{ reinterpret_cast<std::complex<T>*>(m_mem.Data() + rhs.m_real.Size()), rhs.m_complex.Size() } {
