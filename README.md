@@ -107,7 +107,6 @@ More like notes to myself as to what I want to have.
       - ❌️ Direct form I.
       - ❌️ Direct form II.
       - ❌️ Cascaded biquad (I. & II.)
-    - ❌️ Quality assessment tools
   - ✔️ Filter response analysis
     - ✔️ Compute amplitude & phase response
     - ✔️ Classify amplitude response: LP/HP/BP/BS
