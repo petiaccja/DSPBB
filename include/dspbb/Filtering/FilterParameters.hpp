@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../ComputeKernels/VectorizedAlgorithms.hpp"
+#include "../Math/FFT.hpp"
+#include "../Math/Functions.hpp"
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
@@ -56,6 +58,7 @@ using FilterParameters = std::variant<
 	HighpassParameters<T>,
 	BandpassParameters<T>,
 	BandstopParameters<T>>;
+
 
 namespace impl {
 	template <class T>
@@ -447,6 +450,20 @@ BandstopParameters<T> ParametrizeBandstopFilter(const Spectrum<T>& response) {
 template <class T>
 FilterParameters<T> ParametrizeFilter(const Spectrum<T>& response) {
 	return ParametrizeFilter(AsView(response));
+}
+
+template <class T>
+auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
+	const size_t gridSize = gridSizeHint > 0 ? std::max(impulse.Size(), 2 * gridSizeHint - 1) : (2 * impulse.Size() * 10 - 1);
+	Signal<T, TIME_DOMAIN> padded(gridSize, T(0));
+	std::copy(impulse.begin(), impulse.end(), padded.begin());
+	const auto spectrum = FourierTransform(padded, false);
+	return std::make_pair(Abs(spectrum), Arg(spectrum));
+}
+
+template <class T>
+auto FrequencyResponse(const Signal<T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
+	return FrequencyResponse(AsView(impulse), gridSizeHint);
 }
 
 

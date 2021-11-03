@@ -1,6 +1,8 @@
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Generators/Spaces.hpp>
+#include <dspbb/Math/DotProduct.hpp>
+#include <dspbb/Utility/Numbers.hpp>
 #include <random>
 
 using namespace dspbb;
@@ -317,4 +319,56 @@ TEST_CASE("Parametrize ripple band-stop", "[FilterParameters]") {
 	REQUIRE(params.lowerPassbandRipple == Approx(ripplePass1).margin(3e-4f));
 	REQUIRE(params.stopbandAtten == Approx(rippleStop1).margin(3e-4f));
 	REQUIRE(params.upperPassbandRipple == Approx(ripplePass2).margin(3e-4f));
+}
+
+
+//------------------------------------------------------------------------------
+// FIR frequency response
+//------------------------------------------------------------------------------
+
+
+TEST_CASE("FIR frequency response default size", "[FilterParameters]") {
+	constexpr size_t impulseSize = 512;
+
+	const Signal<float, TIME_DOMAIN> impulse(impulseSize, 1);
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+
+	REQUIRE(amplitude.Size() == 10 * impulseSize);
+	REQUIRE(phase.Size() == 10 * impulseSize);
+}
+
+TEST_CASE("FIR frequency response custom size", "[FilterParameters]") {
+	constexpr size_t impulseSize = 512;
+	constexpr size_t responseSize = 2048;
+
+	const Signal<float, TIME_DOMAIN> impulse(impulseSize, 1);
+	const auto [amplitude, phase] = FrequencyResponse(impulse, responseSize);
+
+	REQUIRE(amplitude.Size() == responseSize);
+	REQUIRE(phase.Size() == responseSize);
+}
+
+TEST_CASE("FIR frequency response invalid size", "[FilterParameters]") {
+	constexpr size_t impulseSize = 512;
+	constexpr size_t responseSize = 25;
+
+	const Signal<float, TIME_DOMAIN> impulse(impulseSize, 1);
+	const auto [amplitude, phase] = FrequencyResponse(impulse, responseSize);
+
+	REQUIRE(amplitude.Size() == impulseSize / 2 + 1);
+	REQUIRE(phase.Size() == impulseSize / 2 + 1);
+}
+
+TEST_CASE("FIR frequency response size", "[FilterParameters]") {
+	constexpr size_t impulseSize = 512;
+
+	const Signal<float, TIME_DOMAIN> impulse(impulseSize, 1);
+	const auto [amplitude, phase] = FrequencyResponse(impulse, 1);
+
+	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, float(amplitude.Size()) * pi_v<float>, amplitude.Size(), true);
+	expected = Sin(expected) / expected;
+	expected[0] = 1.0f;
+
+	const float similarity = DotProduct(amplitude, expected) / Norm(amplitude) / Norm(expected);
+	REQUIRE(similarity == Approx(1).epsilon(5e-3f));
 }
