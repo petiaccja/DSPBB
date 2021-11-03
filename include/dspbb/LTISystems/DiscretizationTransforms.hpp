@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System.hpp"
+#include "../Math/RootTransforms.hpp"
 
 #include <optional>
 #include <stdexcept>
@@ -16,32 +17,24 @@ ContinuousPoleZeroSystem<T> BilinearTransform(const DiscretePoleZeroSystem<T>& d
 template <class T>
 DiscretePoleZeroSystem<T> BilinearTransform(const ContinuousPoleZeroSystem<T>& continuous, T sampleRate, std::optional<T> prewarp = {}) {
 	const T k = prewarp ? *prewarp / std::tan(*prewarp / sampleRate / T(2)) : T(2) * sampleRate;
+	
+	// Opposite roots
+	const std::complex<T> z = -T(1);
+	const std::array z12 = { z };
 
-	const T gain = continuous(k);
-	FactoredPolynomial<T> poles;
-	FactoredPolynomial<T> zeros;
+	// Roots
+	const auto transform = [k](const auto& p) {
+		std::complex<T> z = (k + p) / (k - p);
+		return std::array{ z };
+	};
 
-	const size_t numDiscreteRoots = std::max(continuous.zeros.NumRoots(), continuous.poles.NumRoots());
-	const size_t numZeroPairs = continuous.zeros.NumComplexPairs();
-	const size_t numPolePairs = continuous.poles.NumComplexPairs();
-	zeros.Resize(numDiscreteRoots - numZeroPairs * 2, numZeroPairs, -T(1));
-	poles.Resize(numDiscreteRoots - numPolePairs * 2, numPolePairs, -T(1));
+	// Do transform
+	const size_t numRoots = std::max(continuous.zeros.NumRoots(), continuous.poles.NumRoots());
+	FactoredPolynomial<T> newZeros = TransformRoots(continuous.zeros, transform, numRoots, z12);
+	FactoredPolynomial<T> newPoles = TransformRoots(continuous.poles, transform, numRoots, z12);
+	const T newGain = continuous(k);
 
-	// TODO: use ranges transform.
-	std::transform(continuous.zeros.RealRoots().begin(), continuous.zeros.RealRoots().end(), zeros.RealRoots().begin(), [&k](const auto& zero) {
-		return (k + zero) / (k - zero);
-	});
-	std::transform(continuous.zeros.ComplexRoots().begin(), continuous.zeros.ComplexRoots().end(), zeros.ComplexRoots().begin(), [&k](const auto& zero) {
-		return (k + zero) / (k - zero);
-	});
-	std::transform(continuous.poles.RealRoots().begin(), continuous.poles.RealRoots().end(), poles.RealRoots().begin(), [&k](const auto& pole) {
-		return (k + pole) / (k - pole);
-	});
-	std::transform(continuous.poles.ComplexRoots().begin(), continuous.poles.ComplexRoots().end(), poles.ComplexRoots().begin(), [&k](const auto& pole) {
-		return (k + pole) / (k - pole);
-	});
-
-	return { gain, std::move(zeros), std::move(poles) };
+	return { newGain, std::move(newZeros), std::move(newPoles) };
 }
 
 
