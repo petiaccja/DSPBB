@@ -15,7 +15,7 @@ class Polynomial {
 	static_assert(!is_complex_v<T>, "Polynomials can have real coefficients only.");
 
 public:
-	Polynomial() = default;
+	Polynomial() noexcept = default;
 	Polynomial(std::initializer_list<T> coefficients);
 	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter>()), T>, int> = 0>
 	Polynomial(Iter firstCoefficient, Iter lastCoefficient);
@@ -39,9 +39,13 @@ class FactoredPolynomial {
 	static_assert(!is_complex_v<T>, "Factored polynomials are templated with real numbers only.");
 
 public:
-	FactoredPolynomial() = default;
+	FactoredPolynomial() noexcept = default;
 	FactoredPolynomial(FactoredPolynomial&& rhs) noexcept;
 	FactoredPolynomial(const FactoredPolynomial& rhs);
+	FactoredPolynomial& operator=(FactoredPolynomial&& rhs) noexcept;
+	FactoredPolynomial& operator=(const FactoredPolynomial& rhs);
+	~FactoredPolynomial() = default;
+
 	FactoredPolynomial(std::initializer_list<std::complex<T>> roots);
 	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter>()), std::complex<T>>, int> = 0>
 	FactoredPolynomial(Iter firstRoot, Iter lastRoot);
@@ -147,6 +151,22 @@ FactoredPolynomial<T>::FactoredPolynomial(const FactoredPolynomial& rhs)
 	: m_mem{ rhs.m_mem },
 	  m_real{ m_mem.Data(), rhs.m_real.Size() },
 	  m_complex{ reinterpret_cast<std::complex<T>*>(m_mem.Data() + rhs.m_real.Size()), rhs.m_complex.Size() } {}
+
+template <class T>
+FactoredPolynomial<T>& FactoredPolynomial<T>::operator=(FactoredPolynomial&& rhs) noexcept {
+	m_mem = std::move(rhs.m_mem),
+	m_real = { m_mem.Data(), rhs.m_real.Size() },
+	m_complex = { reinterpret_cast<std::complex<T>*>(m_mem.Data() + rhs.m_real.Size()), rhs.m_complex.Size() };
+	rhs.m_real = {};
+	rhs.m_complex = {};
+}
+
+template <class T>
+FactoredPolynomial<T>& FactoredPolynomial<T>::operator=(const FactoredPolynomial& rhs) {
+	m_mem = rhs.m_mem,
+	m_real = { m_mem.Data(), rhs.m_real.Size() },
+	m_complex = { reinterpret_cast<std::complex<T>*>(m_mem.Data() + rhs.m_real.Size()), rhs.m_complex.Size() };
+}
 
 
 template <class T>
