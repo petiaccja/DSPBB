@@ -91,17 +91,17 @@ More like notes to myself as to what I want to have.
       - ✔️ Band-stop
       - ✔️ Arbitrary response
       - ✔️ Hilbert
-  - ❌️ IIR filtering
+  - ❔️ IIR filtering
     - Methods:
-      - ❌️ Butterworth
+      - ✔️ Butterworth
       - ❌️ Chebyshev I
       - ❌️ Chebyshev II
       - ❌️ Elliptic
     - Types:
-      - ❌️ Low-pass
-      - ❌️ High-pass
-      - ❌️ Band-pass
-      - ❌️ Band-stop
+      - ✔️ Low-pass
+      - ✔️ High-pass
+      - ✔️ Band-pass
+      - ✔️ Band-stop
       - ❌️ Notch
     - Realizations:
       - ❌️ Direct form I.
