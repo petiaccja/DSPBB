@@ -17,6 +17,7 @@ enum class eSignalDomain {
 static constexpr auto TIME_DOMAIN = eSignalDomain::TIME;
 static constexpr auto FREQUENCY_DOMAIN = eSignalDomain::FREQUENCY;
 static constexpr auto QUEFRENCY_DOMAIN = eSignalDomain::QUEFRENCY;
+static constexpr auto DOMAINLESS = eSignalDomain::DOMAINLESS;
 
 
 template <class T, eSignalDomain Domain>

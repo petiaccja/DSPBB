@@ -5,6 +5,7 @@
 #include "../Primitives/SignalTraits.hpp"
 
 #include <cmath>
+#include <cassert>
 
 namespace dspbb {
 

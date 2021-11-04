@@ -91,11 +91,22 @@ More like notes to myself as to what I want to have.
       - ✔️ Band-stop
       - ✔️ Arbitrary response
       - ✔️ Hilbert
-  - ❌️ IIR filtering
-    - ❌️ Butterworth
-    - ❌️ Chebyshev I
-    - ❌️ Chebyshev II
-    - ❌️ Elliptic
+  - ❔️ IIR filtering
+    - Methods:
+      - ✔️ Butterworth
+      - ❌️ Chebyshev I
+      - ❌️ Chebyshev II
+      - ❌️ Elliptic
+    - Types:
+      - ✔️ Low-pass
+      - ✔️ High-pass
+      - ✔️ Band-pass
+      - ✔️ Band-stop
+      - ❌️ Notch
+    - Realizations:
+      - ❌️ Direct form I.
+      - ❌️ Direct form II.
+      - ❌️ Cascaded biquad (I. & II.)
   - ✔️ Filter response analysis
     - ✔️ Compute amplitude & phase response
     - ✔️ Classify amplitude response: LP/HP/BP/BS

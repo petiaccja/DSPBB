@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../ComputeKernels/VectorizedAlgorithms.hpp"
+#include "../LTISystems/RepresentationTransforms.hpp"
+#include "../LTISystems/System.hpp"
 #include "../Math/FFT.hpp"
 #include "../Math/Functions.hpp"
 #include "../Math/Statistics.hpp"
@@ -452,18 +453,59 @@ FilterParameters<T> ParametrizeFilter(const Spectrum<T>& response) {
 	return ParametrizeFilter(AsView(response));
 }
 
+
+namespace impl {
+	inline size_t FrequencyResponseFftSize(size_t impulseSize, size_t desiredGridSize) {
+		return std::max(impulseSize, 2 * desiredGridSize - 1);
+	}
+} // namespace impl
+
+
 template <class T>
 auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
-	const size_t gridSize = gridSizeHint > 0 ? std::max(impulse.Size(), 2 * gridSizeHint - 1) : (2 * impulse.Size() * 10 - 1);
-	Signal<T, TIME_DOMAIN> padded(gridSize, T(0));
+	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulse.Size() * 10;
+	const size_t paddedSize = impl::FrequencyResponseFftSize(impulse.Size(), gridSize);
+
+	Signal<T, TIME_DOMAIN> padded(paddedSize, T(0));
 	std::copy(impulse.begin(), impulse.end(), padded.begin());
-	const auto spectrum = FourierTransform(padded, false);
-	return std::make_pair(Abs(spectrum), Arg(spectrum));
+
+	auto spectrum = FourierTransform(padded, false);
+	auto amplitude = Abs(spectrum);
+	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });
+	auto phase = Arg(spectrum);
+	return std::make_pair(std::move(amplitude), std::move(phase));
 }
 
 template <class T>
 auto FrequencyResponse(const Signal<T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
 	return FrequencyResponse(AsView(impulse), gridSizeHint);
+}
+
+
+template <class T>
+auto FrequencyResponse(const DiscreteTransferFunctionSystem<T>& tf, size_t gridSizeHint = 0) {
+	const size_t impulseSize = std::max(tf.numerator.Size(), tf.denominator.Size());
+	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulseSize * 20;
+	const size_t paddedSize = impl::FrequencyResponseFftSize(impulseSize, gridSize);
+
+	Signal<T, TIME_DOMAIN> num(paddedSize, T(0));
+	Signal<T, TIME_DOMAIN> den(paddedSize, T(0));
+	std::copy(tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end(), num.begin());
+	std::copy(tf.denominator.Coefficients().begin(), tf.denominator.Coefficients().end(), den.begin());
+
+	const auto spectrumNum = FourierTransform(num, false);
+	const auto spectrumDen = FourierTransform(den, false);
+	auto spectrum = spectrumNum / spectrumDen;
+	auto amplitude = Abs(spectrum);
+	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });
+	auto phase = Arg(spectrum);
+	return std::make_pair(std::move(amplitude), std::move(phase));
+}
+
+template <class T>
+auto FrequencyResponse(const DiscretePoleZeroSystem<T>& zpk, size_t gridSizeHint = 0) {
+	const DiscreteTransferFunctionSystem<T> tf = TransferFunction(zpk);
+	return FrequencyResponse(tf, gridSizeHint);
 }
 
 
