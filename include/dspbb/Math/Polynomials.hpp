@@ -212,7 +212,7 @@ void FactoredPolynomial<T>::Regroup(size_t numRealRoots, T realValue, std::compl
 		std::move(m_mem.begin() + currentRealRoots, m_mem.end(), m_mem.begin() + numRealRoots);
 	}
 	if (currentRealRoots < numRealRoots) {
-		std::move_backward(m_mem.begin() + currentRealRoots, m_mem.begin() + (NumRoots() - numRealRoots), m_mem.end());
+		std::move_backward(m_mem.begin() + currentRealRoots, m_mem.end() - (numRealRoots - currentRealRoots), m_mem.end());
 	}
 	m_real = { m_mem.Data(), numRealRoots };
 	m_complex = { reinterpret_cast<std::complex<T>*>(m_mem.Data() + numRealRoots), numComplexPairs };
