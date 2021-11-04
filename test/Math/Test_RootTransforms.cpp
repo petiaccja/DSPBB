@@ -109,3 +109,7 @@ TEST_CASE("Second order padding not complex pair", "[Root transforms]") {
 TEST_CASE("Second order transform not complex pair", "[Root transforms]") {
 	REQUIRE_THROWS(TransformRoots<float, 2>(rootsSpin, faulty2nd));
 }
+
+TEST_CASE("Requesting too few roots", "[Root transforms]") {
+	REQUIRE_THROWS(TransformRoots<float, 2>(rootsSpin, faulty2nd, 1));
+}
