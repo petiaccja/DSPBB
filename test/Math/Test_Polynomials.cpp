@@ -144,7 +144,7 @@ TEST_CASE("Factored polynomial regroup oversize", "[Polynomials]") {
 	FactoredPolynomial<float> poly;
 	poly.Resize(1, 3);
 	REQUIRE_NOTHROW(poly.Regroup(7));
-	REQUIRE_THROWS(poly.Regroup(8));
+	REQUIRE_THROWS(poly.Regroup(9));
 }
 
 TEST_CASE("Factored polynomial regroup no pair", "[Polynomials]") {
