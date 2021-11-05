@@ -12,7 +12,7 @@ enum class eSystemDiscretization {
 
 
 template <class T, eSystemDiscretization Discretization>
-struct PoleZeroSystem {
+struct ZeroPoleGain {
 	T gain;
 	FactoredPolynomial<T> zeros;
 	FactoredPolynomial<T> poles;
@@ -23,7 +23,10 @@ struct PoleZeroSystem {
 
 
 template <class T, eSystemDiscretization Discretization>
-struct TransferFunctionSystem {
+struct TransferFunction {
+	TransferFunction() = default;
+	TransferFunction(const ZeroPoleGain<T, Discretization>& zpk);
+
 	Polynomial<T> numerator;
 	Polynomial<T> denominator;
 
@@ -33,14 +36,33 @@ struct TransferFunctionSystem {
 
 
 template <class T>
-using ContinuousTransferFunctionSystem = TransferFunctionSystem<T, eSystemDiscretization::CONTINUOUS>;
-template <class T>
-using DiscreteTransferFunctionSystem = TransferFunctionSystem<T, eSystemDiscretization::DISCRETE>;
+struct CascadedBiquad {
+	struct Biquad {
+		std::array<T, 3> numerator;
+		std::array<T, 2> denominator;
+	};
+	std::vector<Biquad> sections;
+};
+
+
+template <class T, eSystemDiscretization Discretization>
+TransferFunction<T, Discretization>::TransferFunction(const ZeroPoleGain<T, Discretization>& zpk)
+	: numerator{ ExpandPolynomial(zpk.zeros) },
+	  denominator{ ExpandPolynomial(zpk.poles) } {
+	numerator.Coefficients() *= zpk.gain;
+}
+
+
 
 template <class T>
-using ContinuousPoleZeroSystem = PoleZeroSystem<T, eSystemDiscretization::CONTINUOUS>;
+using ContinuousTransferFunction = TransferFunction<T, eSystemDiscretization::CONTINUOUS>;
 template <class T>
-using DiscretePoleZeroSystem = PoleZeroSystem<T, eSystemDiscretization::DISCRETE>;
+using DiscreteTransferFunction = TransferFunction<T, eSystemDiscretization::DISCRETE>;
+
+template <class T>
+using ContinuousZeroPoleGain = ZeroPoleGain<T, eSystemDiscretization::CONTINUOUS>;
+template <class T>
+using DiscreteZeroPoleGain = ZeroPoleGain<T, eSystemDiscretization::DISCRETE>;
 
 
 } // namespace dspbb

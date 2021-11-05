@@ -10,12 +10,12 @@ namespace dspbb {
 
 
 template <class T>
-ContinuousPoleZeroSystem<T> BilinearTransform(const DiscretePoleZeroSystem<T>& discrete, T sampleRate) {
+ContinuousZeroPoleGain<T> BilinearTransform(const DiscreteZeroPoleGain<T>& discrete, T sampleRate) {
 	throw std::logic_error{ "not implemented" };
 }
 
 template <class T>
-DiscretePoleZeroSystem<T> BilinearTransform(const ContinuousPoleZeroSystem<T>& continuous, T sampleRate, std::optional<T> prewarp = {}) {
+DiscreteZeroPoleGain<T> BilinearTransform(const ContinuousZeroPoleGain<T>& continuous, T sampleRate, std::optional<T> prewarp = {}) {
 	const T k = prewarp ? *prewarp / std::tan(*prewarp / sampleRate / T(2)) : T(2) * sampleRate;
 	
 	// Opposite roots

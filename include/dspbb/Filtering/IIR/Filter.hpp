@@ -7,7 +7,7 @@
 namespace dspbb {
 
 template <class SignalT, class T, class U>
-auto Filter(const SignalT& signal, const DiscreteTransferFunctionSystem<U>& filter, DirectFormI<T>& state) {
+auto Filter(const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormI<T>& state) {
 	SignalT r;
 	r.Reserve(signal.Size());
 	for (auto& sample : signal) {

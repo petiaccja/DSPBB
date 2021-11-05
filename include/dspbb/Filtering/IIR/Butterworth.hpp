@@ -8,7 +8,7 @@
 namespace dspbb {
 
 template <class T>
-PoleZeroSystem<T, eSystemDiscretization::CONTINUOUS> Butterworth(size_t order) {
+ZeroPoleGain<T, eSystemDiscretization::CONTINUOUS> Butterworth(size_t order) {
 	FactoredPolynomial<T> poles;
 	poles.Resize(order % 2, order / 2, -T(1));
 

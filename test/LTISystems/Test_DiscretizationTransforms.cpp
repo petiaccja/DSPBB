@@ -8,12 +8,12 @@ using namespace std::complex_literals;
 
 TEST_CASE("Bilinear C->D", "[DiscreteizationTransforms]") {
 	constexpr float sampleRate = 6.0f;
-	const ContinuousPoleZeroSystem<float> c{
+	const ContinuousZeroPoleGain<float> c{
 		1.5f,
 		{ -10000.f, -2.3f + 0.3if, -2.3f - 0.3if },
 		{ -0.0f + 0.7if, -0.0f - 0.7if },
 	};
-	const DiscretePoleZeroSystem<float> d = BilinearTransform(c, sampleRate);
+	const DiscreteZeroPoleGain<float> d = BilinearTransform(c, sampleRate);
 	// Number of poles and zeros.
 	REQUIRE(d.poles.RealRoots().Size() == 1);
 	REQUIRE(d.poles.ComplexRoots().Size() == 1);
@@ -35,12 +35,12 @@ TEST_CASE("Bilinear C->D Prewarp", "[DiscreteizationTransforms]") {
 	constexpr float nyquistLimit = sampleRate / 2.0f;
 	constexpr float angularLimit = 2 * pi_v<float> * nyquistLimit;
 	constexpr float cutoff = 0.65f;
-	const ContinuousPoleZeroSystem<float> c{
+	const ContinuousZeroPoleGain<float> c{
 		1.5f,
 		{ -2.3f + 0.3if, -2.3f - 0.3if },
 		{ -0.0f + 1if * angularLimit * cutoff, -0.0f - 1if * angularLimit * cutoff },
 	};
-	const DiscretePoleZeroSystem<float> d = BilinearTransform(c, sampleRate, { cutoff * angularLimit });
+	const DiscreteZeroPoleGain<float> d = BilinearTransform(c, sampleRate, { cutoff * angularLimit });
 
 	REQUIRE(arg(d.poles.ComplexRoots()[0]) == Approx(cutoff * pi_v<float>));
 }

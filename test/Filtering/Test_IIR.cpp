@@ -8,7 +8,7 @@
 using namespace dspbb;
 
 template <class T>
-bool IsStable(const DiscretePoleZeroSystem<T>& system) {
+bool IsStable(const DiscreteZeroPoleGain<T>& system) {
 	std::vector<T> lengths;
 	std::transform(system.poles.RealRoots().begin(), system.poles.RealRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
 	std::transform(system.poles.ComplexRoots().begin(), system.poles.ComplexRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
