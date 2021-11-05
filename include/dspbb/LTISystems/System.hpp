@@ -5,13 +5,13 @@
 
 namespace dspbb {
 
-enum class eSystemDiscretization {
+enum class eDiscretization {
 	DISCRETE,
 	CONTINUOUS,
 };
 
 
-template <class T, eSystemDiscretization Discretization>
+template <class T, eDiscretization Discretization>
 struct ZeroPoleGain {
 	T gain;
 	FactoredPolynomial<T> zeros;
@@ -22,7 +22,7 @@ struct ZeroPoleGain {
 };
 
 
-template <class T, eSystemDiscretization Discretization>
+template <class T, eDiscretization Discretization>
 struct TransferFunction {
 	TransferFunction() = default;
 	TransferFunction(const ZeroPoleGain<T, Discretization>& zpk);
@@ -37,6 +37,9 @@ struct TransferFunction {
 
 template <class T>
 struct CascadedBiquad {
+	CascadedBiquad() = default;
+	CascadedBiquad(ZeroPoleGain<T, eDiscretization::DISCRETE>);
+
 	struct Biquad {
 		std::array<T, 3> numerator;
 		std::array<T, 2> denominator;
@@ -45,7 +48,7 @@ struct CascadedBiquad {
 };
 
 
-template <class T, eSystemDiscretization Discretization>
+template <class T, eDiscretization Discretization>
 TransferFunction<T, Discretization>::TransferFunction(const ZeroPoleGain<T, Discretization>& zpk)
 	: numerator{ ExpandPolynomial(zpk.zeros) },
 	  denominator{ ExpandPolynomial(zpk.poles) } {
@@ -55,14 +58,14 @@ TransferFunction<T, Discretization>::TransferFunction(const ZeroPoleGain<T, Disc
 
 
 template <class T>
-using ContinuousTransferFunction = TransferFunction<T, eSystemDiscretization::CONTINUOUS>;
+using ContinuousTransferFunction = TransferFunction<T, eDiscretization::CONTINUOUS>;
 template <class T>
-using DiscreteTransferFunction = TransferFunction<T, eSystemDiscretization::DISCRETE>;
+using DiscreteTransferFunction = TransferFunction<T, eDiscretization::DISCRETE>;
 
 template <class T>
-using ContinuousZeroPoleGain = ZeroPoleGain<T, eSystemDiscretization::CONTINUOUS>;
+using ContinuousZeroPoleGain = ZeroPoleGain<T, eDiscretization::CONTINUOUS>;
 template <class T>
-using DiscreteZeroPoleGain = ZeroPoleGain<T, eSystemDiscretization::DISCRETE>;
+using DiscreteZeroPoleGain = ZeroPoleGain<T, eDiscretization::DISCRETE>;
 
 
 } // namespace dspbb
