@@ -5,6 +5,8 @@
 #include "../Primitives/SignalView.hpp"
 #include "../Utility/TypeTraits.hpp"
 
+#include <algorithm>
+
 
 namespace dspbb {
 
@@ -129,6 +131,31 @@ inline double FourierBin2Frequency(size_t binIdx, size_t numBins, uint64_t sampl
 
 inline size_t FourierFrequency2Bin(double frequency, size_t numBins, uint64_t sampleRate) {
 	return size_t(std::round(frequency / double(sampleRate) * double(numBins)));
+}
+
+template <class SignalR, class SignalT, std::enable_if_t<is_same_domain_v<SignalR, SignalT>, int> = 0>
+void FftShift(SignalR&& out, const SignalT& in) {
+	assert(out.Size() == in.Size());
+	if (static_cast<const void*>(std::addressof(out)) == static_cast<const void*>(std::addressof(in))) {
+		const auto first = out.begin();
+		const auto mid = out.begin() + (1 + out.Size()) / 2;
+		const auto last = out.end();
+		std::rotate(first, mid, last);
+	}
+	else {
+		const auto first = in.begin();
+		const auto mid = in.begin() + (1 + in.Size()) / 2;
+		const auto last = in.end();
+		const auto write = out.begin();
+		std::rotate_copy(first, mid, last, write);
+	}
+}
+
+template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
+SignalT FftShift(const SignalT& in) {
+	SignalT out(in.Size());
+	FftShift(out, in);
+	return out;
 }
 
 
