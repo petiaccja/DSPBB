@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../LTISystems/System.hpp"
+#include "../../LTISystems/Systems.hpp"
 #include "../../Math/RootTransforms.hpp"
 #include "../../Utility/Numbers.hpp"
 

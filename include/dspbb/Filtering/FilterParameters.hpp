@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../LTISystems/System.hpp"
+#include "../LTISystems/Systems.hpp"
 #include "../Math/FFT.hpp"
 #include "../Math/Functions.hpp"
 #include "../Math/Statistics.hpp"
