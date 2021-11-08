@@ -77,7 +77,7 @@ void IirFilter(DiscreteZeroPoleGain<T>& out, const ResponseDesc& desc) {
 	const auto filter = IirFilter(order, desc);
 	out.Regroup(filter.NumRealRoots());
 	std::copy(filter.RealRoots().begin(), filter.RealRoots.end(), out.RealRoots.begin());
-	std::copy(filter.ComplexRoots().begin(), filter.ComplexRoots.end(), out.ComplexRoots.begin());
+	std::copy(filter.ComplexPairs().begin(), filter.ComplexPairs.end(), out.ComplexPairs.begin());
 }
 
 } // namespace dspbb

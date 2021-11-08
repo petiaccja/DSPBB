@@ -19,10 +19,10 @@ TEST_CASE("Energy gain", "[WindowFunctions]") {
 
 template <class T, eSignalDomain Domain>
 static bool IsSymmetric(const Signal<T, Domain>& window) {
-	auto it = window.begin();
+	auto fw = window.begin();
 	auto rev = window.rbegin();
-	for (; it != rev.base(); ++it, ++rev) {
-		auto diff = std::abs(*it - *rev);
+	for (; fw <= rev.base(); ++fw, ++rev) {
+		auto diff = std::abs(*fw - *rev);
 		if (diff > 0.001f) {
 			return false;
 		}

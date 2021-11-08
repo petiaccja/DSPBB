@@ -11,7 +11,7 @@ template <class T>
 bool IsStable(const DiscreteZeroPoleGain<T>& system) {
 	std::vector<T> lengths;
 	std::transform(system.poles.RealRoots().begin(), system.poles.RealRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
-	std::transform(system.poles.ComplexRoots().begin(), system.poles.ComplexRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
+	std::transform(system.poles.ComplexPairs().begin(), system.poles.ComplexPairs().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
 	return std::all_of(lengths.begin(), lengths.end(), [](auto len) { return len < 1.0f; });
 }
 

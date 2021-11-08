@@ -52,16 +52,15 @@ public:
 
 	void Resize(size_t numRealRoots, size_t numComplexPairs, T realValue = T{}, std::complex<T> complexValue = std::complex<T>{});
 	void Regroup(size_t numRealRoots, T realValue = T{}, std::complex<T> complexValue = std::complex<T>{});
-	std::pair<size_t, size_t> Size() const;
-	size_t NumRoots() const { return Size().first + Size().second * 2; }
-	size_t NumRealRoots() const { return Size().first; }
-	size_t NumComplexRoots() const { return Size().second * 2; }
-	size_t NumComplexPairs() const { return Size().second; }
+	size_t NumRoots() const { return NumRealRoots() + NumComplexRoots(); }
+	size_t NumRealRoots() const { return m_real.Size(); }
+	size_t NumComplexRoots() const { return 2 * NumComplexPairs(); }
+	size_t NumComplexPairs() const { return m_complex.Size(); }
 
 	SignalView<const T, DOMAINLESS> RealRoots() const;
-	SignalView<const std::complex<T>, DOMAINLESS> ComplexRoots() const;
+	SignalView<const std::complex<T>, DOMAINLESS> ComplexPairs() const;
 	SignalView<T, DOMAINLESS> RealRoots();
-	SignalView<std::complex<T>, DOMAINLESS> ComplexRoots();
+	SignalView<std::complex<T>, DOMAINLESS> ComplexPairs();
 
 	T operator()(const T& x) const;
 	std::complex<T> operator()(const std::complex<T>& x) const;
@@ -199,7 +198,8 @@ FactoredPolynomial<T>::FactoredPolynomial(Iter firstRoot, Iter lastRoot) {
 template <class T>
 void FactoredPolynomial<T>::Resize(size_t numRealRoots, size_t numComplexPairs, T realValue, std::complex<T> complexValue) {
 	const size_t numCoeffs = numRealRoots + 2 * numComplexPairs;
-	const auto [currentRealRoots, currentComplexPairs] = Size();
+	const size_t currentRealRoots = NumRealRoots();
+	const size_t currentComplexPairs = NumComplexPairs();
 	if (numRealRoots < currentRealRoots) {
 		std::move(m_mem.begin() + currentRealRoots, m_mem.end(), m_mem.begin() + numRealRoots);
 	}
@@ -227,7 +227,8 @@ void FactoredPolynomial<T>::Regroup(size_t numRealRoots, T realValue, std::compl
 	}
 
 	const size_t numComplexPairs = (NumRoots() - numRealRoots) / 2;
-	const auto [currentRealRoots, currentComplexPairs] = Size();
+	const size_t currentRealRoots = NumRealRoots();
+	const size_t currentComplexPairs = NumComplexPairs();
 	if (numRealRoots < currentRealRoots) {
 		std::move(m_mem.begin() + currentRealRoots, m_mem.end(), m_mem.begin() + numRealRoots);
 	}
@@ -245,17 +246,12 @@ void FactoredPolynomial<T>::Regroup(size_t numRealRoots, T realValue, std::compl
 }
 
 template <class T>
-std::pair<size_t, size_t> FactoredPolynomial<T>::Size() const {
-	return { m_real.Size(), m_complex.Size() };
-}
-
-template <class T>
 SignalView<const T, DOMAINLESS> FactoredPolynomial<T>::RealRoots() const {
 	return AsView(m_real);
 }
 
 template <class T>
-SignalView<const std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexRoots() const {
+SignalView<const std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() const {
 	return AsView(m_complex);
 }
 
@@ -265,7 +261,7 @@ SignalView<T, DOMAINLESS> FactoredPolynomial<T>::RealRoots() {
 }
 
 template <class T>
-SignalView<std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexRoots() {
+SignalView<std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() {
 	return AsView(m_complex);
 }
 
@@ -345,7 +341,7 @@ Polynomial<T> ExpandPolynomial(const FactoredPolynomial<T>& factored) {
 	for (const auto& root : factored.RealRoots()) {
 		impl::MultiplyPolynomialBy1stOrder(poly.Coefficients(), -root);
 	}
-	for (const auto& root : factored.ComplexRoots()) {
+	for (const auto& root : factored.ComplexPairs()) {
 		const T real = std::real(root);
 		const T imag = std::imag(root);
 		impl::MultiplyPolynomialBy2ndOrder(poly.Coefficients(), real * real + imag * imag, -2.0f * real);

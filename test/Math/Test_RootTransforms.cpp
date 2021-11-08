@@ -38,7 +38,7 @@ TEST_CASE("First order default root count", "[Root transforms]") {
 	REQUIRE(transformedRoots.NumComplexPairs() == rootsDouble.NumComplexPairs());
 	REQUIRE(transformedRoots.RealRoots()[0] == Approx(2.0f));
 	REQUIRE(transformedRoots.RealRoots()[1] == Approx(4.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[0] == ApproxComplex(6.0f + 4.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[0] == ApproxComplex(6.0f + 4.0if));
 }
 
 TEST_CASE("First order padding", "[Root transforms]") {
@@ -52,7 +52,7 @@ TEST_CASE("First order padding", "[Root transforms]") {
 	REQUIRE(transformedRoots.RealRoots()[3] == Approx(-1.0f));
 	REQUIRE(transformedRoots.RealRoots()[4] == Approx(-1.0f));
 	REQUIRE(transformedRoots.RealRoots()[5] == Approx(-1.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[0] == ApproxComplex(6.0f + 4.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[0] == ApproxComplex(6.0f + 4.0if));
 }
 
 TEST_CASE("second order default root count", "[Root transforms]") {
@@ -61,9 +61,9 @@ TEST_CASE("second order default root count", "[Root transforms]") {
 	REQUIRE(transformedRoots.NumComplexRoots() == 6);
 	REQUIRE(transformedRoots.RealRoots()[0] == Approx(0.0f));
 	REQUIRE(transformedRoots.RealRoots()[1] == Approx(0.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[0] == ApproxComplex(2.0if));
-	REQUIRE(transformedRoots.ComplexRoots()[1] == ApproxComplex(3.0if - 2.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[2] == ApproxComplex(-3.0if + 2.0f));
+	REQUIRE(transformedRoots.ComplexPairs()[0] == ApproxComplex(2.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[1] == ApproxComplex(3.0if - 2.0f));
+	REQUIRE(transformedRoots.ComplexPairs()[2] == ApproxComplex(-3.0if + 2.0f));
 }
 
 TEST_CASE("Second order padding with real", "[Root transforms]") {
@@ -81,9 +81,9 @@ TEST_CASE("Second order padding with real", "[Root transforms]") {
 	REQUIRE(transformedRoots.RealRoots()[7] == Approx(-2.0f));
 	REQUIRE(transformedRoots.RealRoots()[8] == Approx(-1.0f));
 	REQUIRE(transformedRoots.RealRoots()[9] == Approx(-2.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[0] == ApproxComplex(2.0if));
-	REQUIRE(transformedRoots.ComplexRoots()[1] == ApproxComplex(3.0if - 2.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[2] == ApproxComplex(-3.0if + 2.0f));
+	REQUIRE(transformedRoots.ComplexPairs()[0] == ApproxComplex(2.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[1] == ApproxComplex(3.0if - 2.0f));
+	REQUIRE(transformedRoots.ComplexPairs()[2] == ApproxComplex(-3.0if + 2.0f));
 }
 
 TEST_CASE("Second order padding with complex pair", "[Root transforms]") {
@@ -93,13 +93,13 @@ TEST_CASE("Second order padding with complex pair", "[Root transforms]") {
 	REQUIRE(transformedRoots.NumComplexRoots() == 14);
 	REQUIRE(transformedRoots.RealRoots()[0] == Approx(0.0f));
 	REQUIRE(transformedRoots.RealRoots()[0] == Approx(0.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[0] == ApproxComplex(2.0if));
-	REQUIRE(transformedRoots.ComplexRoots()[1] == ApproxComplex(3.0if - 2.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[2] == ApproxComplex(-3.0if + 2.0f));
-	REQUIRE(transformedRoots.ComplexRoots()[3] == ApproxComplex(-1.0f + 1.0if));
-	REQUIRE(transformedRoots.ComplexRoots()[4] == ApproxComplex(-1.0f + 1.0if));
-	REQUIRE(transformedRoots.ComplexRoots()[5] == ApproxComplex(-1.0f + 1.0if));
-	REQUIRE(transformedRoots.ComplexRoots()[6] == ApproxComplex(-1.0f + 1.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[0] == ApproxComplex(2.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[1] == ApproxComplex(3.0if - 2.0f));
+	REQUIRE(transformedRoots.ComplexPairs()[2] == ApproxComplex(-3.0if + 2.0f));
+	REQUIRE(transformedRoots.ComplexPairs()[3] == ApproxComplex(-1.0f + 1.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[4] == ApproxComplex(-1.0f + 1.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[5] == ApproxComplex(-1.0f + 1.0if));
+	REQUIRE(transformedRoots.ComplexPairs()[6] == ApproxComplex(-1.0f + 1.0if));
 }
 
 TEST_CASE("Second order padding not complex pair", "[Root transforms]") {
