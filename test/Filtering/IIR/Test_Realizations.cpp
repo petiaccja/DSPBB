@@ -19,8 +19,6 @@ const DiscreteZeroPoleGain<real_t> sys = {
 const TransferFunction tf{ sys };
 const CascadedBiquad cascade{ sys };
 
-Signal<real_t, FREQUENCY_DOMAIN> re;
-Signal<real_t, FREQUENCY_DOMAIN> im;
 const Signal<real_t, TIME_DOMAIN> input = { 0.5f, 0.9f, 1.4f, -1.3f, -0.6f, -0.3f };
 const Signal<real_t, TIME_DOMAIN> response = []() {
 	TimeSignal<real_t> num{ tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end() };
