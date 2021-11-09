@@ -128,3 +128,29 @@ TEST_CASE("FFT - Half real identity", "[FFT]") {
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}
 }
+
+TEST_CASE("FFT shift even", "[FFT]") {
+	const Spectrum<float> s = { 0, 1, 2, 3, 4, 5 };
+	const Spectrum<float> e = { 3, 4, 5, 0, 1, 2 };
+	const auto r = FftShift(s);
+	REQUIRE(Max(r - e) == 0);
+}
+
+TEST_CASE("FFT shift odd", "[FFT]") {
+	const Spectrum<float> s = { 0, 1, 2, 3, 4, 5, 6 };
+	const Spectrum<float> e = { 4, 5, 6, 0, 1, 2, 3 };
+	const auto r = FftShift(s);
+	REQUIRE(Max(r - e) == 0);
+}
+
+TEST_CASE("FFT shift 1", "[FFT]") {
+	const Spectrum<float> s = { 0 };
+	const auto r = FftShift(s);
+	REQUIRE(r[0] == 0);
+}
+
+TEST_CASE("FFT shift empty", "[FFT]") {
+	const Spectrum<float> s = {};
+	const auto r = FftShift(s);
+	REQUIRE(r.Size() == 0);
+}

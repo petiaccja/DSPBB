@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../LTISystems/RepresentationTransforms.hpp"
-#include "../LTISystems/System.hpp"
+#include "../LTISystems/Systems.hpp"
 #include "../Math/FFT.hpp"
 #include "../Math/Functions.hpp"
 #include "../Math/Statistics.hpp"
@@ -483,7 +482,7 @@ auto FrequencyResponse(const Signal<T, TIME_DOMAIN>& impulse, size_t gridSizeHin
 
 
 template <class T>
-auto FrequencyResponse(const DiscreteTransferFunctionSystem<T>& tf, size_t gridSizeHint = 0) {
+auto FrequencyResponse(const DiscreteTransferFunction<T>& tf, size_t gridSizeHint = 0) {
 	const size_t impulseSize = std::max(tf.numerator.Size(), tf.denominator.Size());
 	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulseSize * 20;
 	const size_t paddedSize = impl::FrequencyResponseFftSize(impulseSize, gridSize);
@@ -503,8 +502,8 @@ auto FrequencyResponse(const DiscreteTransferFunctionSystem<T>& tf, size_t gridS
 }
 
 template <class T>
-auto FrequencyResponse(const DiscretePoleZeroSystem<T>& zpk, size_t gridSizeHint = 0) {
-	const DiscreteTransferFunctionSystem<T> tf = TransferFunction(zpk);
+auto FrequencyResponse(const DiscreteZeroPoleGain<T>& zpk, size_t gridSizeHint = 0) {
+	const DiscreteTransferFunction<T> tf = TransferFunction(zpk);
 	return FrequencyResponse(tf, gridSizeHint);
 }
 

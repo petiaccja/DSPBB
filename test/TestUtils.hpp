@@ -91,12 +91,18 @@ public:
 
 	std::string toString() const;
 
+	friend std::ostream& operator<<(std::ostream& os, const ApproxComplex& obj) {
+		os << obj.m_value;
+		return os;
+	}
+
 private:
 	double m_epsilon = std::numeric_limits<float>::epsilon() * 100.0;
 	double m_margin = 0.0;
 	double m_scale = 0.0;
 	std::complex<double> m_value;
 };
+
 
 
 template <class T>

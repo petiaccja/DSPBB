@@ -1,18 +1,40 @@
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/IIR.hpp>
-#include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Statistics.hpp>
-#include <iostream>
 
 using namespace dspbb;
 
-template <class T>
-bool IsStable(const DiscretePoleZeroSystem<T>& system) {
-	std::vector<T> lengths;
-	std::transform(system.poles.RealRoots().begin(), system.poles.RealRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
-	std::transform(system.poles.ComplexRoots().begin(), system.poles.ComplexRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
-	return std::all_of(lengths.begin(), lengths.end(), [](auto len) { return len < 1.0f; });
+
+//------------------------------------------------------------------------------
+// Filter application helpers
+//------------------------------------------------------------------------------
+
+TEST_CASE("Filter direct form I", "[IIR]") {
+	constexpr int order = 7;
+	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
+	DirectFormI<float> state{ order };
+	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const auto filtered = Filter(signal, filter, state);
+	REQUIRE(filtered.Size() == signal.Size());
+}
+
+TEST_CASE("Filter direct form II", "[IIR]") {
+	constexpr int order = 7;
+	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
+	DirectFormII<float> state{ order };
+	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const auto filtered = Filter(signal, filter, state);
+	REQUIRE(filtered.Size() == signal.Size());
+}
+
+TEST_CASE("Filter cascaded form", "[IIR]") {
+	constexpr int order = 7;
+	const auto filter = CascadedBiquad(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
+	CascadedForm<float> state{ order };
+	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const auto filtered = Filter(signal, filter, state);
+	REQUIRE(filtered.Size() == signal.Size());
 }
 
 //------------------------------------------------------------------------------

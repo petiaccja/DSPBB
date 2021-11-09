@@ -20,6 +20,7 @@ target_sources(UnitTest
 		"Filtering/Test_Windowing.cpp"
 		"Generators/Test_Generators.cpp"
 		"LTISystems/Test_DiscretizationTransforms.cpp"
+		"LTISystems/Test_Systems.cpp"
 		"Math/Test_Convolution.cpp"
 		"Math/Test_FFT.cpp"
 		"Math/Test_Functions.cpp"

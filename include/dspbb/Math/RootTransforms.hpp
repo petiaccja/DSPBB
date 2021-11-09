@@ -58,7 +58,7 @@ FactoredPolynomial<T> TransformRoots(const FactoredPolynomial<T>& poly, Transfor
 	FactoredPolynomial<T> r;
 	r.Resize(numReals, numComplexPairs);
 	auto realRootIt = r.RealRoots().begin();
-	auto complexRootIt = r.ComplexRoots().begin();
+	auto complexRootIt = r.ComplexPairs().begin();
 
 	for (auto& root : poly.RealRoots()) {
 		const auto transformedRoots = func(root);
@@ -72,7 +72,7 @@ FactoredPolynomial<T> TransformRoots(const FactoredPolynomial<T>& poly, Transfor
 			}
 		}
 	}
-	for (auto& root : poly.ComplexRoots()) {
+	for (auto& root : poly.ComplexPairs()) {
 		const auto transformedRoots = func(root);
 		assert(std::distance(std::begin(transformedRoots), std::end(transformedRoots)) == Order);
 		complexRootIt = std::copy(transformedRoots.begin(), transformedRoots.end(), complexRootIt);
@@ -94,7 +94,7 @@ FactoredPolynomial<T> TransformRoots(const FactoredPolynomial<T>& poly, Transfor
 template <class T, class RealGain, class PairGain>
 T TransformGain(const FactoredPolynomial<T>& poly, RealGain realGain, PairGain pairGain) {
 	return std::transform_reduce(poly.RealRoots().begin(), poly.RealRoots().end(), T(1), std::multiplies<>{}, realGain)
-		   * std::transform_reduce(poly.ComplexRoots().begin(), poly.ComplexRoots().end(), T(1), std::multiplies<>{}, pairGain);
+		   * std::transform_reduce(poly.ComplexPairs().begin(), poly.ComplexPairs().end(), T(1), std::multiplies<>{}, pairGain);
 }
 
 } // namespace dspbb

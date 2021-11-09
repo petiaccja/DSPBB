@@ -5,7 +5,7 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
-const DiscretePoleZeroSystem<float> prototype = {
+const DiscreteZeroPoleGain<float> prototype = {
 	0.166666672f,
 	{-1.f, -1.f, -1.f},
 	{ 0.f, 0.f + 0.577350259if, 0.f - 0.577350259if }

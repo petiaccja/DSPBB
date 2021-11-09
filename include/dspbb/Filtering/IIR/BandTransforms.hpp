@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../LTISystems/System.hpp"
+#include "../../LTISystems/Systems.hpp"
 #include "../../Math/RootTransforms.hpp"
 #include "../../Utility/Numbers.hpp"
 
@@ -21,7 +21,7 @@ namespace impl {
 	}
 
 	template <class T>
-	DiscretePoleZeroSystem<T> MapZDomain(const DiscretePoleZeroSystem<T>& system, T s, T a0, T a1) {
+	DiscreteZeroPoleGain<T> MapZDomain(const DiscreteZeroPoleGain<T>& system, T s, T a0, T a1) {
 		// Opposite roots
 		const std::complex<T> z = -(a1 / a0);
 		const std::array z12 = { z };
@@ -52,7 +52,7 @@ namespace impl {
 	}
 
 	template <class T>
-	DiscretePoleZeroSystem<T> MapZDomain(const DiscretePoleZeroSystem<T>& system, T s, T a0, T a1, T a2) {
+	DiscreteZeroPoleGain<T> MapZDomain(const DiscreteZeroPoleGain<T>& system, T s, T a0, T a1, T a2) {
 		// Opposite roots
 		const std::complex<T> det = a1 * a1 - T(4) * a0 * a2;
 		const std::complex<T> z1 = (-a1 - std::sqrt(det)) / (T(2) * a0);
@@ -89,7 +89,7 @@ namespace impl {
 } // namespace impl
 
 template <class T>
-DiscretePoleZeroSystem<T> Halfband2Lowpass(const DiscretePoleZeroSystem<T>& system, T to) {
+DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, T to) {
 	const T w = to * pi_v<T>;
 
 	const T s = T(1);
@@ -100,7 +100,7 @@ DiscretePoleZeroSystem<T> Halfband2Lowpass(const DiscretePoleZeroSystem<T>& syst
 }
 
 template <class T>
-DiscretePoleZeroSystem<T> Halfband2Highpass(const DiscretePoleZeroSystem<T>& system, T to) {
+DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system, T to) {
 	const T w = to * pi_v<T>;
 
 	const T s = -T(1);
@@ -111,7 +111,7 @@ DiscretePoleZeroSystem<T> Halfband2Highpass(const DiscretePoleZeroSystem<T>& sys
 }
 
 template <class T>
-DiscretePoleZeroSystem<T> Halfband2Bandpass(const DiscretePoleZeroSystem<T>& system, T to1, T to2) {
+DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system, T to1, T to2) {
 	const T w1 = to1 * pi_v<T>;
 	const T w2 = to2 * pi_v<T>;
 
@@ -124,7 +124,7 @@ DiscretePoleZeroSystem<T> Halfband2Bandpass(const DiscretePoleZeroSystem<T>& sys
 }
 
 template <class T>
-DiscretePoleZeroSystem<T> Halfband2Bandstop(const DiscretePoleZeroSystem<T>& system, T to1, T to2) {
+DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system, T to1, T to2) {
 	const T w1 = to1 * pi_v<T>;
 	const T w2 = to2 * pi_v<T>;
 
