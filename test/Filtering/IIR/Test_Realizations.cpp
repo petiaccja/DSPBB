@@ -177,12 +177,12 @@ TEST_CASE("Cascaded form order odd", "[IIR realizations]") {
 
 TEST_CASE("Cascaded form reset", "[IIR realizations]") {
 	CascadedForm<float> state{ 2 };
-	const CascadedBiquad sys{ DiscreteZeroPoleGain<float>{ 1.0f, { 1.0f, 2.0f }, { -1.0f, -2.0f } } };
+	const CascadedBiquad s{ DiscreteZeroPoleGain<float>{ 1.0f, { 1.0f, 2.0f }, { -1.0f, -2.0f } } };
 	for (int i = 0; i < 10; ++i) {
-		REQUIRE(0.0f != state.Feed(1.0f, sys));
+		REQUIRE(0.0f != state.Feed(1.0f, s));
 	}
 	state.Reset();
 	for (int i = 0; i < 10; ++i) {
-		REQUIRE(0.0f == state.Feed(0.0f, sys));
+		REQUIRE(0.0f == state.Feed(0.0f, s));
 	}
 }
