@@ -5,6 +5,38 @@
 
 using namespace dspbb;
 
+
+//------------------------------------------------------------------------------
+// Filter application helpers
+//------------------------------------------------------------------------------
+
+TEST_CASE("Filter direct form I", "[IIR]") {
+	constexpr int order = 7;
+	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
+	DirectFormI<float> state{ order };
+	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const auto filtered = Filter(signal, filter, state);
+	REQUIRE(filtered.Size() == signal.Size());
+}
+
+TEST_CASE("Filter direct form II", "[IIR]") {
+	constexpr int order = 7;
+	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
+	DirectFormII<float> state{ order };
+	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const auto filtered = Filter(signal, filter, state);
+	REQUIRE(filtered.Size() == signal.Size());
+}
+
+TEST_CASE("Filter cascaded form", "[IIR]") {
+	constexpr int order = 7;
+	const auto filter = CascadedBiquad(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
+	CascadedForm<float> state{ order };
+	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const auto filtered = Filter(signal, filter, state);
+	REQUIRE(filtered.Size() == signal.Size());
+}
+
 //------------------------------------------------------------------------------
 // Butterworth method
 //------------------------------------------------------------------------------
