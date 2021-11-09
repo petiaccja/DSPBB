@@ -86,6 +86,9 @@ While the library is already quite capable, I'm planning to change the interface
       - ✔️ Band-stop
       - ✔️ Arbitrary response
       - ✔️ Hilbert
+    - Realizations:
+      - ✔️ Convolution
+      - ✔️ Overlap-add
   - ❔️ IIR filtering
     - Methods:
       - ✔️ Butterworth
