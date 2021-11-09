@@ -51,7 +51,7 @@ void DirectFormI<T>::Reset() {
 
 template <class T>
 size_t DirectFormI<T>::Order() const {
-	return forwardState.Size();
+	return recursiveState.Size();
 }
 
 template <class T>
@@ -62,7 +62,7 @@ T DirectFormI<T>::Feed(const T& input, DiscreteTransferFunction<T> sys) {
 template <class T>
 template <class SignalT>
 T DirectFormI<T>::Feed(const T& input, const SignalT& forward, const SignalT& recursive) {
-	assert(Order() >= std::max(forward.Size(), recursive.Size()));
+	assert(!forwardState.Empty() && Order() + 1 >= std::max(forward.Size(), recursive.Size()));
 	using U = std::decay_t<typename SignalT::value_type>;
 
 	const auto fwView = SignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
@@ -124,7 +124,7 @@ void DirectFormII<T>::Reset() {
 
 template <class T>
 size_t DirectFormII<T>::Order() const {
-	return m_state.Size() - 1;
+	return !m_state.Empty() ? m_state.Size() - 1 : 0;
 }
 
 template <class T>
@@ -135,6 +135,7 @@ T DirectFormII<T>::Feed(const T& input, DiscreteTransferFunction<T> sys) {
 template <class T>
 template <class SignalT>
 T DirectFormII<T>::Feed(const T& input, const SignalT& forward, const SignalT& recursive) {
+	assert(!m_state.Empty() && Order() + 1 >= forward.Size());
 	using U = std::decay_t<typename SignalT::value_type>;
 
 	const auto fwView = SignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
