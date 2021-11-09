@@ -72,6 +72,17 @@ namespace math_functions {
 	using xsimd::conj;
 	using std::conj;
 
+	// Erf & gamma
+	using std::erf;
+	using std::erfc;
+	using std::tgamma;
+	using std::lgamma;
+
+	using xsimd::erf;
+	using xsimd::erfc;
+	using xsimd::tgamma;
+	using xsimd::lgamma;
+
 	// Misc
 	namespace impl {
 		template <class T, std::enable_if_t<(xsimd::simd_batch_traits<T>::size > 1), int> = 0>

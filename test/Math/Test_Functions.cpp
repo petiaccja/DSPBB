@@ -104,3 +104,9 @@ TEST_CASE_FUNCTION_CPLX("Tanh", Tanh, tanh);
 TEST_CASE_FUNCTION_CPLX("Asinh", Asinh, asinh);
 TEST_CASE_FUNCTION_CPLX("Acosh", Acosh, acosh);
 TEST_CASE_FUNCTION_CPLX("Atanh", Atanh, atanh);
+
+// Hyperbolic functions
+TEST_CASE_FUNCTION_REAL("Erf", Erf, erf);
+TEST_CASE_FUNCTION_REAL("Erfc", Erfc, erfc);
+TEST_CASE_FUNCTION_REAL("TGamma", TGamma, tgamma);
+TEST_CASE_FUNCTION_REAL("LGamma", LGamma, lgamma);

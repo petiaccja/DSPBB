@@ -93,4 +93,13 @@ DSPBB_IMPL_FUNCTION(Acosh, acosh)
 DSPBB_IMPL_FUNCTION(Atanh, atanh)
 
 
+//------------------------------------------------------------------------------
+// Erf & gamma
+//------------------------------------------------------------------------------
+
+DSPBB_IMPL_FUNCTION(Erf, erf)
+DSPBB_IMPL_FUNCTION(Erfc, erfc)
+DSPBB_IMPL_FUNCTION(TGamma, tgamma)
+DSPBB_IMPL_FUNCTION(LGamma, lgamma)
+
 } // namespace dspbb
