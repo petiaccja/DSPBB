@@ -13,14 +13,14 @@ auto iden(T arg) {
 }
 
 
-#define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                    \
-	TEST_CASE(NAME " real", "[Functions]") {                            \
-		using namespace std;                                            \
-		const TimeSignal<float> signal = { 1, 8, 2, 5, 3, 6, 3, 6, 4 }; \
-		const auto applied = FUNC(signal);                              \
-		for (size_t i = 0; i < signal.Size(); ++i) {                    \
-			REQUIRE(Approx(applied[i]) == STDFUNC(signal[i]));          \
-		}                                                               \
+#define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                                               \
+	TEST_CASE(NAME " real", "[Functions]") {                                                       \
+		using namespace std;                                                                       \
+		const TimeSignal<float> signal = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f }; \
+		const auto applied = FUNC(signal);                                                         \
+		for (size_t i = 0; i < signal.Size(); ++i) {                                               \
+			REQUIRE(Approx(applied[i]) == STDFUNC(signal[i]));                                     \
+		}                                                                                          \
 	}
 
 
@@ -50,6 +50,10 @@ TEST_CASE_FUNCTION_REAL("Log2", Log2, log2);
 TEST_CASE_FUNCTION_REAL("Log10", Log10, log10);
 TEST_CASE_FUNCTION_REAL("Exp", Exp, exp);
 
+TEST_CASE_FUNCTION_CPLX("Log", Log, log);
+TEST_CASE_FUNCTION_CPLX("Log10", Log10, log10);
+TEST_CASE_FUNCTION_CPLX("Exp", Exp, exp);
+
 
 // Polynomial functions
 TEST_CASE_FUNCTION_REAL("Sqrt", Sqrt, sqrt);
@@ -73,6 +77,13 @@ TEST_CASE("Pow complex", "[Functions]") {
 }
 
 // Trigonometric functions
+TEST_CASE_FUNCTION_REAL("Sin", Sin, sin);
+TEST_CASE_FUNCTION_REAL("Cos", Cos, cos);
+TEST_CASE_FUNCTION_REAL("Tan", Tan, tan);
+TEST_CASE_FUNCTION_REAL("Asin", Asin, asin);
+TEST_CASE_FUNCTION_REAL("Acos", Acos, acos);
+TEST_CASE_FUNCTION_REAL("Atan", Atan, atan);
+
 TEST_CASE_FUNCTION_CPLX("Sin", Sin, sin);
 TEST_CASE_FUNCTION_CPLX("Cos", Cos, cos);
 TEST_CASE_FUNCTION_CPLX("Tan", Tan, tan);
@@ -81,6 +92,12 @@ TEST_CASE_FUNCTION_CPLX("Acos", Acos, acos);
 TEST_CASE_FUNCTION_CPLX("Atan", Atan, atan);
 
 // Hyperbolic functions
+TEST_CASE_FUNCTION_REAL("Sinh", Sinh, sinh);
+TEST_CASE_FUNCTION_REAL("Cosh", Cosh, cosh);
+TEST_CASE_FUNCTION_REAL("Tanh", Tanh, tanh);
+TEST_CASE_FUNCTION_REAL("Asinh", Asinh, asinh);
+TEST_CASE_FUNCTION_REAL("Atanh", Atanh, atanh);
+
 TEST_CASE_FUNCTION_CPLX("Sinh", Sinh, sinh);
 TEST_CASE_FUNCTION_CPLX("Cosh", Cosh, cosh);
 TEST_CASE_FUNCTION_CPLX("Tanh", Tanh, tanh);
