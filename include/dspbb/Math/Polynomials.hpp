@@ -28,6 +28,9 @@ public:
 
 	T operator()(const T& x) const;
 	std::complex<T> operator()(const std::complex<T>& x) const;
+private:
+	template <class U>
+	U Eval(const U& x) const;
 
 private:
 	Signal<T, DOMAINLESS> m_coefficients;
@@ -66,6 +69,10 @@ public:
 	std::complex<T> operator()(const std::complex<T>& x) const;
 
 private:
+	template <class U>
+	U Eval(const U& x) const;
+
+private:
 	Signal<T, DOMAINLESS> m_mem;
 	SignalView<T, DOMAINLESS> m_real;
 	SignalView<std::complex<T>, DOMAINLESS> m_complex;
@@ -101,19 +108,19 @@ SignalView<T, DOMAINLESS> Polynomial<T>::Coefficients() {
 
 template <class T>
 T Polynomial<T>::operator()(const T& x) const {
-	T xpow = T(1);
-	T acc = T(0);
-	for (const auto& coeff : m_coefficients) {
-		acc += xpow * coeff;
-		xpow *= x;
-	}
-	return acc;
+	return Eval(x);
 }
 
 template <class T>
 std::complex<T> Polynomial<T>::operator()(const std::complex<T>& x) const {
-	std::complex<T> xpow = T(1);
-	std::complex<T> acc = T(0);
+	return Eval(x);
+}
+
+template <class T>
+template <class U>
+U Polynomial<T>::Eval(const U& x) const {
+	U xpow = T(1);
+	U acc = T(0);
 	for (const auto& coeff : m_coefficients) {
 		acc += xpow * coeff;
 		xpow *= x;
@@ -267,23 +274,21 @@ SignalView<std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() {
 
 template <class T>
 T FactoredPolynomial<T>::operator()(const T& x) const {
-	const T rp = std::transform_reduce(m_real.begin(), m_real.end(), T(1), std::multiplies<T>{}, [&x](const auto& root) {
-		return x - root;
-	});
-	const T cp = std::transform_reduce(m_complex.begin(), m_complex.end(), T(1), std::multiplies<T>{}, [&x](const auto& root) {
-		const auto a = real(root);
-		const auto b = imag(root);
-		return x * x - T(2) * a * x + a * a + b * b;
-	});
-	return rp * cp;
+	return Eval(x);
 }
 
 template <class T>
 std::complex<T> FactoredPolynomial<T>::operator()(const std::complex<T>& x) const {
-	const std::complex<T> rp = std::transform_reduce(m_real.begin(), m_real.end(), std::complex<T>(1), std::multiplies<std::complex<T>>{}, [&x](const auto& root) {
-		return root - x;
+	return Eval(x);
+}
+
+template <class T>
+template <class U>
+U FactoredPolynomial<T>::Eval(const U& x) const {
+	const U rp = std::transform_reduce(m_real.begin(), m_real.end(), U(T(1)), std::multiplies{}, [&x](const auto& root) {
+		return x - root;
 	});
-	const std::complex<T> cp = std::transform_reduce(m_complex.begin(), m_complex.end(), std::complex<T>(1), std::multiplies<std::complex<T>>{}, [&x](const auto& root) {
+	const U cp = std::transform_reduce(m_complex.begin(), m_complex.end(), U(T(1)), std::multiplies{}, [&x](const auto& root) {
 		const auto a = real(root);
 		const auto b = imag(root);
 		return x * x - T(2) * a * x + a * a + b * b;

@@ -10,21 +10,15 @@ using namespace std::complex_literals;
 
 template <class T>
 bool ContainsNumeratorConstants(const CascadedBiquad<T>& biquad, std::vector<T> expected) {
-	std::vector<T> constants;
-	std::transform(biquad.sections.begin(), biquad.sections.end(), std::back_inserter(constants), [](const auto& section) {
-		return section.numerator[0];
+	return std::all_of(expected.begin(), expected.end(), [&biquad](const auto& e) {
+		const bool secondOrder = std::any_of(biquad.sections.begin(), biquad.sections.end(), [&e](const auto& s) {
+			return s.numerator[0] == Approx(e);
+		});
+		const bool firstOrder = std::any_of(biquad.sections.begin(), biquad.sections.end(), [&e](const auto& s) {
+			return s.numerator[0] == T(0) && s.numerator[1] == Approx(e);
+		});
+		return firstOrder || secondOrder;
 	});
-	std::sort(constants.begin(), constants.end());
-	std::sort(expected.begin(), expected.end());
-	if (constants.size() == expected.size()) {
-		for (size_t i = 0; i < constants.size(); ++i) {
-			if (constants[i] != Approx(expected[i])) {
-				return false;
-			}
-		}
-		return true;
-	}
-	return false;
 }
 
 
@@ -145,19 +139,65 @@ TEST_CASE("Biquad cascade gain", "[Biquad cascade]") {
 	REQUIRE(gain == Approx(2.718f));
 }
 
-TEST_CASE("Biquad cascade equation evaluation", "[Biquad cascade]") {
+const std::array complexPoints = { 1.345f + 0.928if, 0.7823f + 2.3778if };
+const std::array realPoints = { 1.345f, 0.7823f };
+
+TEST_CASE("Biquad cascade equation evaluation 2x first order", "[Biquad cascade]") {
+	const DiscreteZeroPoleGain<float> sys{
+		6.67f,
+		{ 3.0f, 1.0f + 2.0if, 1.0f - 2.0if, 3.0f + 4.0if, 3.0f - 4.0if },
+		{ 2.0f, 4.0f + 2.0if, 4.0f - 2.0if, 2.0f + 4.0if, 2.0f - 4.0if }
+	};
+	CascadedBiquad cascade{ sys };
+	for (auto& ri : realPoints) {
+		REQUIRE(sys(ri) == Approx(cascade(ri)));
+	}
+	for (auto& ci : complexPoints) {
+		REQUIRE(sys(ci) == ApproxComplex(cascade(ci)));
+	}
+}
+
+TEST_CASE("Biquad cascade equation evaluation 1x num first order", "[Biquad cascade]") {
+	const DiscreteZeroPoleGain<float> sys{
+		6.67f,
+		{ 3.0f, 1.0f + 2.0if, 1.0f - 2.0if, 3.0f + 4.0if, 3.0f - 4.0if },
+		{ 4.0f + 2.0if, 4.0f - 2.0if, 2.0f + 4.0if, 2.0f - 4.0if }
+	};
+	CascadedBiquad cascade{ sys };
+	for (auto& ri : realPoints) {
+		REQUIRE(sys(ri) == Approx(cascade(ri)));
+	}
+	for (auto& ci : complexPoints) {
+		REQUIRE(sys(ci) == ApproxComplex(cascade(ci)));
+	}
+}
+
+TEST_CASE("Biquad cascade equation evaluation 1x den first order", "[Biquad cascade]") {
+	const DiscreteZeroPoleGain<float> sys{
+		6.67f,
+		{ 5.0f, 2.0f, 3.0f, 1.0f + 2.0if, 1.0f - 2.0if, 3.0f + 4.0if, 3.0f - 4.0if },
+		{ 4.0f + 2.0if, 4.0f - 2.0if, 2.0f + 4.0if, 2.0f - 4.0if }
+	};
+	CascadedBiquad cascade{ sys };
+	for (auto& ri : realPoints) {
+		REQUIRE(sys(ri) == Approx(cascade(ri)));
+	}
+	for (auto& ci : complexPoints) {
+		REQUIRE(sys(ci) == ApproxComplex(cascade(ci)));
+	}
+}
+
+TEST_CASE("Biquad cascade equation evaluation no first order", "[Biquad cascade]") {
 	const DiscreteZeroPoleGain<float> sys{
 		6.67f,
 		{ 1.0f + 2.0if, 1.0f - 2.0if, 3.0f + 4.0if, 3.0f - 4.0if },
 		{ 4.0f + 2.0if, 4.0f - 2.0if, 2.0f + 4.0if, 2.0f - 4.0if }
 	};
 	CascadedBiquad cascade{ sys };
-	std::array c = { 1.345f + 0.928if, 0.7823f + 2.3778if };
-	std::array r = { 1.345f, 0.7823f };
-	for (auto& ci : c) {
-		REQUIRE(sys(ci) == ApproxComplex(cascade(ci)));
+	for (auto& ri : realPoints) {
+		REQUIRE(sys(ri) == Approx(cascade(ri)));
 	}
-	for (auto& ri : r) {
-		REQUIRE(sys(ri) == ApproxComplex(cascade(ri)));
+	for (auto& ci : complexPoints) {
+		REQUIRE(sys(ci) == ApproxComplex(cascade(ci)));
 	}
 }

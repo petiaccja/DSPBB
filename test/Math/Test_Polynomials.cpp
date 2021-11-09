@@ -153,16 +153,28 @@ TEST_CASE("Factored polynomial regroup no pair", "[Polynomials]") {
 	REQUIRE_THROWS(poly.Regroup(0));
 }
 
-TEST_CASE("Factored polynomial real evaluate", "[Polynomials]") {
+TEST_CASE("Factored polynomial real evaluate even", "[Polynomials]") {
 	FactoredPolynomial<float> poly{ 1.0f, 3.0f, 2.0f + 1if, 2.0f - 1if }; // 15 - 32 x + 24 x^2 - 8 x^3 + x^4
 	const float x = 1.5f;
 	REQUIRE(poly(x) == Approx(15.f - 32.f * x + 24.f * x * x - 8.f * x * x * x + x * x * x * x));
 }
 
-TEST_CASE("Factored polynomial complex evaluate", "[Polynomials]") {
+TEST_CASE("Factored polynomial complex evaluate even", "[Polynomials]") {
 	FactoredPolynomial<float> poly{ 1.0f, 3.0f, 2.0f + 1if, 2.0f - 1if }; // 15 - 32 x + 24 x^2 - 8 x^3 + x^4
 	const std::complex<float> x = 1.5f + 2.3if;
 	REQUIRE(poly(x) == ApproxComplex(15.f - 32.f * x + 24.f * x * x - 8.f * x * x * x + x * x * x * x));
+}
+
+TEST_CASE("Factored polynomial real evaluate odd", "[Polynomials]") {
+	FactoredPolynomial<float> poly{ 3.0f, -4.0f + 3if, -4.0f - 3if }; // x^3 + 5 x^2 + x - 75
+	const float x = 1.5f;
+	REQUIRE(poly(x) == Approx(x * x * x + 5 * x * x + x - 75));
+}
+
+TEST_CASE("Factored polynomial complex evaluate odd", "[Polynomials]") {
+	FactoredPolynomial<float> poly{ 3.0f, -4.0f + 3if, -4.0f - 3if }; // x^3 + 5 x^2 + x - 75
+	const std::complex<float> x = 1.5f + 2.3if;
+	REQUIRE(poly(x) == ApproxComplex(x * x * x + 5.0f * x * x + x - 75.0f));
 }
 
 TEST_CASE("Expand polynomials", "[Polynomials]") {
