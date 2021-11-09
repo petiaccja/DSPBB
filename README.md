@@ -46,13 +46,13 @@ While the library is already quite capable, I'm planning to change the interface
   - ✔️ Space
     - ✔️ Linspace
     - ✔️ Logspace
-- ❔️ Common math functions
-  - ✔️ Complex (Abs, Arg, Real, Imag)
+- ✔️ Common math functions
+  - ✔️ Complex (Abs, Arg, Real, Imag, Conj)
   - ✔️ Trigonometric (Sin, Cos, Tan x inverse)
   - ✔️ Hyperbolic (Sinh, Cosh, Tanh x inverse)
   - ✔️ Exponential (Exp, Log, Log2, Log10)
   - ✔️ Polynomial (Pow, Sqrt, Cbrt)
-  - ❌️ Special math (Erf, Gamma, etc.)
+  - ✔️ Erf and gamma
 - ✔️ Vector math basics
   - ✔️ Dot product
   - ✔️ Norm (sqrt(SumSquare))
