@@ -37,12 +37,15 @@ auto iden(T arg) {
 // Complex number functions.
 TEST_CASE_FUNCTION_REAL("Abs", Abs, abs);
 TEST_CASE_FUNCTION_CPLX("Abs", Abs, abs);
+TEST_CASE_FUNCTION_REAL("Arg", Arg, arg);
 TEST_CASE_FUNCTION_CPLX("Arg", Arg, arg);
 
 TEST_CASE_FUNCTION_REAL("Real", Real, iden);
 TEST_CASE_FUNCTION_CPLX("Real", Real, real);
+TEST_CASE_FUNCTION_REAL("Imag", Imag, imag);
 TEST_CASE_FUNCTION_CPLX("Imag", Imag, imag);
 
+TEST_CASE_FUNCTION_CPLX("Conj", Conj, conj);
 
 // Exponential functions
 TEST_CASE_FUNCTION_REAL("Log", Log, log);

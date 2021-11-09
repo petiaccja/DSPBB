@@ -40,6 +40,7 @@ DSPBB_IMPL_FUNCTION(Abs, abs)
 DSPBB_IMPL_FUNCTION(Arg, arg)
 DSPBB_IMPL_FUNCTION(Real, real)
 DSPBB_IMPL_FUNCTION(Imag, imag)
+DSPBB_IMPL_FUNCTION(Conj, conj)
 
 //------------------------------------------------------------------------------
 // Exponential functions
