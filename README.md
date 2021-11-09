@@ -99,9 +99,9 @@ While the library is already quite capable, I'm planning to change the interface
       - ✔️ Band-stop
       - ❌️ Notch
     - Realizations:
-      - ❌️ Direct form I.
-      - ❌️ Direct form II.
-      - ❌️ Cascaded biquad (I. & II.)
+      - ✔️ Direct form I.
+      - ✔️ Direct form II.
+      - ✔️ Cascaded biquad
   - ✔️ Filter response analysis
     - ✔️ Compute amplitude & phase response
     - ✔️ Classify amplitude response: LP/HP/BP/BS
