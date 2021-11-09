@@ -1,19 +1,9 @@
 #include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/IIR.hpp>
-#include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Statistics.hpp>
-#include <iostream>
 
 using namespace dspbb;
-
-template <class T>
-bool IsStable(const DiscreteZeroPoleGain<T>& system) {
-	std::vector<T> lengths;
-	std::transform(system.poles.RealRoots().begin(), system.poles.RealRoots().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
-	std::transform(system.poles.ComplexPairs().begin(), system.poles.ComplexPairs().end(), std::back_inserter(lengths), [](const auto& arg) { return std::abs(arg); });
-	return std::all_of(lengths.begin(), lengths.end(), [](auto len) { return len < 1.0f; });
-}
 
 //------------------------------------------------------------------------------
 // Butterworth method
