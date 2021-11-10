@@ -152,3 +152,17 @@ TEST_CASE("FFT shift empty", "[FFT]") {
 	const auto r = FftShift(s);
 	REQUIRE(r.Size() == 0);
 }
+
+TEST_CASE("FFT inverse shift even", "[FFT]") {
+	const Spectrum<float> s = { 3, 4, 5, 0, 1, 2 };
+	const Spectrum<float> e = { 0, 1, 2, 3, 4, 5 };
+	const auto r = IfftShift(s);
+	REQUIRE(Max(r - e) == 0);
+}
+
+TEST_CASE("FFT inverse shift odd", "[FFT]") {
+	const Spectrum<float> s = { 4, 5, 6, 0, 1, 2, 3 };
+	const Spectrum<float> e = { 0, 1, 2, 3, 4, 5, 6 };
+	const auto r = IfftShift(s);
+	REQUIRE(Max(r - e) == 0);
+}
