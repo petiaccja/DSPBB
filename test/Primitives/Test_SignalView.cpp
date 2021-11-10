@@ -5,6 +5,23 @@
 using namespace dspbb;
 using namespace std::complex_literals;
 
+
+TEST_CASE("Conversion construct", "[SignalView]") {
+	Signal<float, TIME_DOMAIN> smut(5);
+	const Signal<float, TIME_DOMAIN> s(5);
+
+	SignalView<float, TIME_DOMAIN> vmut{ smut };
+	SignalView<const float, TIME_DOMAIN> v1{ s };
+	SignalView<const float, TIME_DOMAIN> v2{ smut };
+	SignalView<const float, TIME_DOMAIN> v3{ vmut };
+
+	REQUIRE(vmut.Size() == smut.Size());
+	REQUIRE(v1.Size() == s.Size());
+	REQUIRE(v2.Size() == smut.Size());
+	REQUIRE(v3.Size() == vmut.Size());
+}
+
+
 TEST_CASE("Default construct", "[SignalView]") {
 	SignalView<float, TIME_DOMAIN> span;
 	REQUIRE(span.Empty());

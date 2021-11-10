@@ -19,17 +19,22 @@ public:
 
 public:
 	SignalView() = default;
+	SignalView(SignalView&&) noexcept = default;
+	SignalView(const SignalView&) noexcept = default;
+	SignalView& operator=(SignalView&&) noexcept = default;
+	SignalView& operator=(const SignalView&) noexcept = default;
+	
+	explicit SignalView(Signal<std::remove_const_t<T>, Domain>& signal);
 
-	template <class Q, std::enable_if_t<std::is_convertible_v<Q*, T*> && std::is_same_v<std::remove_cv_t<Q>, std::remove_cv_t<T>>, int> = 0>
-	explicit SignalView(Signal<Q, Domain>& signal);
-	template <class Q, std::enable_if_t<std::is_convertible_v<const Q*, T*> && std::is_same_v<std::remove_cv_t<Q>, std::remove_cv_t<T>>, int> = 0>
-	explicit SignalView(const Signal<Q, Domain>& signal);
-	template <class Q, std::enable_if_t<std::is_convertible_v<Q*, T*> && std::is_same_v<std::remove_cv_t<Q>, std::remove_cv_t<T>>, int> = 0>
-	SignalView(const SignalView<Q, Domain>& signal);
+	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
+	explicit SignalView(const Signal<std::remove_const_t<T>, Domain>& signal);
 
-	template <class Iter, std::enable_if_t<std::is_convertible_v<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>, int> = 0>
+	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
+	SignalView(const SignalView<std::remove_const_t<T>, Domain>& signal);
+
+	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter&>()), T&>, int> = 0>
 	SignalView(Iter first, Iter last);
-	template <class Iter, std::enable_if_t<std::is_convertible_v<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>, int> = 0>
+	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter&>()), T&>, int> = 0>
 	SignalView(Iter first, size_t size);
 
 	iterator begin() { return first; }
@@ -65,32 +70,31 @@ private:
 };
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_convertible_v<Q*, T*> && std::is_same_v<std::remove_cv_t<Q>, std::remove_cv_t<T>>, int>>
-SignalView<T, Domain>::SignalView(Signal<Q, Domain>& signal)
+SignalView<T, Domain>::SignalView(Signal<std::remove_const_t<T>, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_convertible_v<const Q*, T*> && std::is_same_v<std::remove_cv_t<Q>, std::remove_cv_t<T>>, int>>
-SignalView<T, Domain>::SignalView(const Signal<Q, Domain>& signal)
+template <class Q, std::enable_if_t<std::is_const_v<Q>, int>>
+SignalView<T, Domain>::SignalView(const Signal<std::remove_const_t<T>, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Q, std::enable_if_t<std::is_convertible_v<Q*, T*> && std::is_same_v<std::remove_cv_t<Q>, std::remove_cv_t<T>>, int>>
-SignalView<T, Domain>::SignalView(const SignalView<Q, Domain>& signal)
+template <class Q, std::enable_if_t<std::is_const_v<Q>, int>>
+SignalView<T, Domain>::SignalView(const SignalView<std::remove_const_t<T>, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
-template <class Iter, std::enable_if_t<std::is_convertible_v<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>, int>>
+template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter&>()), T&>, int>>
 SignalView<T, Domain>::SignalView(Iter first, Iter last) {
 	this->first = first != last ? std::addressof(*first) : nullptr;
 	this->last = this->first + (last - first);
 }
 
 template <class T, eSignalDomain Domain>
-template <class Iter, std::enable_if_t<std::is_convertible_v<std::add_pointer_t<std::remove_reference_t<decltype(*std::declval<Iter>())>>, T*>, int>>
+template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter&>()), T&>, int>>
 SignalView<T, Domain>::SignalView(Iter first, size_t size) {
 	this->first = size != 0 ? std::addressof(*first) : nullptr;
 	this->last = this->first + size;
