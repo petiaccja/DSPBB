@@ -3,7 +3,7 @@
 #include "../PocketFFT/pocketfft_hdronly.h"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
-#include "../Utility/TypeTraits.hpp"
+#include "../Math/Functions.hpp"
 
 #include <algorithm>
 
@@ -38,6 +38,8 @@ namespace impl {
 			auto last = out.begin() + (fullSize + 1) / 2;
 			auto dest = out.begin() + fullSize / 2 + 1;
 			std::reverse_copy(first, last, dest);
+			const auto mirrorRange = AsView<FREQUENCY_DOMAIN>(dest, out.end());
+			Conj(mirrorRange, mirrorRange);
 		}
 	}
 

@@ -115,3 +115,20 @@ dspbb::TimeSignal<T> RandomPositiveSignal(size_t size) {
 	}
 	return s;
 }
+
+template <class T, dspbb::eSignalDomain Domain>
+dspbb::Signal<T, Domain> RandomSignal(size_t length) {
+thread_local std::mt19937_64 rne(723574);
+thread_local std::uniform_real_distribution<float> rng;
+	Signal<T, Domain> s(length);
+	for (auto& v : s) {
+		if constexpr (is_complex_v<T>) {
+			v.real(rng(rne));
+			v.imag(rng(rne));
+		}
+		else {
+			v = rng(rne);
+		}
+	}
+	return s;
+}

@@ -11,43 +11,43 @@ namespace impl {
 	namespace ola {
 
 		template <class SignalU>
-		auto MakeFrequencyFilter(const SignalU& filter, std::false_type, std::false_type) {
+		auto FftFilter(const SignalU& filter, std::false_type, std::false_type) {
 			return Fft(filter, HALF);
 		}
 		template <class SignalU>
-		auto MakeFrequencyFilter(const SignalU& filter, std::false_type, std::true_type) {
+		auto FftFilter(const SignalU& filter, std::false_type, std::true_type) {
 			return Fft(filter);
 		}
 		template <class SignalU>
-		auto MakeFrequencyFilter(const SignalU& filter, std::true_type, std::false_type) {
+		auto FftFilter(const SignalU& filter, std::true_type, std::false_type) {
 			return Fft(filter, FULL);
 		}
 		template <class SignalU>
-		auto MakeFrequencyFilter(const SignalU& filter, std::true_type, std::true_type) {
+		auto FftFilter(const SignalU& filter, std::true_type, std::true_type) {
 			return Fft(filter);
 		}
 
 
 		template <class SignalT, bool S, bool F>
-		auto MakeFrequencyChunk(const SignalT& chunk, std::integral_constant<bool, S>, std::integral_constant<bool, F>) {
+		auto FftChunk(const SignalT& chunk, std::integral_constant<bool, S>, std::integral_constant<bool, F>) {
 			// Same thing as filter, just reverse the order of the complexness parameters.
-			return MakeFrequencyFilter(chunk, std::integral_constant<bool, F>{}, std::integral_constant<bool, S>{});
+			return FftFilter(chunk, std::integral_constant<bool, F>{}, std::integral_constant<bool, S>{});
 		}
 
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::false_type, std::false_type, size_t fftSize) {
+		auto IfftChunk(const SpectrumT& fft, std::false_type, std::false_type, size_t fftSize) {
 			return Ifft(fft, HALF, fftSize % 2 == 0);
 		}
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::false_type, std::true_type, size_t) {
+		auto IfftChunk(const SpectrumT& fft, std::false_type, std::true_type, size_t) {
 			return Ifft(fft);
 		}
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::true_type, std::false_type, size_t) {
+		auto IfftChunk(const SpectrumT& fft, std::true_type, std::false_type, size_t) {
 			return Ifft(fft);
 		}
 		template <class SpectrumT>
-		auto InvertChunk(const SpectrumT& fft, std::true_type, std::true_type, size_t) {
+		auto IfftChunk(const SpectrumT& fft, std::true_type, std::true_type, size_t) {
 			return Ifft(fft);
 		}
 
@@ -58,9 +58,9 @@ namespace impl {
 
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t chunkSize, size_t overlapSize, size_t offset, size_t length) {
-	assert(chunkSize + overlapSize >= filter.Size());
-	const size_t fftSize = chunkSize + overlapSize;
+auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t stepSize, size_t overlapSize, size_t offset, size_t length) {
+	assert(stepSize + overlapSize >= filter.Size());
+	const size_t chunkSize = stepSize + overlapSize;
 
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
@@ -69,31 +69,29 @@ auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t chunkSize, 
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};
 
-	Signal<U, Domain> paddedFilter(fftSize, U(0));
-	std::copy(filter.begin(), filter.end(), paddedFilter.begin());
-	const auto frequencyFilter = impl::ola::MakeFrequencyFilter(paddedFilter, is_complex_t, is_complex_u);
+	Signal<U, Domain> filterChunk(chunkSize, U(0));
+	std::copy(filter.begin(), filter.end(), filterChunk.begin());
+	const auto filterChunkFd = impl::ola::FftFilter(filterChunk, is_complex_t, is_complex_u);
 
-	Signal<R, Domain> r(length, R(0));
-	Signal<T, Domain> paddedChunk(fftSize, T(0));
+	Signal<R, Domain> out(length, R(0));
+	Signal<T, Domain> workingChunk(chunkSize, T(0));
+	
+	for (size_t inIdx = 0; inIdx < signal.Size(); inIdx += stepSize) {
+		const auto inChunk = AsView(signal).SubSignal(inIdx, std::min(stepSize, signal.Size() - inIdx));
+		std::copy(inChunk.begin(), inChunk.end(), workingChunk.begin());
+		std::fill(workingChunk.begin() + inChunk.Size(), workingChunk.end(), T(0));
+		auto workingChunkFd = impl::ola::FftChunk(workingChunk, is_complex_t, is_complex_u);
+		workingChunkFd *= filterChunkFd;
+		const auto filteredChunk = impl::ola::IfftChunk(workingChunkFd, is_complex_t, is_complex_u, chunkSize);
 
-	const auto signalView = AsConstView(signal);
-	const auto rView = AsView(r);
-	for (size_t i = 0; i < signal.Size(); i += chunkSize) {
-		const auto chunkView = signalView.SubSignal(i, std::min(chunkSize, signalView.Size() - i));
-		std::copy(chunkView.begin(), chunkView.end(), paddedChunk.begin());
-		std::fill(paddedChunk.begin() + chunkView.Size(), paddedChunk.end(), T(0));
-		auto frequencyChunk = impl::ola::MakeFrequencyChunk(paddedChunk, is_complex_t, is_complex_u);
-		frequencyChunk *= frequencyFilter;
-		const auto filteredChunk = impl::ola::InvertChunk(frequencyChunk, is_complex_t, is_complex_u, fftSize);
-
-		const intptr_t outFirstRaw = intptr_t(i) - intptr_t(offset);
-		const intptr_t outLast = std::min(outFirstRaw + intptr_t(fftSize), intptr_t(rView.Size()));
+		const intptr_t outFirstRaw = intptr_t(inIdx) - intptr_t(offset);
+		const intptr_t outLast = std::min(outFirstRaw + intptr_t(chunkSize), intptr_t(out.Size()));
 		const intptr_t outFirst = std::max(intptr_t(0), outFirstRaw);
-		auto rChunkView = rView.SubSignal(outFirst, outLast - outFirst);
-		rChunkView += AsConstView(filteredChunk).SubSignal(outFirst - outFirstRaw, outLast - outFirst);
+		auto outChunk = AsView(out).SubSignal(outFirst, outLast - outFirst);
+		outChunk += AsConstView(filteredChunk).SubSignal(outFirst - outFirstRaw, outLast - outFirst);
 	}
 
-	return r;
+	return out;
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
