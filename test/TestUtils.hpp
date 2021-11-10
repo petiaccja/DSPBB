@@ -123,7 +123,7 @@ dspbb::Signal<T, Domain> RandomSignal(size_t length) {
 	thread_local std::uniform_real_distribution<float> rng;
 	dspbb::Signal<T, Domain> s(length);
 	for (auto& v : s) {
-		if constexpr (is_complex_v<T>) {
+		if constexpr (dspbb::is_complex_v<T>) {
 			v.real(rng(rne));
 			v.imag(rng(rne));
 		}
