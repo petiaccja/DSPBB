@@ -15,11 +15,6 @@ using namespace dspbb;
 // Helpers
 //------------------------------------------------------------------------------
 
-TimeSignal<float> GenTestSignal(size_t sampleRate, float frequency, float length = 1.0f) {
-	const size_t numSamples = std::max(size_t(1), size_t(double(sampleRate) * double(length)));
-	return SineWave<float, TIME_DOMAIN>(numSamples, sampleRate, frequency);
-}
-
 template <class SignalT>
 bool IsSymmetric(const SignalT& signal) {
 	auto beg = signal.begin();
