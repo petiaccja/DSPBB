@@ -23,7 +23,7 @@ public:
 	SignalView(const SignalView&) noexcept = default;
 	SignalView& operator=(SignalView&&) noexcept = default;
 	SignalView& operator=(const SignalView&) noexcept = default;
-	
+
 	explicit SignalView(Signal<std::remove_const_t<T>, Domain>& signal);
 
 	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
@@ -152,38 +152,62 @@ SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_ty
 
 // Helpers
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain> AsView(Signal<T, Domain>& signal) {
-	return { signal.begin(), signal.end() };
+auto AsView(Signal<T, Domain>& signal) -> SignalView<T, Domain> {
+	return SignalView<T, Domain>{ signal };
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsView(const Signal<T, Domain>& signal) {
-	return { signal.begin(), signal.end() };
+auto AsView(const Signal<T, Domain>& signal) -> SignalView<const T, Domain> {
+	return SignalView<const T, Domain>{ signal };
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsConstView(const Signal<T, Domain>& signal) {
-	return { signal.begin(), signal.end() };
-}
-
-template <class T, eSignalDomain Domain>
-SignalView<T, Domain> AsView(SignalView<T, Domain> view) {
+auto AsView(SignalView<T, Domain> view) -> SignalView<T, Domain> {
 	return view;
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsView(SignalView<const T, Domain> view) {
+auto AsView(SignalView<const T, Domain> view) -> SignalView<const T, Domain> {
 	return view;
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsConstView(SignalView<T, Domain> view) {
+auto AsConstView(const Signal<T, Domain>& signal) -> SignalView<const T, Domain> {
+	return SignalView<const T, Domain>{ signal };
+}
+
+template <class T, eSignalDomain Domain>
+auto AsConstView(SignalView<T, Domain> view) -> SignalView<const T, Domain> {
 	return view;
 }
 
 template <class T, eSignalDomain Domain>
-SignalView<const T, Domain> AsConstView(SignalView<const T, Domain> view) {
+auto AsConstView(SignalView<const T, Domain> view) -> SignalView<const T, Domain> {
 	return view;
+}
+
+template <eSignalDomain Domain, class Iter>
+auto AsView(Iter first, Iter last) {
+	using T = typename std::iterator_traits<Iter>::value_type;
+	return SignalView<T, Domain>{ first, last };
+}
+
+template <eSignalDomain Domain, class Iter>
+auto AsView(Iter first, size_t size) {
+	using T = typename std::iterator_traits<Iter>::value_type;
+	return SignalView<T, Domain>{ first, size };
+}
+
+template <eSignalDomain Domain, class Iter>
+auto AsConstView(Iter first, Iter last) {
+	using T = typename std::iterator_traits<Iter>::value_type;
+	return SignalView<const T, Domain>{ first, last };
+}
+
+template <eSignalDomain Domain, class Iter>
+auto AsConstView(Iter first, size_t size) {
+	using T = typename std::iterator_traits<Iter>::value_type;
+	return SignalView<const T, Domain>{ first, size };
 }
 
 

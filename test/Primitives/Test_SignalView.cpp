@@ -10,17 +10,43 @@ TEST_CASE("Conversion construct", "[SignalView]") {
 	Signal<float, TIME_DOMAIN> smut(5);
 	const Signal<float, TIME_DOMAIN> s(5);
 
-	SignalView<float, TIME_DOMAIN> vmut{ smut };
-	SignalView<const float, TIME_DOMAIN> v1{ s };
-	SignalView<const float, TIME_DOMAIN> v2{ smut };
-	SignalView<const float, TIME_DOMAIN> v3{ vmut };
+	SignalView<float, TIME_DOMAIN> v1{ smut };
+	SignalView<const float, TIME_DOMAIN> v2{ s };
+	SignalView<const float, TIME_DOMAIN> v3{ smut };
+	SignalView<const float, TIME_DOMAIN> v4{ v1 };
+	SignalView<float, TIME_DOMAIN> v5{ smut.begin(), smut.end() };
+	SignalView<const float, TIME_DOMAIN> v6{ smut.begin(), smut.end() };
+	SignalView<const float, TIME_DOMAIN> v7{ s.begin(), s.end() };
 
-	REQUIRE(vmut.Size() == smut.Size());
-	REQUIRE(v1.Size() == s.Size());
-	REQUIRE(v2.Size() == smut.Size());
-	REQUIRE(v3.Size() == vmut.Size());
+	REQUIRE(v1.Size() == smut.Size());
+	REQUIRE(v2.Size() == s.Size());
+	REQUIRE(v3.Size() == smut.Size());
+	REQUIRE(v4.Size() == v1.Size());
+	REQUIRE(v5.Size() == smut.Size());
+	REQUIRE(v6.Size() == smut.Size());
+	REQUIRE(v6.Size() == s.Size());
 }
 
+TEST_CASE("View of", "[SignalView]") {
+	Signal<float, TIME_DOMAIN> smut(5);
+	const Signal<float, TIME_DOMAIN> s(5);
+
+	SignalView<float, TIME_DOMAIN> v1 = AsView(smut);
+	SignalView<const float, TIME_DOMAIN> v2 = AsConstView(smut);
+	SignalView<float, TIME_DOMAIN> v3 = AsView<TIME_DOMAIN>(smut.begin(), smut.end());
+	SignalView<const float, TIME_DOMAIN> v4 = AsConstView<TIME_DOMAIN>(smut.begin(), smut.end());
+	SignalView<const float, TIME_DOMAIN> v5 = AsView(s);
+	SignalView<const float, TIME_DOMAIN> v6 = AsConstView(s);
+	SignalView<const float, TIME_DOMAIN> v7 = AsConstView(s);
+	
+	REQUIRE(v1.Size() == smut.Size());
+	REQUIRE(v2.Size() == smut.Size());
+	REQUIRE(v3.Size() == smut.Size());
+	REQUIRE(v4.Size() == smut.Size());
+	REQUIRE(v5.Size() == s.Size());
+	REQUIRE(v6.Size() == s.Size());
+	REQUIRE(v7.Size() == s.Size());
+}
 
 TEST_CASE("Default construct", "[SignalView]") {
 	SignalView<float, TIME_DOMAIN> span;
