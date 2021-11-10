@@ -3,6 +3,7 @@
 #include <catch2/catch.hpp>
 #include <complex>
 #include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Utility/TypeTraits.hpp>
 #include <random>
 
 
