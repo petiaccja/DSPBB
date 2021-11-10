@@ -1,9 +1,10 @@
 #include <array>
 #include <catch2/catch.hpp>
-#include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Filtering/FIR.hpp>
+#include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/Interpolation.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
+#include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Math/Statistics.hpp>
 
 using namespace dspbb;
@@ -83,9 +84,13 @@ TEST_CASE("Windowed low-pass", "[FIR]") {
 	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(1));
 
-	RequireResponse(impulse, { { cutoff - 0.04f, 1.0f }, { cutoff + 0.04f, 0.0f } });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeLowpassFilter(amplitude);
+	REQUIRE(params.passbandEdge < cutoff);
+	REQUIRE(params.stopbandEdge > cutoff);
+	REQUIRE(params.passbandRipple < 0.05f);
+	REQUIRE(params.stopbandAtten < 0.05f);
 }
 
 TEST_CASE("Windowed high-pass", "[FIR]") {
@@ -95,9 +100,13 @@ TEST_CASE("Windowed high-pass", "[FIR]") {
 	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
 
-	RequireResponse(impulse, { { cutoff - 0.04f, 0.0f }, { cutoff + 0.04f, 1.0f } });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeHighpassFilter(amplitude);
+	REQUIRE(params.stopbandEdge < cutoff);
+	REQUIRE(params.passbandEdge > cutoff);
+	REQUIRE(params.stopbandAtten < 0.05f);
+	REQUIRE(params.passbandRipple < 0.05f);
 }
 
 TEST_CASE("Windowed band-pass", "[FIR]") {
@@ -108,14 +117,16 @@ TEST_CASE("Windowed band-pass", "[FIR]") {
 	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
 
-	RequireResponse(impulse, {
-								 { bandLow - 0.05f, 0.0f },
-								 { bandLow + 0.05f, 1.0f },
-								 { bandHigh - 0.05f, 1.0f },
-								 { bandHigh + 0.05f, 0.0f },
-							 });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeBandpassFilter(amplitude);
+	REQUIRE(params.lowerStopbandEdge < bandLow);
+	REQUIRE(params.passbandLowerEdge > bandLow);
+	REQUIRE(params.passbandUpperEdge < bandHigh);
+	REQUIRE(params.upperStopbandEdge > bandHigh);
+	REQUIRE(params.lowerStopbandAtten < 0.05f);
+	REQUIRE(params.passbandRipple < 0.05f);
+	REQUIRE(params.upperStopbandAtten < 0.05f);
 }
 
 TEST_CASE("Windowed band-stop", "[FIR]") {
@@ -126,14 +137,16 @@ TEST_CASE("Windowed band-stop", "[FIR]") {
 	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(1.0).margin(0.01));
 
-	RequireResponse(impulse, {
-								 { bandLow - 0.05f, 1.0f },
-								 { bandLow + 0.05f, 0.0f },
-								 { bandHigh - 0.05f, 0.0f },
-								 { bandHigh + 0.05f, 1.0f },
-							 });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeBandstopFilter(amplitude);
+	REQUIRE(params.lowerPassbandEdge < bandLow);
+	REQUIRE(params.stopbandLowerEdge > bandLow);
+	REQUIRE(params.stopbandUpperEdge < bandHigh);
+	REQUIRE(params.upperPassbandEdge > bandHigh);
+	REQUIRE(params.lowerPassbandRipple < 0.05f);
+	REQUIRE(params.stopbandAtten < 0.05f);
+	REQUIRE(params.upperPassbandRipple < 0.05f);
 }
 
 TEST_CASE("Windowed arbitrary", "[FIR]") {
@@ -143,26 +156,26 @@ TEST_CASE("Windowed arbitrary", "[FIR]") {
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
-	RequireResponse(impulse, {
-								 { 0.12f, TestArbitraryResponse(0.12f) },
-								 { 0.12f, TestArbitraryResponse(0.12f) },
-								 { 0.32f, TestArbitraryResponse(0.32f) },
-								 { 0.67f, TestArbitraryResponse(0.67f) },
-								 { 0.88f, TestArbitraryResponse(0.88f) },
-							 });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, 1.0f, amplitude.Size(), true);
+	std::for_each(expected.begin(), expected.end(), [](auto& v) { v = TestArbitraryResponse(v); });
+	REQUIRE(Max(Abs(amplitude - expected)) < 0.02f);
 }
 
 TEST_CASE("Windowed hilbert magnitude", "[FIR]") {
 	const auto odd = FirFilter<float, TIME_DOMAIN>(377, Hilbert(WINDOWED).Window(windows::blackman));
 	const auto even = FirFilter<float, TIME_DOMAIN>(376, Hilbert(WINDOWED).Window(windows::blackman));
 
-	std::vector<std::pair<float, float>> required = {
-		{ 0.1f, 1.0f },
-		{ 0.5f, 1.0f },
-		{ 0.9f, 1.0f },
-	};
-	RequireResponse(odd, required);
-	RequireResponse(even, required);
+	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
+	const auto paramsOdd = ParametrizeBandpassFilter(amplitudeOdd);
+	REQUIRE(paramsOdd.passbandLowerEdge < 0.05f);
+	REQUIRE(paramsOdd.passbandUpperEdge > 0.95f);
+	REQUIRE(paramsOdd.passbandRipple < 0.05f);
+
+	const auto [amplitudeEven, phaseEven] = FrequencyResponse(even);
+	const auto paramsEven = ParametrizeHighpassFilter(amplitudeEven);
+	REQUIRE(paramsEven.passbandEdge < 0.05f);
+	REQUIRE(paramsEven.passbandRipple < 0.05f);
 }
 
 TEST_CASE("Windowed methods equal", "[FIR]") {
@@ -196,49 +209,71 @@ TEST_CASE("Windowed methods equal", "[FIR]") {
 
 TEST_CASE("Least squares low-pass", "[FIR]") {
 	constexpr size_t numTaps = 255;
-	static constexpr float cutoffBegin = 0.28f;
-	static constexpr float cutoffEnd = 0.32f;
+	constexpr float cutoffBegin = 0.28f;
+	constexpr float cutoffEnd = 0.32f;
+	constexpr float width = cutoffEnd - cutoffBegin;
 
 	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(LEAST_SQUARES).Cutoff(cutoffBegin, cutoffEnd));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(1).margin(0.01));
 
-	RequireResponse(impulse, { { cutoffBegin - 0.01f, 1.0f }, { cutoffEnd + 0.01f, 0.0f } });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeLowpassFilter(amplitude);
+	REQUIRE(params.passbandEdge > cutoffBegin - width / 2);
+	REQUIRE(params.passbandEdge < cutoffBegin + width / 2);
+	REQUIRE(params.stopbandEdge > cutoffEnd - width / 2);
+	REQUIRE(params.stopbandEdge < cutoffEnd + width / 2);
+	REQUIRE(params.passbandRipple < 0.05f);
+	REQUIRE(params.stopbandAtten < 0.05f);
 }
 
 TEST_CASE("Least squares high-pass", "[FIR]") {
 	constexpr size_t numTaps = 255;
-	static constexpr float cutoffBegin = 0.28f;
-	static constexpr float cutoffEnd = 0.32f;
+	constexpr float cutoffBegin = 0.28f;
+	constexpr float cutoffEnd = 0.32f;
+	constexpr float width = cutoffEnd - cutoffBegin;
 
 	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(LEAST_SQUARES).Cutoff(cutoffBegin, cutoffEnd));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
 
-	RequireResponse(impulse, { { cutoffBegin - 0.04f, 0.0f }, { cutoffEnd + 0.04f, 1.0f } });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeHighpassFilter(amplitude);
+	REQUIRE(params.stopbandEdge > cutoffBegin - width / 2);
+	REQUIRE(params.stopbandEdge < cutoffBegin + width / 2);
+	REQUIRE(params.passbandEdge > cutoffEnd - width / 2);
+	REQUIRE(params.passbandEdge < cutoffEnd + width / 2);
+	REQUIRE(params.stopbandAtten < 0.05f);
+	REQUIRE(params.passbandRipple < 0.05f);
 }
 
 
 TEST_CASE("Least squares band-pass", "[FIR]") {
 	constexpr size_t numTaps = 255;
-	static constexpr float bandLowBegin = 0.28f;
-	static constexpr float bandLowEnd = 0.32f;
-	static constexpr float bandHighBegin = 0.58f;
-	static constexpr float bandHighEnd = 0.65f;
+	constexpr float bandLowBegin = 0.28f;
+	constexpr float bandLowEnd = 0.32f;
+	constexpr float bandHighBegin = 0.58f;
+	constexpr float bandHighEnd = 0.65f;
+	constexpr float lowWidth = bandLowEnd - bandLowBegin;
+	constexpr float highWidth = bandHighEnd - bandHighBegin;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(0).margin(0.01));
 
-	RequireResponse(impulse, {
-								 { bandLowBegin - 0.01f, 0.0f },
-								 { bandLowEnd + 0.01f, 1.0f },
-								 { bandHighBegin - 0.01f, 1.0f },
-								 { bandHighEnd + 0.01f, 0.0f },
-							 });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeBandpassFilter(amplitude);
+	REQUIRE(params.lowerStopbandEdge > bandLowBegin - lowWidth / 2);
+	REQUIRE(params.lowerStopbandEdge < bandLowBegin + lowWidth / 2);
+	REQUIRE(params.passbandLowerEdge > bandLowEnd - lowWidth / 2);
+	REQUIRE(params.passbandLowerEdge < bandLowEnd + lowWidth / 2);
+	REQUIRE(params.passbandUpperEdge > bandHighBegin - highWidth / 2);
+	REQUIRE(params.passbandUpperEdge < bandHighBegin + highWidth / 2);
+	REQUIRE(params.upperStopbandEdge > bandHighEnd - highWidth / 2);
+	REQUIRE(params.upperStopbandEdge < bandHighEnd + highWidth / 2);
+	REQUIRE(params.lowerStopbandAtten < 0.05f);
+	REQUIRE(params.passbandRipple < 0.05f);
+	REQUIRE(params.upperStopbandAtten < 0.05f);
 }
 
 TEST_CASE("Least squares band-stop", "[FIR]") {
@@ -247,18 +282,26 @@ TEST_CASE("Least squares band-stop", "[FIR]") {
 	static constexpr float bandLowEnd = 0.32f;
 	static constexpr float bandHighBegin = 0.58f;
 	static constexpr float bandHighEnd = 0.65f;
+	constexpr float lowWidth = bandLowEnd - bandLowBegin;
+	constexpr float highWidth = bandHighEnd - bandHighBegin;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd));
+	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
-	REQUIRE(Sum(impulse) == Approx(1.0).margin(0.01));
 
-	RequireResponse(impulse, {
-								 { bandLowBegin - 0.01f, 1.0f },
-								 { bandLowEnd + 0.01f, 0.0f },
-								 { bandHighBegin - 0.01f, 0.0f },
-								 { bandHighEnd + 0.01f, 1.0f },
-							 });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	const auto params = ParametrizeBandstopFilter(amplitude);
+	REQUIRE(params.lowerPassbandEdge > bandLowBegin - lowWidth / 2);
+	REQUIRE(params.lowerPassbandEdge < bandLowBegin + lowWidth / 2);
+	REQUIRE(params.stopbandLowerEdge > bandLowEnd - lowWidth / 2);
+	REQUIRE(params.stopbandLowerEdge < bandLowEnd + lowWidth / 2);
+	REQUIRE(params.stopbandUpperEdge > bandHighBegin - highWidth / 2);
+	REQUIRE(params.stopbandUpperEdge < bandHighBegin + highWidth / 2);
+	REQUIRE(params.upperPassbandEdge > bandHighEnd - highWidth / 2);
+	REQUIRE(params.upperPassbandEdge < bandHighEnd + highWidth / 2);
+	REQUIRE(params.lowerPassbandRipple < 0.05f);
+	REQUIRE(params.stopbandAtten < 0.05f);
+	REQUIRE(params.upperPassbandRipple < 0.05f);
 }
 
 TEST_CASE("Least squares arbitrary", "[FIR]") {
@@ -268,13 +311,10 @@ TEST_CASE("Least squares arbitrary", "[FIR]") {
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
-	RequireResponse(impulse, {
-								 { 0.12f, TestArbitraryResponse(0.12f) },
-								 { 0.12f, TestArbitraryResponse(0.12f) },
-								 { 0.32f, TestArbitraryResponse(0.32f) },
-								 { 0.67f, TestArbitraryResponse(0.67f) },
-								 { 0.88f, TestArbitraryResponse(0.88f) },
-							 });
+	const auto [amplitude, phase] = FrequencyResponse(impulse);
+	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, 1.0f, amplitude.Size(), true);
+	std::for_each(expected.begin(), expected.end(), [](auto& v) { v = TestArbitraryResponse(v); });
+	REQUIRE(Max(Abs(amplitude - expected)) < 0.02f);
 }
 
 TEST_CASE("Least squares hilbert magnitude", "[FIR]") {
@@ -282,21 +322,16 @@ TEST_CASE("Least squares hilbert magnitude", "[FIR]") {
 	const auto odd = FirFilter<float, TIME_DOMAIN>(155, Hilbert(LEAST_SQUARES).TransitionWidth(transition));
 	const auto even = FirFilter<float, TIME_DOMAIN>(154, Hilbert(LEAST_SQUARES).TransitionWidth(transition));
 
-	std::vector<std::pair<float, float>> requiredOdd = {
-		{ 0.031f, 1.0f },
-		{ 0.5f, 1.0f },
-		{ 0.969f, 1.0f },
-	};
-	std::vector<std::pair<float, float>> requiredEven = {
-		{ 0.062f, 1.0f },
-		{ 0.5f, 1.0f },
-		{ 0.999f, 1.0f },
-	};
-	RequireResponse(odd, requiredOdd, 0.01);
-	RequireResponse(even, requiredEven, 0.01);
-	REQUIRE(MeasureResponse(0.020f, odd) < 0.95f);
-	REQUIRE(MeasureResponse(0.980f, odd) < 0.95f);
-	REQUIRE(MeasureResponse(0.020f, even) < 0.95f);
+	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
+	const auto paramsOdd = ParametrizeBandpassFilter(amplitudeOdd);
+	REQUIRE(paramsOdd.passbandLowerEdge < 0.05f);
+	REQUIRE(paramsOdd.passbandUpperEdge > 0.95f);
+	REQUIRE(paramsOdd.passbandRipple < 0.05f);
+
+	const auto [amplitudeEven, phaseEven] = FrequencyResponse(even);
+	const auto paramsEven = ParametrizeHighpassFilter(amplitudeEven);
+	REQUIRE(paramsEven.passbandEdge < 0.05f);
+	REQUIRE(paramsEven.passbandRipple < 0.05f);
 }
 
 TEST_CASE("Least squares weights", "[FIR]") {
@@ -325,18 +360,17 @@ TEST_CASE("Least squares weights", "[FIR]") {
 		return 3.0f;
 	};
 
-	auto filterL = FirFilter<float, TIME_DOMAIN>(27, Arbitrary(LEAST_SQUARES).Response(response).Weight(weightL));
-	auto filterH = FirFilter<float, TIME_DOMAIN>(27, Arbitrary(LEAST_SQUARES).Response(response).Weight(weightH));
-	filterL.Resize(1024, 0.0f);
-	filterH.Resize(1024, 0.0f);
-	const auto responseL = Abs(FourierTransform(filterL, false));
-	const auto responseH = Abs(FourierTransform(filterH, false));
-	const float stdLL = StandardDeviation(AsView(responseL).SubSignal(0, 230));
-	const float stdLH = StandardDeviation(AsView(responseL).SubSignal(280));
-	const float stdHL = StandardDeviation(AsView(responseH).SubSignal(0, 230));
-	const float stdHH = StandardDeviation(AsView(responseH).SubSignal(280));
-	REQUIRE(stdLL < stdHL * 0.6f);
-	REQUIRE(stdLH * 0.6f > stdHH);
+	const auto filterL = FirFilter<float, TIME_DOMAIN>(27, Arbitrary(LEAST_SQUARES).Response(response).Weight(weightL));
+	const auto filterH = FirFilter<float, TIME_DOMAIN>(27, Arbitrary(LEAST_SQUARES).Response(response).Weight(weightH));
+
+	const auto [amplitudeL, phaseL] = FrequencyResponse(filterL);
+	const auto [amplitudeH, phaseH] = FrequencyResponse(filterH);
+
+	const auto paramsL = ParametrizeLowpassFilter(amplitudeL);
+	const auto paramsH = ParametrizeLowpassFilter(amplitudeH);
+
+	REQUIRE(paramsL.passbandRipple < 0.5f * paramsH.passbandRipple);
+	REQUIRE(0.5f * paramsL.stopbandAtten > paramsH.stopbandAtten);
 }
 
 //------------------------------------------------------------------------------
