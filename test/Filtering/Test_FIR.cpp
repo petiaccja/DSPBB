@@ -48,26 +48,6 @@ bool IsAntiSymmetric(const SignalT& signal) {
 	return true;
 }
 
-template <class SignalT>
-auto MeasureResponse(float frequency, const SignalT& filter) {
-	const float period = 1.0f / frequency;
-	const float length = std::max(float(filter.Size()), 25.f * period);
-	auto testSignal = GenTestSignal(2, frequency, length);
-	testSignal *= BlackmanWindow<float, TIME_DOMAIN>(testSignal.Size());
-	const auto filteredSignal = Convolution(testSignal, filter, convolution::full);
-	const auto rmsTest = std::sqrt(SumSquare(testSignal));
-	const auto rmsFiltered = std::sqrt(SumSquare(filteredSignal));
-	return rmsFiltered / rmsTest;
-}
-
-template <class SignalT>
-void RequireResponse(const SignalT& impulse, const std::vector<std::pair<float, float>>& desired, double margin = 0.03) {
-	for (const auto& [frequency, desiredResponse] : desired) {
-		const auto actualResponse = MeasureResponse(frequency, impulse);
-		REQUIRE(actualResponse == Approx(desiredResponse).margin(margin));
-	}
-}
-
 constexpr auto TestArbitraryResponse = [](float x) {
 	return 2.0f * x - 1.5f * x * x - 0.5f * std::pow(x - 1.f, 3.f);
 };
