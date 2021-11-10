@@ -12,7 +12,7 @@ target_sources(UnitTest
 		"Filtering/IIR/Test_Kernels.cpp"
 		"Filtering/IIR/Test_Realizations.cpp"
 		"Filtering/Test_FilterParameters.cpp"
-		"Filtering/Test_FirFilter.cpp"
+		"Filtering/Test_FIR.cpp"
 		"Filtering/Test_IIR.cpp"
 		"Filtering/Test_Interpolation.cpp"
 		"Filtering/Test_OverlapAdd.cpp"
