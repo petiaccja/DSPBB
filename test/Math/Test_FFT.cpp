@@ -1,8 +1,10 @@
+#include "../TestUtils.hpp"
+
 #include <algorithm>
 #include <catch2/catch.hpp>
-#include <dspbb/Math/FFT.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/DotProduct.hpp>
+#include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
@@ -18,7 +20,7 @@ constexpr size_t fftSize = 1024;
 TEST_CASE("FFT - Real spectral peak", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 
-	Spectrum<std::complex<float>> complexSpectrum = FourierTransform(signal, true);
+	Spectrum<std::complex<float>> complexSpectrum = Fft(signal, FULL);
 	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
 
 	REQUIRE(complexSpectrum.Length() == fftSize);
@@ -32,7 +34,7 @@ TEST_CASE("FFT - Real spectral peak", "[FFT]") {
 TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 
-	Spectrum<std::complex<float>> complexSpectrum = FourierTransform(signal);
+	Spectrum<std::complex<float>> complexSpectrum = Fft(signal);
 	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
 
 	REQUIRE(complexSpectrum.Length() == fftSize);
@@ -45,33 +47,25 @@ TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 
 TEST_CASE("IFFT - Real identity", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
-	Spectrum<std::complex<float>> spectrum = FourierTransform(signal, false);
-	const auto repro = InverseFourierTransformR(spectrum, signal.Size());
+	Spectrum<std::complex<float>> spectrum = Fft(signal, HALF);
+	const auto repro = Ifft(spectrum, HALF, signal.Size() % 2 == 0);
 
-	const float norm = Norm(signal);
-	const float rnorm = Norm(repro);
-	const float similarity = DotProduct(signal, repro) / norm / rnorm;
-	REQUIRE(similarity == Approx(1));
-	REQUIRE(norm == Approx(rnorm));
+	REQUIRE(Max(Abs(signal - repro)) < 1e-4f);
 }
 
 
 TEST_CASE("IFFT - Complex identity", "[FFT]") {
-	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, sampleRate, frequency);
-	Spectrum<std::complex<float>> spectrum = FourierTransform(signal);
-	const auto repro = InverseFourierTransformC(spectrum);
-
-	const float norm = std::abs(Norm(signal));
-	const float rnorm = std::abs(Norm(repro));
-	const float similarity = std::abs(DotProduct(signal, repro)) / norm / rnorm;
-	REQUIRE(similarity == Approx(1));
-	REQUIRE(norm == Approx(rnorm));
+	const auto signal = RandomSignal<std::complex<float>, TIME_DOMAIN>(fftSize);
+	Spectrum<std::complex<float>> spectrum = Fft(signal);
+	const auto repro = Ifft(spectrum);
+	
+	REQUIRE(Max(Abs(signal-repro)) < 1e-4f);
 }
 
 
 TEST_CASE("Parseval's relation", "[FFT]") {
-	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
-	Spectrum<std::complex<float>> spectrum = FourierTransform(signal, true);
+	const auto signal = RandomSignal<float, TIME_DOMAIN>(fftSize);
+	Spectrum<std::complex<float>> spectrum = Fft(signal, FULL);
 
 	const float signalSum = SumSquare(signal);
 	const float spectrumSum = SumSquare(Abs(spectrum));
@@ -83,23 +77,29 @@ TEST_CASE("Parseval's relation", "[FFT]") {
 TEST_CASE("FFT - Full real even", "[FFT]") {
 	TimeSignal<float> even(64, 0.0f);
 	even[30] = 1.0f;
-	const Spectrum<std::complex<float>> evenHalf = FourierTransform(even, false);
-	const Spectrum<std::complex<float>> evenFull = FourierTransform(even, true);
+	const Spectrum<std::complex<float>> evenHalf = Fft(even, HALF);
+	const Spectrum<std::complex<float>> evenFull = Fft(even, FULL);
 	REQUIRE(evenHalf.Length() == 33);
 	REQUIRE(evenFull.Length() == 64);
 	REQUIRE(std::all_of(evenHalf.begin(), evenHalf.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 	REQUIRE(std::all_of(evenFull.begin(), evenFull.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
+	const auto normal = Spectrum<std::complex<float>>(evenFull.begin() + 1, evenFull.begin() + 32);
+	const auto conjugate = Spectrum<std::complex<float>>(evenFull.rbegin(), evenFull.rbegin() + 31);
+	REQUIRE(Max(Abs(normal - Conj(conjugate))) < 1e-4f);
 }
 
 TEST_CASE("FFT - Full real odd", "[FFT]") {
 	TimeSignal<float> odd(63, 0.0f);
 	odd[30] = 1.0f;
-	Spectrum<std::complex<float>> evenHalf = FourierTransform(odd, false);
-	Spectrum<std::complex<float>> evenFull = FourierTransform(odd, true);
+	Spectrum<std::complex<float>> evenHalf = Fft(odd, HALF);
+	Spectrum<std::complex<float>> evenFull = Fft(odd, FULL);
 	REQUIRE(evenHalf.Length() == 32);
 	REQUIRE(evenFull.Length() == 63);
 	REQUIRE(std::all_of(evenHalf.begin(), evenHalf.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 	REQUIRE(std::all_of(evenFull.begin(), evenFull.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
+	const auto normal = Spectrum<std::complex<float>>(evenFull.begin() + 1, evenFull.begin() + 32);
+	const auto conjugate = Spectrum<std::complex<float>>(evenFull.rbegin(), evenFull.rbegin() + 31);
+	REQUIRE(Max(Abs(normal - Conj(conjugate))) < 1e-4f);
 }
 
 
@@ -107,10 +107,9 @@ TEST_CASE("FFT - Full real identity", "[FFT]") {
 	const std::array<size_t, 7> sizes = { 63, 64, 65, 66, 67, 68, 69 };
 
 	for (auto s : sizes) {
-		TimeSignal<float> signal(s, 0.0f);
-		signal[signal.Size() / 2] = 1.0f;
-		const Spectrum<std::complex<float>> spectrum = FourierTransform(signal, true);
-		const TimeSignal<float> repro = InverseFourierTransformR(spectrum, 0);
+		const auto signal = RandomSignal<float, TIME_DOMAIN>(s);
+		const Spectrum<std::complex<float>> spectrum = Fft(signal, FULL);
+		const TimeSignal<float> repro = Ifft(spectrum, FULL);
 		REQUIRE(signal.Size() == repro.Size());
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}
@@ -120,10 +119,9 @@ TEST_CASE("FFT - Half real identity", "[FFT]") {
 	const std::array<size_t, 7> sizes = { 63, 64, 65, 66, 67, 68, 69 };
 
 	for (auto s : sizes) {
-		TimeSignal<float> signal(s, 0.0f);
-		signal[signal.Size() / 2] = 1.0f;
-		const Spectrum<std::complex<float>> spectrum = FourierTransform(signal, false);
-		const TimeSignal<float> repro = InverseFourierTransformR(spectrum, signal.Size());
+		const auto signal = RandomSignal<float, TIME_DOMAIN>(s);
+		const Spectrum<std::complex<float>> spectrum = Fft(signal, HALF);
+		const TimeSignal<float> repro = Ifft(spectrum, HALF, signal.Size() % 2 == 0);
 		REQUIRE(signal.Size() == repro.Size());
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}
@@ -153,4 +151,18 @@ TEST_CASE("FFT shift empty", "[FFT]") {
 	const Spectrum<float> s = {};
 	const auto r = FftShift(s);
 	REQUIRE(r.Size() == 0);
+}
+
+TEST_CASE("FFT inverse shift even", "[FFT]") {
+	const Spectrum<float> s = { 3, 4, 5, 0, 1, 2 };
+	const Spectrum<float> e = { 0, 1, 2, 3, 4, 5 };
+	const auto r = IfftShift(s);
+	REQUIRE(Max(r - e) == 0);
+}
+
+TEST_CASE("FFT inverse shift odd", "[FFT]") {
+	const Spectrum<float> s = { 4, 5, 6, 0, 1, 2, 3 };
+	const Spectrum<float> e = { 0, 1, 2, 3, 4, 5, 6 };
+	const auto r = IfftShift(s);
+	REQUIRE(Max(r - e) == 0);
 }

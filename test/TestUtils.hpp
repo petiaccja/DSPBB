@@ -3,6 +3,7 @@
 #include <catch2/catch.hpp>
 #include <complex>
 #include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Utility/TypeTraits.hpp>
 #include <random>
 
 
@@ -112,6 +113,23 @@ dspbb::TimeSignal<T> RandomPositiveSignal(size_t size) {
 	dspbb::TimeSignal<T> s;
 	for (size_t i = 0; i < size; ++i) {
 		s.PushBack(rng(rne));
+	}
+	return s;
+}
+
+template <class T, dspbb::eSignalDomain Domain>
+dspbb::Signal<T, Domain> RandomSignal(size_t length) {
+	thread_local std::mt19937_64 rne(723574);
+	thread_local std::uniform_real_distribution<float> rng;
+	dspbb::Signal<T, Domain> s(length);
+	for (auto& v : s) {
+		if constexpr (dspbb::is_complex_v<T>) {
+			v.real(rng(rne));
+			v.imag(rng(rne));
+		}
+		else {
+			v = rng(rne);
+		}
 	}
 	return s;
 }
