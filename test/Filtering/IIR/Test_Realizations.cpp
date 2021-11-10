@@ -29,10 +29,10 @@ const Signal<real_t, TIME_DOMAIN> response = []() {
 	num.Resize(1000);
 	den.Resize(1000);
 	padded.Resize(1000);
-	const auto numF = FourierTransform(num, false);
-	const auto denF = FourierTransform(den, false);
-	const auto inputF = FourierTransform(padded, false);
-	return InverseFourierTransformR(inputF * numF / denF, 1000);
+	const auto numF = Fft(num, HALF);
+	const auto denF = Fft(den, HALF);
+	const auto inputF = Fft(padded, HALF);
+	return Ifft(inputF * numF / denF, HALF, true);
 }();
 
 //------------------------------------------------------------------------------

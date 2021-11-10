@@ -12,19 +12,19 @@ namespace impl {
 
 		template <class SignalU>
 		auto MakeFrequencyFilter(const SignalU& filter, std::false_type, std::false_type) {
-			return FourierTransform(filter, false);
+			return Fft(filter, HALF);
 		}
 		template <class SignalU>
 		auto MakeFrequencyFilter(const SignalU& filter, std::false_type, std::true_type) {
-			return FourierTransform(filter);
+			return Fft(filter);
 		}
 		template <class SignalU>
 		auto MakeFrequencyFilter(const SignalU& filter, std::true_type, std::false_type) {
-			return FourierTransform(filter, true);
+			return Fft(filter, FULL);
 		}
 		template <class SignalU>
 		auto MakeFrequencyFilter(const SignalU& filter, std::true_type, std::true_type) {
-			return FourierTransform(filter);
+			return Fft(filter);
 		}
 
 
@@ -36,19 +36,19 @@ namespace impl {
 
 		template <class SpectrumT>
 		auto InvertChunk(const SpectrumT& fft, std::false_type, std::false_type, size_t fftSize) {
-			return InverseFourierTransformR(fft, fftSize);
+			return Ifft(fft, HALF, fftSize % 2 == 0);
 		}
 		template <class SpectrumT>
 		auto InvertChunk(const SpectrumT& fft, std::false_type, std::true_type, size_t) {
-			return InverseFourierTransformC(fft);
+			return Ifft(fft);
 		}
 		template <class SpectrumT>
 		auto InvertChunk(const SpectrumT& fft, std::true_type, std::false_type, size_t) {
-			return InverseFourierTransformC(fft);
+			return Ifft(fft);
 		}
 		template <class SpectrumT>
 		auto InvertChunk(const SpectrumT& fft, std::true_type, std::true_type, size_t) {
-			return InverseFourierTransformC(fft);
+			return Ifft(fft);
 		}
 
 	} // namespace ola
