@@ -10,6 +10,138 @@
 
 namespace dspbb {
 
+namespace impl {
+	template <class T>
+	void Fft(SpectrumView<std::complex<T>> out, TimeSignalView<const T> in) {
+		const size_t halfSize = in.Size() / 2 + 1;
+		const size_t fullSize = in.Size();
+		if (out.Size() != halfSize || out.Size() != fullSize) {
+			throw std::invalid_argument("Output size must be N or N/2+1.");
+		}
+
+		pocketfft_dspbb::shape_t shape = { in.Size() };
+		pocketfft_dspbb::stride_t stride_in = { sizeof(T) };
+		pocketfft_dspbb::stride_t stride_out = { sizeof(std::complex<T>) };
+		pocketfft_dspbb::r2c(shape, stride_in, stride_out, 0, pocketfft_dspbb::FORWARD, in.Data(), out.Data(), T(1));
+
+		if (out.Size() == fullSize && fullSize > 2) {
+			std::reverse_copy(out.begin() + 1, out.begin() + fullSize / 2, out.begin() + fullSize / 2 + 1);
+		}
+	}
+
+	template <class T>
+	void Fft(SpectrumView<std::complex<T>> out, TimeSignalView<const std::complex<T>> in) {
+		if (out.Size() != in.Size()) {
+			throw std::invalid_argument("Output and input size must be the same.");
+		}
+
+		pocketfft_dspbb::shape_t shape = { in.Size() };
+		pocketfft_dspbb::stride_t stride = { sizeof(std::complex<T>) };
+		pocketfft_dspbb::shape_t axes = { 0 };
+		pocketfft_dspbb::c2c(shape, stride, stride, axes, pocketfft_dspbb::FORWARD, in.Data(), out.Data(), T(1));
+	}
+
+	template <class T>
+	void Ifft(TimeSignalView<T> out, TimeSignalView<const std::complex<T>> in) {
+		const size_t halfSize = out.Size() / 2 + 1;
+		const size_t fullSize = out.Size();
+		if (in.Size() != halfSize || in.Size() != fullSize) {
+			throw std::invalid_argument("Input size must be N or N/2+1.");
+		}
+
+		pocketfft_dspbb::shape_t shape = { out.Size() };
+		pocketfft_dspbb::stride_t stride_in = { sizeof(std::complex<T>) };
+		pocketfft_dspbb::stride_t stride_out = { sizeof(T) };
+		pocketfft_dspbb::c2r<T>(shape, stride_in, stride_out, 0, pocketfft_dspbb::BACKWARD, in.Data(), out.Data(), T(1.0 / double(out.Size())));
+	}
+
+	template <class T>
+	void Ifft(TimeSignalView<std::complex<T>> out, TimeSignalView<const std::complex<T>> in) {
+		if (out.Size() != in.Size()) {
+			throw std::invalid_argument("Output and input size must be the same.");
+		}
+
+		pocketfft_dspbb::shape_t shape = { out.Size() };
+		pocketfft_dspbb::stride_t stride = { sizeof(std::complex<T>) };
+		pocketfft_dspbb::shape_t axes = { 0 };
+		pocketfft_dspbb::c2c(shape, stride, stride, axes, pocketfft_dspbb::BACKWARD, in.Data(), out.Data(), T(1.0 / double(out.Size())));
+	}
+
+
+	template <class T>
+	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, bool full) {
+		const size_t halfSize = in.Size() / 2 + 1;
+		const size_t fullSize = in.Size();
+		const size_t size = full ? fullSize : halfSize;
+
+		Spectrum<std::complex<T>> out(size);
+		Fft(out, in);
+		return out;
+	}
+
+	template <class T>
+	Spectrum<std::complex<T>> Fft(TimeSignalView<const std::complex<T>> in) {
+		const size_t size = in.Size();
+
+		Spectrum<std::complex<T>> out(size);
+		Fft(out, in);
+		return out;
+	}
+
+	template <class T>
+	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, bool full, bool even) {
+		const size_t halfSizeEven = in.Size() * 2 - 2;
+		const size_t halfSizeOdd = in.Size() * 2 - 1;
+		const size_t fullSize = in.Size();
+		const size_t size = full ? fullSize : (even ? halfSizeEven : halfSizeOdd);
+
+		TimeSignal<std::complex<T>> out(size);
+		Fft(out, in);
+		return out;
+	}
+
+	template <class T>
+	TimeSignal<std::complex<T>> Ifft(SpectrumView<const std::complex<T>> in) {
+		const size_t size = in.Size();
+
+		TimeSignal<std::complex<T>> out(size);
+		Fft(out, in);
+		return out;
+	}
+
+} // namespace impl
+
+
+template <class SignalR, class SignalT>
+auto Fft(SignalR&& out, const SignalT& in) -> decltype(impl::Fft(AsView(out), AsView(in))) {
+	return impl::Fft(AsView(out), AsView(in));
+}
+
+template <class SignalR, class SignalT>
+auto Ifft(SignalR&& out, const SignalT& in) -> decltype(impl::Fft(AsView(out), AsView(in))) {
+	return impl::Fft(AsView(out), AsView(in));
+}
+
+
+template <class SignalT>
+auto Fft(const SignalT& in, bool full) -> decltype(impl::Fft(AsView(in), full)) {
+	return impl::Fft(AsView(in, full));
+}
+
+template <class SignalT>
+auto Fft(const SignalT& in) -> decltype(impl::Fft(AsView(in))) {
+	return impl::Fft(AsView(in));
+}
+
+template <class SignalT>
+auto Ifft(const SignalT& in, bool full, bool even) -> decltype(impl::Ifft(AsView(in), full, even)) {
+	return impl::Ifft(AsView(in), full, even);
+}
+
+template <class SignalT>
+auto Ifft(const SignalT& in) -> decltype(impl::Fft(AsView(in))) {
+	return impl::Fft(AsView(in));
+}
 
 /// <summary>
 /// You'd never guess: it computes the discrete fourier transform of a real <paramref name="signal"/>!
