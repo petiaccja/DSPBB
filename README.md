@@ -74,6 +74,9 @@ While the library is already quite capable, I'm planning to change the interface
 - ❔️ Filtering
   - ✔️ Convolution
   - ✔️ FFT
+    - ✔️ R->C, C->C, C->C, C->R
+    - ✔️ FFT shift
+    - ✔️ Bin <-> Frequency conversions
   - ❔️ FIR filtering
     - Methods:
       - ✔️ Window method
