@@ -95,15 +95,15 @@ auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t stepSize, s
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& u, const SignalU& v, size_t chunkSize, size_t overlapSize, convolution::impl::Full) {
-	const size_t length = ConvolutionLength(u.Length(), v.Length(), convolution::full);
+auto OverlapAdd(const SignalT& u, const SignalU& v, size_t chunkSize, size_t overlapSize, impl::ConvFull) {
+	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
 	size_t offset = 0;
 	return OverlapAdd(u, v, chunkSize, overlapSize, offset, length);
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& u, const SignalU& v, size_t chunkSize, size_t overlapSize, convolution::impl::Central) {
-	const size_t length = ConvolutionLength(u.Length(), v.Length(), convolution::central);
+auto OverlapAdd(const SignalT& u, const SignalU& v, size_t chunkSize, size_t overlapSize, impl::ConvCentral) {
+	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
 	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
 	return OverlapAdd(u, v, chunkSize, overlapSize, offset, length);
 }

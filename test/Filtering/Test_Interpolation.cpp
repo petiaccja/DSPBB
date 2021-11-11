@@ -41,7 +41,7 @@ TEST_CASE("Polyphase interpolation", "[Interpolation]") {
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(scratch, filter, numFilters));
 
 	const TimeSignal<float> signal = MakeRamp(150);
-	TimeSignal<float> output(numFilters * ConvolutionLength(signal.Size(), polyphase.Size(), convolution::full));
+	TimeSignal<float> output(numFilters * ConvolutionLength(signal.Size(), polyphase.Size(), CONV_FULL));
 	Interpolate(output, signal, polyphase, 0);
 
 	REQUIRE(output[0] == Approx(0).margin(0.001f));
@@ -65,7 +65,7 @@ TEST_CASE("Polyphase resampling replicate convolution full", "[Interpolation]") 
 	TimeSignal<float> padded(signal.Size() * numFilters);
 	Expand(padded, signal, numFilters);
 
-	TimeSignal<float> outputConv = Convolution(padded, filter * numFilters, convolution::full);
+	TimeSignal<float> outputConv = Convolution(padded, filter * numFilters, CONV_FULL);
 	TimeSignal<float> output(outputConv.Size());
 
 	Resample(output, signal, polyphase, { 1, numFilters });

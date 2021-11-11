@@ -407,7 +407,7 @@ TEST_CASE("Hilbert odd phase shift", "[FIR]") {
 	constexpr size_t testSignalSize = 4096;
 	const auto filter = FirFilter<float, TIME_DOMAIN>(377, Hilbert(WINDOWED));
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
-	const auto imaginarySignal = Convolution(filter, testSignal, convolution::central);
+	const auto imaginarySignal = Convolution(filter, testSignal, CONV_CENTRAL);
 	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
 	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.000001f);
 	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
@@ -417,7 +417,7 @@ TEST_CASE("Hilbert even phase shift", "[FIR]") {
 	constexpr size_t testSignalSize = 4096;
 	const auto filter = FirFilter<float, TIME_DOMAIN>(376, Hilbert(WINDOWED));
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
-	const auto imaginarySignal = Convolution(filter, testSignal, convolution::central);
+	const auto imaginarySignal = Convolution(filter, testSignal, CONV_CENTRAL);
 	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
 	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.01f);
 	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));

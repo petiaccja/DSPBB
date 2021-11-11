@@ -10,20 +10,20 @@
 
 namespace dspbb {
 
-namespace convolution {
-	namespace impl {
-		class Central {};
-		class Full {};
-	} // namespace impl
-	constexpr impl::Central central;
-	constexpr impl::Full full;
-} // namespace convolution
+namespace impl {
+	class ConvCentral {};
+	class ConvFull {};
+	constexpr ConvCentral CONV_CENTRAL;
+	constexpr ConvFull CONV_FULL;
+} // namespace impl
 
+using impl::CONV_CENTRAL;
+using impl::CONV_FULL;
 
 /// <summary> Calculates the length of the result of the convolution U*V. </summary>
 /// <param name="lengthU"> Length of U. </param>
 /// <param name="lengthV"> Length of V. </param>
-inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Central) {
+inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvCentral) {
 	if (lengthU == 0 || lengthV == 0) {
 		return 0;
 	}
@@ -36,7 +36,7 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::imp
 /// <summary> Calculates the length of the result of the convolution U*V. </summary>
 /// <param name="lengthU"> Length of U. </param>
 /// <param name="lengthV"> Length of V. </param>
-inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, convolution::impl::Full) {
+inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvFull) {
 	if (lengthU == 0 || lengthV == 0) {
 		return 0;
 	}
@@ -70,15 +70,15 @@ auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t lengt
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto Convolution(const SignalT& u, const SignalU& v, convolution::impl::Full) {
-	const size_t length = ConvolutionLength(u.Length(), v.Length(), convolution::full);
+auto Convolution(const SignalT& u, const SignalU& v, impl::ConvFull) {
+	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
 	size_t offset = 0;
 	return Convolution(u, v, offset, length);
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto Convolution(const SignalT& u, const SignalU& v, convolution::impl::Central) {
-	const size_t length = ConvolutionLength(u.Length(), v.Length(), convolution::central);
+auto Convolution(const SignalT& u, const SignalU& v, impl::ConvCentral) {
+	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
 	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
 	return Convolution(u, v, offset, length);
 }

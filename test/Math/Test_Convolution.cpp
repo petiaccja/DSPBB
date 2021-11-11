@@ -43,7 +43,7 @@ TEST_CASE("Real central", "[Convolution]") {
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<float> expected = { urvr_central.begin(), urvr_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -56,7 +56,7 @@ TEST_CASE("Real full", "[Convolution]") {
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
 
-	auto result = Convolution(u, v, convolution::full);
+	auto result = Convolution(u, v, CONV_FULL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -70,7 +70,7 @@ TEST_CASE("Real-complex central BR", "[Convolution]") {
 	TimeSignal<std::complex<float>> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<float>> expected = { urvr_central.begin(), urvr_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -83,7 +83,7 @@ TEST_CASE("Complex-real central RB", "[Convolution]") {
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<float>> expected = { urvr_central.begin(), urvr_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -96,7 +96,7 @@ TEST_CASE("Complex-complex central", "[Convolution]") {
 	TimeSignal<std::complex<float>> v{ vc.begin(), vc.end() };
 	TimeSignal<std::complex<float>> expected = { ucvc_central.begin(), ucvc_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -117,7 +117,7 @@ TEST_CASE("Real-world signal", "[Convolution]") {
 	v[0] = 1;
 	v[50] = 1;
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == 950);
 	REQUIRE(result[145] == 0);
