@@ -12,7 +12,7 @@ namespace impl {
 
 		template <class SignalU>
 		auto FftFilter(const SignalU& filter, std::false_type, std::false_type) {
-			return Fft(filter, HALF);
+			return Fft(filter, FFT_HALF);
 		}
 		template <class SignalU>
 		auto FftFilter(const SignalU& filter, std::false_type, std::true_type) {
@@ -20,7 +20,7 @@ namespace impl {
 		}
 		template <class SignalU>
 		auto FftFilter(const SignalU& filter, std::true_type, std::false_type) {
-			return Fft(filter, FULL);
+			return Fft(filter, FFT_FULL);
 		}
 		template <class SignalU>
 		auto FftFilter(const SignalU& filter, std::true_type, std::true_type) {
@@ -36,7 +36,7 @@ namespace impl {
 
 		template <class SpectrumT>
 		auto IfftChunk(const SpectrumT& fft, std::false_type, std::false_type, size_t fftSize) {
-			return Ifft(fft, HALF, fftSize % 2 == 0);
+			return Ifft(fft, FFT_HALF, fftSize % 2 == 0);
 		}
 		template <class SpectrumT>
 		auto IfftChunk(const SpectrumT& fft, std::false_type, std::true_type, size_t) {
