@@ -173,7 +173,6 @@ TEST_CASE("Arbitrary offset end", "[Convolution]") {
 TEST_CASE("Arbitrary offset out of bounds", "[Convolution]") {
 	TimeSignal<float> u{ ur.begin(), ur.end() };
 	TimeSignal<float> v{ vr.begin(), vr.end() };
-	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
 
 	REQUIRE_THROWS(Convolution(u, v, 28, 6));
 	REQUIRE_THROWS(Convolution(u, v, 0, 51));

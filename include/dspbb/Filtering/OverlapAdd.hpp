@@ -56,28 +56,35 @@ namespace impl {
 } // namespace impl
 
 
+template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
+void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, size_t chunkSize) {
+	if (u.Size() < v.Size()) {
+		return OverlapAdd(out, v, u, offset, chunkSize);
+	}
 
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t stepSize, size_t overlapSize, size_t offset, size_t length) {
-	assert(stepSize + overlapSize >= filter.Size());
-	const size_t chunkSize = stepSize + overlapSize;
+	if (chunkSize < v.Size()) {
+		throw std::invalid_argument("Chunk size must be at least the size of the filter.");
+	}
+	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
+	if (offset + out.Size() > fullLength) {
+		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
+	}
 
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
-	using R = decltype(std::declval<T>() * std::declval<U>());
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};
 
+	const size_t stepSize = chunkSize - v.Size();
 	Signal<U, Domain> filterChunk(chunkSize, U(0));
-	std::copy(filter.begin(), filter.end(), filterChunk.begin());
+	std::copy(v.begin(), v.end(), filterChunk.begin());
 	const auto filterChunkFd = impl::ola::FftFilter(filterChunk, is_complex_t, is_complex_u);
 
-	Signal<R, Domain> out(length, R(0));
 	Signal<T, Domain> workingChunk(chunkSize, T(0));
-	
-	for (size_t inIdx = 0; inIdx < signal.Size(); inIdx += stepSize) {
-		const auto inChunk = AsView(signal).SubSignal(inIdx, std::min(stepSize, signal.Size() - inIdx));
+
+	for (size_t inIdx = 0; inIdx < u.Size(); inIdx += stepSize) {
+		const auto inChunk = AsView(u).SubSignal(inIdx, std::min(stepSize, u.Size() - inIdx));
 		std::copy(inChunk.begin(), inChunk.end(), workingChunk.begin());
 		std::fill(workingChunk.begin() + inChunk.Size(), workingChunk.end(), T(0));
 		auto workingChunkFd = impl::ola::FftChunk(workingChunk, is_complex_t, is_complex_u);
@@ -90,22 +97,53 @@ auto OverlapAdd(const SignalT& signal, const SignalU& filter, size_t stepSize, s
 		auto outChunk = AsView(out).SubSignal(outFirst, outLast - outFirst);
 		outChunk += AsConstView(filteredChunk).SubSignal(outFirst - outFirstRaw, outLast - outFirst);
 	}
+}
 
+template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
+void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize) {
+	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
+	if (out.Size() != fullLength) {
+		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
+	}
+	size_t offset = 0;
+	OverlapAdd(out, u, v, offset, chunkSize);
+}
+
+template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
+void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize) {
+	const size_t centralLength = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
+	if (out.Size() != centralLength) {
+		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
+	}
+	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
+	OverlapAdd(out, u, v, offset, chunkSize);
+}
+
+
+template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length, size_t chunkSize) {
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using U = typename signal_traits<std::decay_t<SignalU>>::type;
+	using R = product_type_t<T, U>;
+	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
+
+	Signal<R, Domain> out(length, R(0));
+	OverlapAdd(out, u, v, offset, chunkSize);
 	return out;
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& u, const SignalU& v, size_t chunkSize, size_t overlapSize, impl::ConvFull) {
+auto OverlapAdd(const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize) {
 	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
 	size_t offset = 0;
-	return OverlapAdd(u, v, chunkSize, overlapSize, offset, length);
+	return OverlapAdd(u, v, offset, length, chunkSize);
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& u, const SignalU& v, size_t chunkSize, size_t overlapSize, impl::ConvCentral) {
+auto OverlapAdd(const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize) {
 	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
 	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
-	return OverlapAdd(u, v, chunkSize, overlapSize, offset, length);
+	return OverlapAdd(u, v, offset, length, chunkSize);
 }
 
 } // namespace dspbb
