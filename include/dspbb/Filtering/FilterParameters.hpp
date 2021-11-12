@@ -468,7 +468,7 @@ auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t g
 	Signal<T, TIME_DOMAIN> padded(paddedSize, T(0));
 	std::copy(impulse.begin(), impulse.end(), padded.begin());
 
-	auto spectrum = Fft(padded, HALF);
+	auto spectrum = Fft(padded, FFT_HALF);
 	auto amplitude = Abs(spectrum);
 	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });
 	auto phase = Arg(spectrum);
@@ -492,8 +492,8 @@ auto FrequencyResponse(const DiscreteTransferFunction<T>& tf, size_t gridSizeHin
 	std::copy(tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end(), num.begin());
 	std::copy(tf.denominator.Coefficients().begin(), tf.denominator.Coefficients().end(), den.begin());
 
-	const auto spectrumNum = Fft(num, HALF);
-	const auto spectrumDen = Fft(den, HALF);
+	const auto spectrumNum = Fft(num, FFT_HALF);
+	const auto spectrumDen = Fft(den, FFT_HALF);
 	auto spectrum = spectrumNum / spectrumDen;
 	auto amplitude = Abs(spectrum);
 	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });

@@ -62,7 +62,7 @@ void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, WindowF
 	LinSpace(discreteResponse, R(0), R(1), true);
 	std::for_each(discreteResponse.begin(), discreteResponse.end(), [&response](auto& arg) { arg = response(std::real(arg)); });
 
-	const auto impulse = Ifft(discreteResponse, HALF, out.Size() % 2 == 0);
+	const auto impulse = Ifft(discreteResponse, FFT_HALF, out.Size() % 2 == 0);
 	windowFunc(out);
 	AsView(out).SubSignal(0, out.Size() / 2) *= AsView(impulse).SubSignal(impulse.Size() / 2 + 1);
 	AsView(out).SubSignal(out.Size() / 2) *= AsView(impulse).SubSignal(0, impulse.Size() / 2 + 1);
@@ -81,7 +81,7 @@ void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, const S
 	LinSpace(discreteResponse, R(0), R(1), true);
 	std::for_each(discreteResponse.begin(), discreteResponse.end(), [&response](auto& arg) { arg = response(std::real(arg)); });
 
-	const auto impulse = Ifft(discreteResponse, HALF, out.Size() % 2 == 0);
+	const auto impulse = Ifft(discreteResponse, FFT_HALF, out.Size() % 2 == 0);
 	Multiply(AsView(out).SubSignal(0, out.Size() / 2), AsView(impulse).SubSignal(impulse.Size() / 2 + 1), AsView(window).SubSignal(0, window.Size() / 2));
 	Multiply(AsView(out).SubSignal(out.Size() / 2), AsView(impulse).SubSignal(0, impulse.Size() / 2 + 1), AsView(window).SubSignal(window.Size() / 2));
 }

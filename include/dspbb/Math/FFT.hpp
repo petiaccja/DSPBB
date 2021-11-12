@@ -15,10 +15,10 @@ namespace dspbb {
 // Kernels
 //------------------------------------------------------------------------------
 namespace impl {
-	struct Full {};
-	struct Half {};
-	constexpr Full FULL;
-	constexpr Half HALF;
+	struct FftFull {};
+	struct FftHalf {};
+	constexpr FftFull FFT_FULL;
+	constexpr FftHalf FFT_HALF;
 
 	template <class T>
 	void Fft(SpectrumView<std::complex<T>> out, TimeSignalView<const T> in) {
@@ -83,7 +83,7 @@ namespace impl {
 
 
 	template <class T>
-	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, Full) {
+	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, FftFull) {
 		const size_t fullSize = in.Size();
 		Spectrum<std::complex<T>> out(fullSize);
 		Fft(AsView(out), in);
@@ -91,7 +91,7 @@ namespace impl {
 	}
 
 	template <class T>
-	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, Half) {
+	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, FftHalf) {
 		const size_t halfSize = in.Size() / 2 + 1;
 		Spectrum<std::complex<T>> out(halfSize);
 		Fft(AsView(out), in);
@@ -108,7 +108,7 @@ namespace impl {
 	}
 
 	template <class T>
-	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, Half, bool even) {
+	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, FftHalf, bool even) {
 		const size_t halfSizeEven = in.Size() * 2 - 2;
 		const size_t halfSizeOdd = in.Size() * 2 - 1;
 		TimeSignal<T> out(even ? halfSizeEven : halfSizeOdd);
@@ -117,7 +117,7 @@ namespace impl {
 	}
 
 	template <class T>
-	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, Full) {
+	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, FftFull) {
 		const size_t fullSize = in.Size();
 		TimeSignal<T> out(fullSize);
 		Ifft(AsView(out), in);
@@ -139,8 +139,8 @@ namespace impl {
 // Wrappers
 //------------------------------------------------------------------------------
 
-using impl::FULL;
-using impl::HALF;
+using impl::FFT_FULL;
+using impl::FFT_HALF;
 
 template <class SignalR, class SignalT>
 auto Fft(SignalR&& out, const SignalT& in) -> decltype(impl::Fft(AsView(out), AsView(in))) {
@@ -154,13 +154,13 @@ auto Ifft(SignalR&& out, const SignalT& in) -> decltype(impl::Ifft(AsView(out), 
 
 
 template <class SignalT>
-auto Fft(const SignalT& in, impl::Full) -> decltype(impl::Fft(AsView(in), FULL)) {
-	return impl::Fft(AsView(in), FULL);
+auto Fft(const SignalT& in, impl::FftFull) -> decltype(impl::Fft(AsView(in), FFT_FULL)) {
+	return impl::Fft(AsView(in), FFT_FULL);
 }
 
 template <class SignalT>
-auto Fft(const SignalT& in, impl::Half) -> decltype(impl::Fft(AsView(in), HALF)) {
-	return impl::Fft(AsView(in), HALF);
+auto Fft(const SignalT& in, impl::FftHalf) -> decltype(impl::Fft(AsView(in), FFT_HALF)) {
+	return impl::Fft(AsView(in), FFT_HALF);
 }
 
 template <class SignalT>
@@ -169,13 +169,13 @@ auto Fft(const SignalT& in) -> decltype(impl::Fft(AsView(in))) {
 }
 
 template <class SignalT>
-auto Ifft(const SignalT& in, impl::Full) -> decltype(impl::Ifft(AsView(in), FULL)) {
-	return impl::Ifft(AsView(in), FULL);
+auto Ifft(const SignalT& in, impl::FftFull) -> decltype(impl::Ifft(AsView(in), FFT_FULL)) {
+	return impl::Ifft(AsView(in), FFT_FULL);
 }
 
 template <class SignalT>
-auto Ifft(const SignalT& in, impl::Half, bool even) -> decltype(impl::Ifft(AsView(in), HALF, even)) {
-	return impl::Ifft(AsView(in), HALF, even);
+auto Ifft(const SignalT& in, impl::FftHalf, bool even) -> decltype(impl::Ifft(AsView(in), FFT_HALF, even)) {
+	return impl::Ifft(AsView(in), FFT_HALF, even);
 }
 
 template <class SignalT>

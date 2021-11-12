@@ -43,7 +43,7 @@ TEST_CASE("Real central", "[Convolution]") {
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<float> expected = { urvr_central.begin(), urvr_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -56,7 +56,7 @@ TEST_CASE("Real full", "[Convolution]") {
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
 
-	auto result = Convolution(u, v, convolution::full);
+	auto result = Convolution(u, v, CONV_FULL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -70,7 +70,7 @@ TEST_CASE("Real-complex central BR", "[Convolution]") {
 	TimeSignal<std::complex<float>> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<float>> expected = { urvr_central.begin(), urvr_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -83,7 +83,7 @@ TEST_CASE("Complex-real central RB", "[Convolution]") {
 	TimeSignal<float> v{ vr.begin(), vr.end() };
 	TimeSignal<std::complex<float>> expected = { urvr_central.begin(), urvr_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -96,7 +96,7 @@ TEST_CASE("Complex-complex central", "[Convolution]") {
 	TimeSignal<std::complex<float>> v{ vc.begin(), vc.end() };
 	TimeSignal<std::complex<float>> expected = { ucvc_central.begin(), ucvc_central.end() };
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
@@ -117,7 +117,7 @@ TEST_CASE("Real-world signal", "[Convolution]") {
 	v[0] = 1;
 	v[50] = 1;
 
-	auto result = Convolution(u, v, convolution::central);
+	auto result = Convolution(u, v, CONV_CENTRAL);
 
 	REQUIRE(result.Length() == 950);
 	REQUIRE(result[145] == 0);
@@ -128,3 +128,73 @@ TEST_CASE("Real-world signal", "[Convolution]") {
 	REQUIRE(result[219] == 19);
 	REQUIRE(result[225] == 0);
 }
+
+
+
+TEST_CASE("Arbitrary offset middle", "[Convolution]") {
+	TimeSignal<float> u{ ur.begin(), ur.end() };
+	TimeSignal<float> v{ vr.begin(), vr.end() };
+	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
+
+	const auto result = Convolution(u, v, 4, 6);
+
+	REQUIRE(result.Length() == 6);
+	for (size_t i = 0; i < result.Length(); ++i) {
+		REQUIRE(result[i] == expected[i + 4]);
+	}
+}
+
+TEST_CASE("Arbitrary offset start", "[Convolution]") {
+	TimeSignal<float> u{ ur.begin(), ur.end() };
+	TimeSignal<float> v{ vr.begin(), vr.end() };
+	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
+
+	const auto result = Convolution(u, v, 0, 6);
+
+	REQUIRE(result.Length() == 6);
+	for (size_t i = 0; i < result.Length(); ++i) {
+		REQUIRE(result[i] == expected[i]);
+	}
+}
+
+TEST_CASE("Arbitrary offset end", "[Convolution]") {
+	TimeSignal<float> u{ ur.begin(), ur.end() };
+	TimeSignal<float> v{ vr.begin(), vr.end() };
+	TimeSignal<float> expected = { urvr_full.begin(), urvr_full.end() };
+
+	const auto result = Convolution(u, v, 25, 6);
+
+	REQUIRE(result.Length() == 6);
+	for (size_t i = 0; i < result.Length(); ++i) {
+		REQUIRE(result[i] == expected[i + 25]);
+	}
+}
+
+TEST_CASE("Arbitrary offset out of bounds", "[Convolution]") {
+	TimeSignal<float> u{ ur.begin(), ur.end() };
+	TimeSignal<float> v{ vr.begin(), vr.end() };
+
+	REQUIRE_THROWS(Convolution(u, v, 28, 6));
+	REQUIRE_THROWS(Convolution(u, v, 0, 51));
+}
+
+TEST_CASE("3-operand full & central", "[Convolution]") {
+	TimeSignal<float> u{ ur.begin(), ur.end() };
+	TimeSignal<float> v{ vr.begin(), vr.end() };
+	TimeSignal<float> fullExpected = { urvr_full.begin(), urvr_full.end() };
+	TimeSignal<float> centralExpected = { urvr_central.begin(), urvr_central.end() };
+	TimeSignal<float> fullOut(fullExpected.Size());
+	TimeSignal<float> centralOut(centralExpected.Size());
+
+	Convolution(fullOut, u, v, CONV_FULL);
+	Convolution(centralOut, u, v, CONV_CENTRAL);
+
+	for (size_t i = 0; i < fullOut.Length(); ++i) {
+		REQUIRE(fullOut[i] == fullExpected[i]);
+	}
+	for (size_t i = 0; i < centralOut.Length(); ++i) {
+		REQUIRE(centralOut[i] == centralExpected[i]);
+	}
+}
+
+

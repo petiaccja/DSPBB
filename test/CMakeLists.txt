@@ -30,6 +30,7 @@ target_sources(UnitTest
 		"Primitives/Test_Signal.cpp"
 		"Primitives/Test_SignalArithmetic.cpp"
 		"Primitives/Test_SignalView.cpp"
+		"Utility/Test_Interval.cpp"
 )
 
 find_package(Catch2 REQUIRED)

@@ -1,10 +1,16 @@
 #pragma once
 
-#include <complex>
-#include <type_traits>
 #include "TypeTraits.hpp"
 
+#include <complex>
+#include <type_traits>
+
 namespace dspbb {
+
+template <class T>
+struct type_identity_cpp17 {
+	using type = T;
+};
 
 
 template <class T, bool Pred>
@@ -65,6 +71,18 @@ struct remove_complex : impl::remove_complex_h<std::remove_cv_t<T>> {
 
 template <class T>
 using remove_complex_t = typename remove_complex<T>::type;
+
+template <class T, class U>
+struct product_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T&>() * std::declval<const U&>())>> {};
+
+template<class T, class U>
+using product_type_t = typename product_type<T, U>::type;
+
+template <class T, class U>
+struct sum_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T&>() + std::declval<const U&>())>> {};
+
+template<class T, class U>
+using sum_type_t = typename sum_type<T, U>::type;
 
 
 } // namespace dspbb
