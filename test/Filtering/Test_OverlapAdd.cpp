@@ -38,7 +38,7 @@ TEST_CASE("OLA real-real central big chunk", "[OverlapAdd]") {
 TEST_CASE("OLA real-real central small chunk", "[OverlapAdd]") {
 	const auto signal = RandomSignal<float, TIME_DOMAIN>(63);
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(9);
-	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 12);
+	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 17);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
 	REQUIRE(ola.Length() == conv.Length());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
@@ -75,7 +75,7 @@ TEST_CASE("OLA real-real full big chunk", "[OverlapAdd]") {
 TEST_CASE("OLA real-real full small chunk", "[OverlapAdd]") {
 	const auto signal = RandomSignal<float, TIME_DOMAIN>(63);
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(9);
-	const auto ola = OverlapAdd(signal, filter, CONV_FULL, 12);
+	const auto ola = OverlapAdd(signal, filter, CONV_FULL, 17);
 	const auto conv = Convolution(signal, filter, CONV_FULL);
 	REQUIRE(ola.Length() == conv.Length());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
@@ -119,19 +119,19 @@ TEST_CASE("OLA Arbitrary offset middle", "[OverlapAdd]") {
 
 	REQUIRE(ola.Length() == conv.Length());
 	for (size_t i = 0; i < conv.Length(); ++i) {
-		REQUIRE(ola[i] == conv[i]);
+		REQUIRE(ola[i] == ApproxComplex(conv[i]).margin(1e-4f));
 	}
 }
 
 TEST_CASE("OLA Arbitrary offset start", "[OverlapAdd]") {
 	const auto signal = RandomSignal<std::complex<float>, TIME_DOMAIN>(107);
 	const auto filter = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
-	const auto ola = OverlapAdd(signal, filter, 0, 7, 33);
+	const auto ola = OverlapAdd(signal, filter, 0, 7, 31);
 	const auto conv = Convolution(signal, filter, 0, 7);
 
 	REQUIRE(ola.Length() == conv.Length());
 	for (size_t i = 0; i < conv.Length(); ++i) {
-		REQUIRE(ola[i] == conv[i]);
+		REQUIRE(ola[i] == ApproxComplex(conv[i]).margin(1e-4f));
 	}
 }
 
@@ -143,7 +143,7 @@ TEST_CASE("OLA Arbitrary offset end", "[OverlapAdd]") {
 
 	REQUIRE(ola.Length() == conv.Length());
 	for (size_t i = 0; i < conv.Length(); ++i) {
-		REQUIRE(ola[i] == conv[i]);
+		REQUIRE(ola[i] == ApproxComplex(conv[i]).margin(1e-4f));
 	}
 }
 
@@ -167,9 +167,9 @@ TEST_CASE("OLA 3-operand full & central", "[OverlapAdd]") {
 	OverlapAdd(centralOut, u, v, CONV_CENTRAL, 33);
 
 	for (size_t i = 0; i < fullOut.Length(); ++i) {
-		REQUIRE(fullOut[i] == fullExpected[i]);
+		REQUIRE(fullOut[i] == ApproxComplex(fullExpected[i]).margin(1e-4f));
 	}
 	for (size_t i = 0; i < centralOut.Length(); ++i) {
-		REQUIRE(centralOut[i] == centralExpected[i]);
+		REQUIRE(centralOut[i] == ApproxComplex(centralExpected[i]).margin(1e-4f));
 	}
 }

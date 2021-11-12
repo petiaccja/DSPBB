@@ -2,7 +2,7 @@
 
 #include "../Math/Convolution.hpp"
 #include "../Math/FFT.hpp"
-
+#include "../Utility/Interval.hpp"
 
 namespace dspbb {
 
@@ -61,8 +61,7 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	if (u.Size() < v.Size()) {
 		return OverlapAdd(out, v, u, offset, chunkSize);
 	}
-
-	if (chunkSize < v.Size()) {
+	if (chunkSize < 2 * v.Size() - 1) {
 		throw std::invalid_argument("Chunk size must be at least the size of the filter.");
 	}
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
@@ -76,26 +75,31 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};
 
-	const size_t stepSize = chunkSize - v.Size();
-	Signal<U, Domain> filterChunk(chunkSize, U(0));
-	std::copy(v.begin(), v.end(), filterChunk.begin());
-	const auto filterChunkFd = impl::ola::FftFilter(filterChunk, is_complex_t, is_complex_u);
+	Signal<U, Domain> filter(chunkSize, U(0));
+	std::copy(v.begin(), v.end(), filter.begin());
+	const auto filterFd = impl::ola::FftFilter(filter, is_complex_t, is_complex_u);
+
+
+	const Interval outExtent{ intptr_t(offset), intptr_t(offset + out.Size()) };
+	const Interval uExtent{ intptr_t(0), intptr_t(u.Size()) };
+	const Interval loopInterval = Intersection(uExtent, EncompassingUnion(outExtent, outExtent + intptr_t(1) - intptr_t(v.Size())));
 
 	Signal<T, Domain> workingChunk(chunkSize, T(0));
+	Interval uInterval = { loopInterval.first, loopInterval.first + intptr_t(v.Size()) };
+	Interval outInterval = { loopInterval.first, loopInterval.first + intptr_t(chunkSize) };
+	for (; !IsDisjoint(outInterval, outExtent); uInterval += intptr_t(v.Size()), outInterval += intptr_t(v.Size())) {
+		Interval uValidInterval = Intersection(uInterval, uExtent);
+		const auto fillFirst = std::copy(u.begin() + uValidInterval.first, u.begin() + uValidInterval.last, workingChunk.begin());
+		std::fill(fillFirst, workingChunk.end(), T(0));
 
-	for (size_t inIdx = 0; inIdx < u.Size(); inIdx += stepSize) {
-		const auto inChunk = AsView(u).SubSignal(inIdx, std::min(stepSize, u.Size() - inIdx));
-		std::copy(inChunk.begin(), inChunk.end(), workingChunk.begin());
-		std::fill(workingChunk.begin() + inChunk.Size(), workingChunk.end(), T(0));
-		auto workingChunkFd = impl::ola::FftChunk(workingChunk, is_complex_t, is_complex_u);
-		workingChunkFd *= filterChunkFd;
-		const auto filteredChunk = impl::ola::IfftChunk(workingChunkFd, is_complex_t, is_complex_u, chunkSize);
+		const auto workingChunkFd = impl::ola::FftChunk(workingChunk, is_complex_t, is_complex_u);
+		const auto filteredChunkFd = workingChunkFd * filterFd;
+		const auto filteredChunk = impl::ola::IfftChunk(filteredChunkFd, is_complex_t, is_complex_u, chunkSize);
 
-		const intptr_t outFirstRaw = intptr_t(inIdx) - intptr_t(offset);
-		const intptr_t outLast = std::min(outFirstRaw + intptr_t(chunkSize), intptr_t(out.Size()));
-		const intptr_t outFirst = std::max(intptr_t(0), outFirstRaw);
-		auto outChunk = AsView(out).SubSignal(outFirst, outLast - outFirst);
-		outChunk += AsConstView(filteredChunk).SubSignal(outFirst - outFirstRaw, outLast - outFirst);
+		Interval outValidInterval = Intersection(outInterval, outExtent) - intptr_t(offset);
+		Interval chunkValidInterval = Intersection(outInterval, outExtent) - uInterval.first;
+
+		AsView(out).SubSignal(outValidInterval.first, outValidInterval.Size()) += AsView(filteredChunk).SubSignal(chunkValidInterval.first, chunkValidInterval.Size());
 	}
 }
 
