@@ -83,4 +83,4 @@ void Subtract(R* out, const T& a, const U* b, size_t length) {
 	BinaryOperationVectorized(out, a, b, length, [](const auto& a, const auto& b) { return a - b; });
 }
 
-} // namespace dspbb
+} // namespace dspbb::kernels

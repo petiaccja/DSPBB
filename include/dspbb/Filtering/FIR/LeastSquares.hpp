@@ -87,4 +87,4 @@ void KernelLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, Weigh
 	}
 }
 
-} // namespace dspbb
+} // namespace dspbb::fir

@@ -1,9 +1,10 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/IIR/Realizations.hpp>
 #include <dspbb/LTISystems/Systems.hpp>
 #include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
+
+#include <catch2/catch.hpp>
 
 
 using namespace dspbb;

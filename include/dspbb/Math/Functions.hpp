@@ -14,7 +14,7 @@ namespace dspbb {
 #define DSPBB_IMPL_FUNCTION_2_PARAM(NAME, FUNC)                                                                                                                        \
 	template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0> \
 	auto NAME(SignalT&& out, const SignalU& in) {                                                                                                                      \
-		return kernels::UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](const auto& v) { return kernels::math_functions::FUNC(v); });                          \
+		return kernels::UnaryOperationVectorized(out.Data(), in.Data(), out.Length(), [](const auto& v) { return kernels::math_functions::FUNC(v); });                 \
 	}
 
 #define DSPBB_IMPL_FUNCTION_1_PARAM(NAME, FUNC)                                                  \

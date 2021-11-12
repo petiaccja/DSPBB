@@ -1,5 +1,6 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/IIR/Butterworth.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 

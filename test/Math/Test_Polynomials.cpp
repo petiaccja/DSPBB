@@ -1,7 +1,8 @@
 #include "../TestUtils.hpp"
 
-#include <catch2/catch.hpp>
 #include <dspbb/Math/Polynomials.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

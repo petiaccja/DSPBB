@@ -5,6 +5,7 @@
 #include "../Primitives/SignalTraits.hpp"
 #include "../Utility/TypeTraits.hpp"
 
+#include <cassert>
 #include <type_traits>
 
 

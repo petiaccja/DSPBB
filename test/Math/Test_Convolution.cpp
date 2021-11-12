@@ -1,7 +1,8 @@
-#include <catch2/catch.hpp>
-#include <array>
-#include <complex>
 #include <dspbb/Math/Convolution.hpp>
+
+#include <array>
+#include <catch2/catch.hpp>
+#include <complex>
 
 using namespace dspbb;
 using namespace std::complex_literals;
@@ -48,7 +49,7 @@ TEST_CASE("Real central", "[Convolution]") {
 	REQUIRE(result.Length() == expected.Length());
 	for (size_t i = 0; i < expected.Length(); ++i) {
 		REQUIRE(result[i] == expected[i]);
-	}	
+	}
 }
 
 TEST_CASE("Real full", "[Convolution]") {
@@ -196,5 +197,3 @@ TEST_CASE("3-operand full & central", "[Convolution]") {
 		REQUIRE(centralOut[i] == centralExpected[i]);
 	}
 }
-
-

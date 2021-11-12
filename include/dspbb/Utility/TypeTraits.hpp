@@ -75,13 +75,13 @@ using remove_complex_t = typename remove_complex<T>::type;
 template <class T, class U>
 struct product_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T&>() * std::declval<const U&>())>> {};
 
-template<class T, class U>
+template <class T, class U>
 using product_type_t = typename product_type<T, U>::type;
 
 template <class T, class U>
 struct sum_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T&>() + std::declval<const U&>())>> {};
 
-template<class T, class U>
+template <class T, class U>
 using sum_type_t = typename sum_type<T, U>::type;
 
 

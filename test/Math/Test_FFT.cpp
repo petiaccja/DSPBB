@@ -1,13 +1,14 @@
 #include "../TestUtils.hpp"
 
-#include <algorithm>
-#include <catch2/catch.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
+
+#include <algorithm>
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 
@@ -58,8 +59,8 @@ TEST_CASE("IFFT - Complex identity", "[FFT]") {
 	const auto signal = RandomSignal<std::complex<float>, TIME_DOMAIN>(fftSize);
 	Spectrum<std::complex<float>> spectrum = Fft(signal);
 	const auto repro = Ifft(spectrum);
-	
-	REQUIRE(Max(Abs(signal-repro)) < 1e-4f);
+
+	REQUIRE(Max(Abs(signal - repro)) < 1e-4f);
 }
 
 

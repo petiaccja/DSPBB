@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Systems.hpp"
 #include "../Math/RootTransforms.hpp"
+#include "Systems.hpp"
 
 #include <optional>
 #include <stdexcept>
@@ -17,7 +17,7 @@ ContinuousZeroPoleGain<T> BilinearTransform(const DiscreteZeroPoleGain<T>& discr
 template <class T>
 DiscreteZeroPoleGain<T> BilinearTransform(const ContinuousZeroPoleGain<T>& continuous, T sampleRate, std::optional<T> prewarp = {}) {
 	const T k = prewarp ? *prewarp / std::tan(*prewarp / sampleRate / T(2)) : T(2) * sampleRate;
-	
+
 	// Opposite roots
 	const std::complex<T> z = -T(1);
 	const std::array z12 = { z };

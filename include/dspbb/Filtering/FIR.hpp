@@ -116,8 +116,7 @@ namespace impl {
 	auto TranslateLeastSquares(const impl::BandpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
 		const auto response = [desc, fmid](ParamType f) {
-			return f < fmid ? Smoothstep((f - desc.cutoffBegin1) / (desc.cutoffEnd1 - desc.cutoffBegin1)) :
-								Smoothstep((f - desc.cutoffEnd2) / (desc.cutoffBegin2 - desc.cutoffEnd2));
+			return f < fmid ? Smoothstep((f - desc.cutoffBegin1) / (desc.cutoffEnd1 - desc.cutoffBegin1)) : Smoothstep((f - desc.cutoffEnd2) / (desc.cutoffBegin2 - desc.cutoffEnd2));
 		};
 		const auto weight = [desc](ParamType f) {
 			return LeastSquaresBandWeight(f, desc);
@@ -129,8 +128,7 @@ namespace impl {
 	auto TranslateLeastSquares(const impl::BandstopDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
 		const auto response = [desc, fmid](ParamType f) {
-			return f < fmid ? Smoothstep((f - desc.cutoffEnd1) / (desc.cutoffBegin1 - desc.cutoffEnd1)) :
-								Smoothstep((f - desc.cutoffBegin2) / (desc.cutoffEnd2 - desc.cutoffBegin2));
+			return f < fmid ? Smoothstep((f - desc.cutoffEnd1) / (desc.cutoffBegin1 - desc.cutoffEnd1)) : Smoothstep((f - desc.cutoffBegin2) / (desc.cutoffEnd2 - desc.cutoffBegin2));
 		};
 		const auto weight = [desc](ParamType f) {
 			return LeastSquaresBandWeight(f, desc);

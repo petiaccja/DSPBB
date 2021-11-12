@@ -1,8 +1,9 @@
 #include "../TestUtils.hpp"
 
+#include <dspbb/Math/RootTransforms.hpp>
+
 #include <catch2/catch.hpp>
 #include <complex>
-#include <dspbb/Math/RootTransforms.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;
@@ -28,7 +29,7 @@ const auto spin2nd = [](const auto& root) {
 	return std::array{ z1, z2 };
 };
 
-const auto faulty2nd= [](const auto&) {
+const auto faulty2nd = [](const auto&) {
 	return std::array{ -1.0f + 1.0if, -1.0f + 1.0if }; // Not a conjugate pair.
 };
 

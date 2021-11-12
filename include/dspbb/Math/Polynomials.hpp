@@ -28,6 +28,7 @@ public:
 
 	T operator()(const T& x) const;
 	std::complex<T> operator()(const std::complex<T>& x) const;
+
 private:
 	template <class U>
 	U Eval(const U& x) const;

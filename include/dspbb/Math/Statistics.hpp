@@ -4,8 +4,8 @@
 #include "../ComputeKernels/VectorizedMathFunctions.hpp"
 #include "../Primitives/SignalTraits.hpp"
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
 
 namespace dspbb {
 

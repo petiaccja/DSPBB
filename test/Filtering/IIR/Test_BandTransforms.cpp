@@ -1,13 +1,14 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/IIR/BandTransforms.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;
 
 const DiscreteZeroPoleGain<float> prototype = {
 	0.166666672f,
-	{-1.f, -1.f, -1.f},
+	{ -1.f, -1.f, -1.f },
 	{ 0.f, 0.f + 0.577350259if, 0.f - 0.577350259if }
 };
 constexpr float minus3dB = 0.70794578438414f;
@@ -34,7 +35,6 @@ TEST_CASE("Verify prototype filter", "[IIR band transforms]") {
 	const auto [amplitude, phase] = FrequencyResponse(prototype, 1024);
 	const float crossover = CrossoverPoint(amplitude.begin(), amplitude.end(), minus3dB).value() / float(amplitude.Size() - 1);
 	REQUIRE(crossover == Approx(0.5).epsilon(5e-3f));
-	
 }
 
 TEST_CASE("Lowpass to lowpass", "[IIR band transforms]") {

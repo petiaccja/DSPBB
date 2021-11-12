@@ -1,11 +1,12 @@
-#include <array>
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/FIR.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/Interpolation.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Math/Statistics.hpp>
+
+#include <array>
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 
