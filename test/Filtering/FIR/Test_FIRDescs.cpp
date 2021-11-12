@@ -48,16 +48,16 @@ TEST_CASE("High pass windowed function", "[FIR Descs]") {
 
 TEST_CASE("Band pass windowed view", "[FIR Descs]") {
 	const auto desc = Bandpass(WINDOWED).Band(winBandLow, winBandHigh).Window(winWindow);
-	REQUIRE(desc.low == winBandLow);
-	REQUIRE(desc.high == winBandHigh);
+	REQUIRE(desc.lower == winBandLow);
+	REQUIRE(desc.upper == winBandHigh);
 	REQUIRE(desc.window.Size() == 3);
 	REQUIRE(desc.window[0] == 1);
 }
 
 TEST_CASE("Band pass windowed function", "[FIR Descs]") {
 	const auto desc = Bandpass(WINDOWED).Band(winBandLow, winBandHigh).Window(windows::hamming);
-	REQUIRE(desc.low == winBandLow);
-	REQUIRE(desc.high == winBandHigh);
+	REQUIRE(desc.lower == winBandLow);
+	REQUIRE(desc.upper == winBandHigh);
 	Signal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
@@ -66,16 +66,16 @@ TEST_CASE("Band pass windowed function", "[FIR Descs]") {
 
 TEST_CASE("Band stop windowed view", "[FIR Descs]") {
 	const auto desc = Bandstop(WINDOWED).Band(winBandLow, winBandHigh).Window(winWindow);
-	REQUIRE(desc.low == winBandLow);
-	REQUIRE(desc.high == winBandHigh);
+	REQUIRE(desc.lower == winBandLow);
+	REQUIRE(desc.upper == winBandHigh);
 	REQUIRE(desc.window.Size() == 3);
 	REQUIRE(desc.window[0] == 1);
 }
 
 TEST_CASE("Band stop windowed function", "[FIR Descs]") {
 	const auto desc = Bandstop(WINDOWED).Band(winBandLow, winBandHigh).Window(windows::hamming);
-	REQUIRE(desc.low == winBandLow);
-	REQUIRE(desc.high == winBandHigh);
+	REQUIRE(desc.lower == winBandLow);
+	REQUIRE(desc.upper == winBandHigh);
 	Signal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
@@ -146,10 +146,10 @@ TEST_CASE("High pass least squares", "[FIR Descs]") {
 
 TEST_CASE("Band pass least squares", "[FIR Descs]") {
 	const auto desc = Bandpass(LEAST_SQUARES).Band(lsBegin1, lsEnd1, lsBegin2, lsEnd2).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh);
-	REQUIRE(desc.cutoffBegin1 == lsBegin1);
-	REQUIRE(desc.cutoffEnd1 == lsEnd1);
-	REQUIRE(desc.cutoffBegin2 == lsBegin2);
-	REQUIRE(desc.cutoffEnd2 == lsEnd2);
+	REQUIRE(desc.lowerBegin == lsBegin1);
+	REQUIRE(desc.lowerEnd == lsEnd1);
+	REQUIRE(desc.upperBegin == lsBegin2);
+	REQUIRE(desc.upperEnd == lsEnd2);
 	REQUIRE(desc.weightLow == lsWeightLow);
 	REQUIRE(desc.weightTransition1 == lsWeightTr1);
 	REQUIRE(desc.weightMid == lsWeightMid);
@@ -159,10 +159,10 @@ TEST_CASE("Band pass least squares", "[FIR Descs]") {
 
 TEST_CASE("Band stop least squares", "[FIR Descs]") {
 	const auto desc = Bandstop(LEAST_SQUARES).Band(lsBegin1, lsEnd1, lsBegin2, lsEnd2).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh);
-	REQUIRE(desc.cutoffBegin1 == lsBegin1);
-	REQUIRE(desc.cutoffEnd1 == lsEnd1);
-	REQUIRE(desc.cutoffBegin2 == lsBegin2);
-	REQUIRE(desc.cutoffEnd2 == lsEnd2);
+	REQUIRE(desc.lowerBegin == lsBegin1);
+	REQUIRE(desc.lowerEnd == lsEnd1);
+	REQUIRE(desc.upperBegin == lsBegin2);
+	REQUIRE(desc.upperEnd == lsEnd2);
 	REQUIRE(desc.weightLow == lsWeightLow);
 	REQUIRE(desc.weightTransition1 == lsWeightTr1);
 	REQUIRE(desc.weightMid == lsWeightMid);
@@ -179,5 +179,5 @@ TEST_CASE("Arbitrary least squares", "[FIR Descs]") {
 
 TEST_CASE("Hilbert least squares", "[FIR Descs]") {
 	const auto desc = Hilbert(LEAST_SQUARES).TransitionWidth(0.95f);
-	REQUIRE(desc.transition == Approx(0.95f));
+	REQUIRE(desc.transitionWidth == Approx(0.95f));
 }
