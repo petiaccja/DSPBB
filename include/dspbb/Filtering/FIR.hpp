@@ -3,8 +3,8 @@
 #include "FIR/BandTransforms.hpp"
 #include "FIR/Descs.hpp"
 #include "FIR/LeastSquares.hpp"
-#include "FIR/Utility.hpp"
 #include "FIR/Windowed.hpp"
+#include "FilterUtility.hpp"
 
 #include <algorithm>
 
