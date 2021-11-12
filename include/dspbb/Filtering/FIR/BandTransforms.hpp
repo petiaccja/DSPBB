@@ -3,6 +3,9 @@
 #include "../../Primitives/SignalTraits.hpp"
 #include "../../Utility/Numbers.hpp"
 
+#include <array>
+#include <cassert>
+
 
 namespace dspbb::fir {
 
