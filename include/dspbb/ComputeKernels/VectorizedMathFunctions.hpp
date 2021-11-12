@@ -61,27 +61,27 @@ namespace math_functions {
 	// Complex
 	using std::abs;
 	using std::arg;
-	using std::real;
 	using std::imag;
+	using std::real;
 
 	using xsimd::abs;
 	using xsimd::arg;
-	using xsimd::real;
 	using xsimd::imag;
+	using xsimd::real;
 
-	using xsimd::conj;
 	using std::conj;
+	using xsimd::conj;
 
 	// Erf & gamma
 	using std::erf;
 	using std::erfc;
-	using std::tgamma;
 	using std::lgamma;
+	using std::tgamma;
 
 	using xsimd::erf;
 	using xsimd::erfc;
-	using xsimd::tgamma;
 	using xsimd::lgamma;
+	using xsimd::tgamma;
 
 	// Misc
 	namespace impl {
@@ -112,7 +112,7 @@ namespace math_functions {
 		return impl::max(a, b, 0);
 	}
 
-	
+
 
 } // namespace math_functions
-} // namespace dspbb
+} // namespace dspbb::kernels

@@ -21,8 +21,8 @@ TEST_CASE("Interval negative offset", "[Interval]") {
 
 TEST_CASE("Interval disjoint", "[Interval]") {
 	Interval i1{ 1, 2 };
-	Interval i2{ 3,6 };
-	Interval i3{ 5,7 };
+	Interval i2{ 3, 6 };
+	Interval i3{ 5, 7 };
 	REQUIRE(IsDisjoint(i1, i2));
 	REQUIRE(!IsDisjoint(i2, i3));
 	REQUIRE(IsDisjoint(i1, i3));
@@ -30,26 +30,26 @@ TEST_CASE("Interval disjoint", "[Interval]") {
 
 TEST_CASE("Interval intersection", "[Interval]") {
 	Interval i1{ 1, 2 };
-	Interval i2{ 3,6 };
-	Interval i3{ 5,7 };
+	Interval i2{ 3, 6 };
+	Interval i3{ 5, 7 };
 	REQUIRE(Intersection(i1, i2).Size() == 0);
-	REQUIRE(Intersection(i2, i3) == Interval{5,6});
+	REQUIRE(Intersection(i2, i3) == Interval{ 5, 6 });
 	REQUIRE(Intersection(i1, i3).Size() == 0);
 }
 
 TEST_CASE("Interval encompassing union", "[Interval]") {
 	Interval i1{ 1, 2 };
-	Interval i2{ 3,6 };
-	Interval i3{ 5,7 };
-	REQUIRE(EncompassingUnion(i1, i2) == Interval(1,6));
+	Interval i2{ 3, 6 };
+	Interval i3{ 5, 7 };
+	REQUIRE(EncompassingUnion(i1, i2) == Interval(1, 6));
 	REQUIRE(EncompassingUnion(i2, i3) == Interval{ 3, 7 });
-	REQUIRE(EncompassingUnion(i1, i3) == Interval(1,7));
+	REQUIRE(EncompassingUnion(i1, i3) == Interval(1, 7));
 }
 
 TEST_CASE("Interval union", "[Interval]") {
 	Interval i1{ 1, 2 };
-	Interval i2{ 3,6 };
-	Interval i3{ 5,7 };
+	Interval i2{ 3, 6 };
+	Interval i3{ 5, 7 };
 	REQUIRE(!Union(i1, i2));
 	REQUIRE(Union(i2, i3).value() == Interval{ 3, 7 });
 	REQUIRE(!Union(i1, i3));

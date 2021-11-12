@@ -38,7 +38,7 @@ TEST_CASE("View of", "[SignalView]") {
 	SignalView<const float, TIME_DOMAIN> v5 = AsView(s);
 	SignalView<const float, TIME_DOMAIN> v6 = AsConstView(s);
 	SignalView<const float, TIME_DOMAIN> v7 = AsConstView(s);
-	
+
 	REQUIRE(v1.Size() == smut.Size());
 	REQUIRE(v2.Size() == smut.Size());
 	REQUIRE(v3.Size() == smut.Size());

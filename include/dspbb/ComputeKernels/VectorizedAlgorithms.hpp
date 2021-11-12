@@ -346,4 +346,4 @@ R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductO
 
 
 
-} // namespace dspbb
+} // namespace dspbb::kernels

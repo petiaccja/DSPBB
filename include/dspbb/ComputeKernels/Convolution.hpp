@@ -26,4 +26,4 @@ void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_
 
 
 
-} // namespace dspbb
+} // namespace dspbb::kernels

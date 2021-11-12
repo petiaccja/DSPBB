@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../Generators/Spaces.hpp"
-#include "../../Utility/Numbers.hpp"
 #include "../../LTISystems/Systems.hpp"
+#include "../../Utility/Numbers.hpp"
 
 
 namespace dspbb {

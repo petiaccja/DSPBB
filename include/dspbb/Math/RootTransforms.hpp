@@ -44,7 +44,7 @@ template <class T, size_t Order, class TransformFunc>
 FactoredPolynomial<T> TransformRoots(const FactoredPolynomial<T>& poly, TransformFunc func, size_t numRoots = 0, std::array<std::complex<T>, Order> padRoots = {}) {
 	const auto [realToReals, realToPairs] = impl::CountTransformedRoots(poly.RealRoots().begin(), poly.RealRoots().end(), func);
 	const auto [padReals, padPairs] = impl::CountRoots(padRoots.begin(), padRoots.end());
-	if (numRoots >0  && numRoots < poly.NumRoots()) {
+	if (numRoots > 0 && numRoots < poly.NumRoots()) {
 		throw std::invalid_argument("Number of transformed roots must be >= than number of input roots, or 0 to automatically deduce number.");
 	}
 	if (numRoots == 0) {

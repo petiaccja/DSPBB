@@ -58,8 +58,8 @@ TEST_CASE("IFFT - Complex identity", "[FFT]") {
 	const auto signal = RandomSignal<std::complex<float>, TIME_DOMAIN>(fftSize);
 	Spectrum<std::complex<float>> spectrum = Fft(signal);
 	const auto repro = Ifft(spectrum);
-	
-	REQUIRE(Max(Abs(signal-repro)) < 1e-4f);
+
+	REQUIRE(Max(Abs(signal - repro)) < 1e-4f);
 }
 
 

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "../Math/Functions.hpp"
 #include "../PocketFFT/pocketfft_hdronly.h"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
-#include "../Math/Functions.hpp"
 
 #include <algorithm>
 
@@ -198,7 +198,7 @@ inline size_t FourierFrequency2Bin(double frequency, size_t numBins, uint64_t sa
 
 namespace impl {
 	template <class SignalR, class SignalT, std::enable_if_t<is_same_domain_v<SignalR, SignalT>, int> = 0>
-	void BasicShift(SignalR && out, const SignalT& in, size_t shift) {
+	void BasicShift(SignalR&& out, const SignalT& in, size_t shift) {
 		assert(out.Size() == in.Size());
 		if (static_cast<const void*>(std::addressof(out)) == static_cast<const void*>(std::addressof(in))) {
 			const auto first = out.begin();
@@ -214,7 +214,7 @@ namespace impl {
 			std::rotate_copy(first, mid, last, write);
 		}
 	}
-}
+} // namespace impl
 
 template <class SignalR, class SignalT, std::enable_if_t<is_same_domain_v<SignalR, SignalT>, int> = 0>
 void FftShift(SignalR&& out, const SignalT& in) {

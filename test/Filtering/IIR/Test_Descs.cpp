@@ -1,5 +1,5 @@
-#include <dspbb/Filtering/IIR/Descs.hpp>
 #include <catch2/catch.hpp>
+#include <dspbb/Filtering/IIR/Descs.hpp>
 
 using namespace dspbb;
 
