@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cassert>
+#include <cmath>
 
 
 namespace dspbb::fir {
