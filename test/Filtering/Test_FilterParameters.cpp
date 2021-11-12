@@ -1,8 +1,9 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Generators/Spaces.hpp>
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Utility/Numbers.hpp>
+
+#include <catch2/catch.hpp>
 #include <random>
 
 using namespace dspbb;

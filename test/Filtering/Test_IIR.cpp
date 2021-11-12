@@ -1,7 +1,8 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/IIR.hpp>
 #include <dspbb/Math/Statistics.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 

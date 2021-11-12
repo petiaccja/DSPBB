@@ -1,6 +1,7 @@
+#include <dspbb/Primitives/SignalView.hpp>
+
 #include <catch2/catch.hpp>
 #include <complex>
-#include <dspbb/Primitives/SignalView.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

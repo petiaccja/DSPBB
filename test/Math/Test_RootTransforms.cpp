@@ -1,8 +1,9 @@
 #include "../TestUtils.hpp"
 
+#include <dspbb/Math/RootTransforms.hpp>
+
 #include <catch2/catch.hpp>
 #include <complex>
-#include <dspbb/Math/RootTransforms.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

@@ -1,9 +1,10 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Generators/Spaces.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 #include <dspbb/Primitives/SignalView.hpp>
+
+#include <catch2/catch.hpp>
 
 
 using namespace dspbb;

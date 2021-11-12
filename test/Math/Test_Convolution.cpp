@@ -1,7 +1,8 @@
+#include <dspbb/Math/Convolution.hpp>
+
 #include <array>
 #include <catch2/catch.hpp>
 #include <complex>
-#include <dspbb/Math/Convolution.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

@@ -1,9 +1,10 @@
 #include "../TestUtils.hpp"
 
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/OverlapAdd.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

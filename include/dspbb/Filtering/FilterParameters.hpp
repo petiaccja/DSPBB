@@ -205,15 +205,13 @@ namespace impl {
 		std::optional<T> edgeLeft;
 		std::optional<T> edgeRight;
 		if (findLeft) {
-			const auto extremumIt = passBand ? FindFirstExtremum(band.begin(), band.end(), kernelSize, std::less<T>{}) :
-												 FindFirstExtremum(band.begin(), band.end(), kernelSize, std::greater<T>{});
+			const auto extremumIt = passBand ? FindFirstExtremum(band.begin(), band.end(), kernelSize, std::less<T>{}) : FindFirstExtremum(band.begin(), band.end(), kernelSize, std::greater<T>{});
 			if (extremumIt != band.end()) {
 				edgeLeft = T(extremumIt - band.begin());
 			}
 		}
 		if (findRight) {
-			const auto extremumIt = passBand ? FindFirstExtremum(band.rbegin(), band.rend(), kernelSize, std::less<T>{}) :
-												 FindFirstExtremum(band.rbegin(), band.rend(), kernelSize, std::greater<T>{});
+			const auto extremumIt = passBand ? FindFirstExtremum(band.rbegin(), band.rend(), kernelSize, std::less<T>{}) : FindFirstExtremum(band.rbegin(), band.rend(), kernelSize, std::greater<T>{});
 			if (extremumIt != band.rend()) {
 				edgeRight = T(extremumIt.base() - band.begin());
 			}

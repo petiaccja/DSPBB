@@ -1,13 +1,14 @@
 #include "../TestUtils.hpp"
 
-#include <algorithm>
-#include <catch2/catch.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
+
+#include <algorithm>
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 

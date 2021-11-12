@@ -1,7 +1,8 @@
 #include "../TestUtils.hpp"
 
-#include <catch2/catch.hpp>
 #include <dspbb/LTISystems/Systems.hpp>
+
+#include <catch2/catch.hpp>
 
 
 using namespace dspbb;

@@ -1,8 +1,9 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/Windowing.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 

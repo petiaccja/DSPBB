@@ -1,7 +1,7 @@
 #include "dspbb/Generators/Waveforms.hpp"
+#include <dspbb/Filtering/Polyphase.hpp>
 
 #include <catch2/catch.hpp>
-#include <dspbb/Filtering/Polyphase.hpp>
 
 using namespace dspbb;
 

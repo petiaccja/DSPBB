@@ -1,5 +1,6 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Utility/Interval.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 

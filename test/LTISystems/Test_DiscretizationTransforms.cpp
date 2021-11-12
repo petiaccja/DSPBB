@@ -1,6 +1,7 @@
-#include <catch2/catch.hpp>
 #include <dspbb/LTISystems/DiscretizationTransforms.hpp>
 #include <dspbb/Utility/Numbers.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

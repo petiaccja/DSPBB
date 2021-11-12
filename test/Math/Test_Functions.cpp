@@ -1,8 +1,9 @@
+#include <dspbb/Math/Functions.hpp>
+#include <dspbb/Primitives/Signal.hpp>
+
 #include <catch2/catch.hpp>
 #include <cmath>
 #include <complex>
-#include <dspbb/Math/Functions.hpp>
-#include <dspbb/Primitives/Signal.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

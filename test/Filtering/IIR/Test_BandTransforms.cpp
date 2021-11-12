@@ -1,6 +1,7 @@
-#include <catch2/catch.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/IIR/BandTransforms.hpp>
+
+#include <catch2/catch.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;
