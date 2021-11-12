@@ -173,3 +173,10 @@ TEST_CASE("OLA 3-operand full & central", "[OverlapAdd]") {
 		REQUIRE(centralOut[i] == ApproxComplex(centralExpected[i]).margin(1e-4f));
 	}
 }
+
+TEST_CASE("OLA too small chunk size", "[OverlapAdd]") {
+	const auto u = RandomSignal<std::complex<float>, TIME_DOMAIN>(107);
+	const auto v = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
+	REQUIRE_THROWS(OverlapAdd(u, v, CONV_FULL, 30));
+	REQUIRE_NOTHROW(OverlapAdd(u, v, CONV_CENTRAL, 31));
+}
