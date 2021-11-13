@@ -1,3 +1,5 @@
+#include "../TestUtils.hpp"
+
 #include <dspbb/Filtering/FIR.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/Interpolation.hpp>
@@ -5,12 +7,52 @@
 #include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Math/Statistics.hpp>
 
-#include <array>
 #include <catch2/catch.hpp>
 
 using namespace dspbb;
 
 
+//------------------------------------------------------------------------------
+// Filter application helpers
+//------------------------------------------------------------------------------
+
+TEST_CASE("Filter convolution", "[FIR]") {
+	constexpr int taps = 7;
+	constexpr int length = 80;
+	static_assert(length % 2 == 0);
+
+	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
+	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
+
+	const auto expected = Convolution(signal, filter, 0, length);
+
+	TimeSignal<double> state(taps - 1, 0.0f);
+	TimeSignal<double> result(length);
+
+	Filter(AsView(result).SubSignal(0, length / 2), AsView(signal).SubSignal(0, length / 2), filter, state, FILTER_CONV);
+	Filter(AsView(result).SubSignal(length / 2, length / 2), AsView(signal).SubSignal(length / 2, length / 2), filter, state, FILTER_CONV);
+
+	REQUIRE(Max(Abs(result - expected)) < 1e-4f);
+}
+
+TEST_CASE("Filter OLA", "[FIR]") {
+	constexpr int taps = 7;
+	constexpr int length = 80;
+	static_assert(length % 2 == 0);
+
+	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
+	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
+
+	const auto expected = Convolution(signal, filter, 0, length);
+
+	TimeSignal<double> state(taps - 1, 0.0f);
+	TimeSignal<double> result(length);
+
+	Filter(AsView(result).SubSignal(0, length / 2), AsView(signal).SubSignal(0, length / 2), filter, state, FILTER_OLA, taps * 2 - 1);
+	Filter(AsView(result).SubSignal(length / 2, length / 2), AsView(signal).SubSignal(length / 2, length / 2), filter, state, FILTER_OLA, taps * 2 - 1);
+
+	REQUIRE(Max(Abs(result - expected)) < 1e-4f);
+}
 
 //------------------------------------------------------------------------------
 // Helpers

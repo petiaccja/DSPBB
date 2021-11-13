@@ -73,8 +73,8 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 		std::fill(out.begin(), out.end(), R(remove_complex_t<R>(0)));
 	}
 
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	using U = typename signal_traits<std::decay_t<SignalU>>::type;
+	using T = std::remove_cv_t<typename signal_traits<std::decay_t<SignalT>>::type>;
+	using U = std::remove_cv_t<typename signal_traits<std::decay_t<SignalU>>::type>;
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};

@@ -6,34 +6,55 @@
 
 namespace dspbb {
 
+namespace impl {
+	template <class SignalR, class SignalT, class System, class State, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+	auto Filter(SignalR&& out, const SignalT& signal, const System& filter, State& state) {
+		using T = typename signal_traits<SignalT>::type;
+		auto signalIt = signal.begin();
+		auto outIt = out.begin();
+		for (; outIt != out.end() && signalIt != signal.end(); ++outIt, ++signalIt) {
+			*outIt = state.Feed(*signalIt, filter);
+		}
+		for (; outIt != out.end(); ++outIt) {
+			*outIt = state.Feed(T(0), filter);
+		}
+	}
+} // namespace impl
+
+template <class SignalR, class SignalT, class T, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+auto Filter(SignalR&& out, const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormI<T>& state) {
+	impl::Filter(out, signal, filter, state);
+}
+
+template <class SignalR, class SignalT, class T, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+auto Filter(SignalR&& out, const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormII<T>& state) {
+	impl::Filter(out, signal, filter, state);
+}
+
+template <class SignalR, class SignalT, class T, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+auto Filter(SignalR&& out, const SignalT& signal, const CascadedBiquad<U>& filter, CascadedForm<T>& state) {
+	impl::Filter(out, signal, filter, state);
+}
+
 template <class SignalT, class T, class U>
 auto Filter(const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormI<T>& state) {
-	SignalT r;
-	r.Reserve(signal.Size());
-	for (auto& sample : signal) {
-		r.PushBack(state.Feed(sample, filter));
-	}
-	return r;
+	SignalT out(signal.Size());
+	Filter(out, signal, filter, state);
+	return out;
 }
 
 template <class SignalT, class T, class U>
 auto Filter(const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormII<T>& state) {
-	SignalT r;
-	r.Reserve(signal.Size());
-	for (auto& sample : signal) {
-		r.PushBack(state.Feed(sample, filter));
-	}
-	return r;
+	SignalT out(signal.Size());
+	Filter(out, signal, filter, state);
+	return out;
 }
 
 template <class SignalT, class T, class U>
 auto Filter(const SignalT& signal, const CascadedBiquad<U>& filter, CascadedForm<T>& state) {
-	SignalT r;
-	r.Reserve(signal.Size());
-	for (auto& sample : signal) {
-		r.PushBack(state.Feed(sample, filter));
-	}
-	return r;
+	SignalT out(signal.Size());
+	Filter(out, signal, filter, state);
+	return out;
 }
 
 } // namespace dspbb

@@ -2,6 +2,7 @@
 
 #include "FIR/BandTransforms.hpp"
 #include "FIR/Descs.hpp"
+#include "FIR/Filter.hpp"
 #include "FIR/LeastSquares.hpp"
 #include "FIR/Windowed.hpp"
 #include "FilterUtility.hpp"
