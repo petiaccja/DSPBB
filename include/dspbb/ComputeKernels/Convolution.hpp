@@ -9,12 +9,14 @@ namespace dspbb::kernels {
 
 
 template <class R, class U, class V>
-void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_t first, size_t count) {
+void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_t first, size_t count, bool clearOut = true) {
 	if (lenU < lenV) {
 		return Convolution(out, v, u, lenV, lenU, first, count);
 	}
 
-	memset(out, 0, sizeof(R) * count);
+	if (clearOut) {
+		memset(out, 0, sizeof(R) * count);
+	}
 	for (size_t i = 0; i < lenV; ++i) {
 		const auto scale = v[i];
 		const intptr_t uoffset = std::max(intptr_t(0), intptr_t(first) - intptr_t(i));
