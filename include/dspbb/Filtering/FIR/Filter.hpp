@@ -65,8 +65,8 @@ auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS
 		throw std::invalid_argument("Output and input signals must have the same size.");
 	}
 
-	std::fill(out.begin(), out.end(), remove_complex_t<typename SignalR::value_type>(0));
-	OverlapAdd(AsView(out).SubSignal(0, state.Size()), state, filter, filter.Size() - 1, chunkSize, false);
+	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
+	OverlapAdd(AsView(out).SubSignal(0, std::min(out.Size(), state.Size())), state, filter, filter.Size() - 1, chunkSize, false);
 	OverlapAdd(out, signal, filter, 0, chunkSize, false);
 	impl::ShiftFilterState(state, signal);
 }
@@ -84,36 +84,36 @@ auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS
 		throw std::invalid_argument("Output and input signals must have the same size.");
 	}
 
-	std::fill(out.begin(), out.end(), remove_complex_t<typename SignalR::value_type>(0));
-	Convolution(AsView(out).SubSignal(0, state.Size()), state, filter, filter.Size() - 1, false);
+	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
+	Convolution(AsView(out).SubSignal(0, std::min(out.Size(), state.Size())), state, filter, filter.Size() - 1, false);
 	Convolution(out, signal, filter, 0, false);
 	impl::ShiftFilterState(state, signal);
 }
 
 template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
 auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize) {
-	impl::ProductSignalT<SignalU, SignalV> out(signal.Size());
+	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.Size(), filter.Size(), CONV_CENTRAL));
 	Filter(out, signal, filter, CONV_CENTRAL, FILTER_OLA, chunkSize);
 	return out;
 }
 
 template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
 auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterConv) {
-	impl::ProductSignalT<SignalU, SignalV> out(signal.Size());
+	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.Size(), filter.Size(), CONV_CENTRAL));
 	Filter(out, signal, filter, CONV_CENTRAL, FILTER_CONV);
 	return out;
 }
 
 template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
 auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize) {
-	impl::ProductSignalT<SignalU, SignalV> out(signal.Size());
+	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.Size(), filter.Size(), CONV_FULL));
 	Filter(out, signal, filter, CONV_FULL, FILTER_OLA, chunkSize);
 	return out;
 }
 
 template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
 auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterConv) {
-	impl::ProductSignalT<SignalU, SignalV> out(signal.Size());
+	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.Size(), filter.Size(), CONV_FULL));
 	Filter(out, signal, filter, CONV_FULL, FILTER_CONV);
 	return out;
 }

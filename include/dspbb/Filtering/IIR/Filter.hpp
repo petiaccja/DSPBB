@@ -9,14 +9,13 @@ namespace dspbb {
 namespace impl {
 	template <class SignalR, class SignalT, class System, class State, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 	auto Filter(SignalR&& out, const SignalT& signal, const System& filter, State& state) {
-		using T = typename signal_traits<SignalT>::type;
+		if (out.Size() != signal.Size()) {
+			throw std::invalid_argument("Output and input signals must have the same size.");
+		}
 		auto signalIt = signal.begin();
 		auto outIt = out.begin();
 		for (; outIt != out.end() && signalIt != signal.end(); ++outIt, ++signalIt) {
 			*outIt = state.Feed(*signalIt, filter);
-		}
-		for (; outIt != out.end(); ++outIt) {
-			*outIt = state.Feed(T(0), filter);
 		}
 	}
 } // namespace impl
