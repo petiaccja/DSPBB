@@ -16,10 +16,9 @@ using namespace dspbb;
 // Filter application helpers
 //------------------------------------------------------------------------------
 
-TEST_CASE("Filter convolution continuity", "[FIR]") {
+TEST_CASE("Filter state continuity", "[FIR]") {
 	constexpr int taps = 7;
 	constexpr int length = 80;
-	static_assert(length % 2 == 0);
 
 	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
 	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
@@ -29,120 +28,57 @@ TEST_CASE("Filter convolution continuity", "[FIR]") {
 	TimeSignal<double> state(taps - 1, 0.0f);
 	TimeSignal<double> result(length);
 
-	Filter(AsView(result).SubSignal(0, length / 2), AsView(signal).SubSignal(0, length / 2), filter, state, FILTER_CONV);
-	Filter(AsView(result).SubSignal(length / 2, length / 2), AsView(signal).SubSignal(length / 2, length / 2), filter, state, FILTER_CONV);
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-TEST_CASE("Filter OLA continuity", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-	static_assert(length % 2 == 0);
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, 0, length);
-
-	TimeSignal<double> state(taps - 1, 0.0f);
-	TimeSignal<double> result(length);
-
-	Filter(AsView(result).SubSignal(0, length / 2), AsView(signal).SubSignal(0, length / 2), filter, state, FILTER_OLA, taps * 2 - 1);
-	Filter(AsView(result).SubSignal(length / 2, length / 2), AsView(signal).SubSignal(length / 2, length / 2), filter, state, FILTER_OLA, taps * 2 - 1);
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-TEST_CASE("Filter convolution continuity small fragments", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-	constexpr int step = 4;
-	static_assert(length % step == 0);
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, 0, length);
-
-	TimeSignal<double> state(taps - 1, 0.0f);
-	TimeSignal<double> result(length);
-
-	for (size_t i = 0; i < length; i += step) {
-		Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+	SECTION("Convolution large") {
+		constexpr int step = 40;
+		static_assert(length % step == 0);
+		for (size_t i = 0; i < length; i += step) {
+			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+		}
+	}
+	SECTION("OLA large") {
+		constexpr int step = 40;
+		static_assert(length % step == 0);
+		for (size_t i = 0; i < length; i += step) {
+			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
+		}
+	}
+	SECTION("Convolution small") {
+		constexpr int step = 4;
+		static_assert(length % step == 0);
+		for (size_t i = 0; i < length; i += step) {
+			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+		}
+	}
+	SECTION("OLA small") {
+		constexpr int step = 4;
+		static_assert(length % step == 0);
+		for (size_t i = 0; i < length; i += step) {
+			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
+		}
+	}
+	SECTION("Convolution copy") {
+		constexpr int step = 4;
+		static_assert(length % step == 0);
+		for (size_t i = 0; i < length; i += step) {
+			const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+			const auto outBatch = AsView(result).SubSignal(i, step);
+			std::copy(batch.begin(), batch.end(), outBatch.begin());
+		}
+	}
+	SECTION("OLA copy") {
+		constexpr int step = 4;
+		static_assert(length % step == 0);
+		for (size_t i = 0; i < length; i += step) {
+			const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
+			const auto outBatch = AsView(result).SubSignal(i, step);
+			std::copy(batch.begin(), batch.end(), outBatch.begin());
+		}
 	}
 
 	REQUIRE(Max(Abs(result - expected)) < 1e-7);
 }
 
-TEST_CASE("Filter OLA continuity small fragments", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-	constexpr int step = 4;
-	static_assert(length % step == 0);
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, 0, length);
-
-	TimeSignal<double> state(taps - 1, 0.0f);
-	TimeSignal<double> result(length);
-
-	for (size_t i = 0; i < length; i += step) {
-		Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
-	}
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-TEST_CASE("Filter convolution continuity alloc", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-	constexpr int step = 4;
-	static_assert(length % step == 0);
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, 0, length);
-
-	TimeSignal<double> state(taps - 1, 0.0f);
-	TimeSignal<double> result(length);
-
-	for (size_t i = 0; i < length; i += step) {
-		const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
-		const auto outBatch = AsView(result).SubSignal(i, step);
-		std::copy(batch.begin(), batch.end(), outBatch.begin());
-	}
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-TEST_CASE("Filter OLA continuity small alloc", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-	constexpr int step = 4;
-	static_assert(length % step == 0);
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, 0, length);
-
-	TimeSignal<double> state(taps - 1, 0.0f);
-	TimeSignal<double> result(length);
-
-	for (size_t i = 0; i < length; i += step) {
-		const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
-		const auto outBatch = AsView(result).SubSignal(i, step);
-		std::copy(batch.begin(), batch.end(), outBatch.begin());
-	}
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-TEST_CASE("Filter convolution central", "[FIR]") {
+TEST_CASE("Filter central", "[FIR]") {
 	constexpr int taps = 7;
 	constexpr int length = 80;
 
@@ -150,25 +86,18 @@ TEST_CASE("Filter convolution central", "[FIR]") {
 	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
 
 	const auto expected = Convolution(signal, filter, CONV_CENTRAL);
-	const auto result = Filter(signal, filter, CONV_CENTRAL, FILTER_CONV);
 
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
+	SECTION("Convolution") {
+		const auto result = Filter(signal, filter, CONV_CENTRAL, FILTER_CONV);
+		REQUIRE(Max(Abs(result - expected)) < 1e-7);
+	}
+	SECTION("OLA") {
+		const auto result = Filter(signal, filter, CONV_CENTRAL, FILTER_OLA, 16);
+		REQUIRE(Max(Abs(result - expected)) < 1e-7);
+	}
 }
 
-TEST_CASE("Filter OLA central", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, CONV_CENTRAL);
-	const auto result = Filter(signal, filter, CONV_CENTRAL, FILTER_OLA, 16);
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-TEST_CASE("Filter convolution full", "[FIR]") {
+TEST_CASE("Filter full", "[FIR]") {
 	constexpr int taps = 7;
 	constexpr int length = 80;
 
@@ -176,25 +105,17 @@ TEST_CASE("Filter convolution full", "[FIR]") {
 	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
 
 	const auto expected = Convolution(signal, filter, CONV_FULL);
-	const auto result = Filter(signal, filter, CONV_FULL, FILTER_CONV);
 
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
+	SECTION("Convolution") {
+		const auto result = Filter(signal, filter, CONV_FULL, FILTER_CONV);
+		REQUIRE(Max(Abs(result - expected)) < 1e-7);
+	}
+
+	SECTION("OLA") {
+		const auto result = Filter(signal, filter, CONV_FULL, FILTER_OLA, 16);
+		REQUIRE(Max(Abs(result - expected)) < 1e-7);
+	}
 }
-
-TEST_CASE("Filter OLA full", "[FIR]") {
-	constexpr int taps = 7;
-	constexpr int length = 80;
-
-	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
-
-	const auto expected = Convolution(signal, filter, CONV_FULL);
-	const auto result = Filter(signal, filter, CONV_FULL, FILTER_OLA, 16);
-
-	REQUIRE(Max(Abs(result - expected)) < 1e-7);
-}
-
-
 
 //------------------------------------------------------------------------------
 // Helpers
