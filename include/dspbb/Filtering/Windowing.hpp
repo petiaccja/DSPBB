@@ -131,6 +131,19 @@ void GaussianWindow(SignalR&& out, V sigma = 1.f) {
 	Exp(out, out);
 }
 
+template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void KaiserWindow(SignalR&& out, V alpha) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	LinSpace(out, -U(1), U(1), true);
+	std::for_each(out.begin(), out.end(), [&](R& k) {
+		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
+		const U piAlpha = pi_v<U> * U(alpha);
+		const U arg = std::sqrt(std::max(U(0), U(1) - kreal*kreal));
+		k = U(std::cyl_bessel_i(U(0), piAlpha * arg)) / U(std::cyl_bessel_i(U(0), U(piAlpha)));
+	});
+}
+
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> HammingWindow(size_t length) {
@@ -174,9 +187,16 @@ Signal<T, Domain> BlackmanHarrisWindow(size_t length) {
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> GaussianWindow(size_t length, T sigma = 1) {
+Signal<T, Domain> GaussianWindow(size_t length, T sigma = T(1)) {
 	Signal<T, Domain> window(length);
 	GaussianWindow(AsView(window), sigma);
+	return window;
+}
+
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(1)) {
+	Signal<T, Domain> window(length);
+	KaiserWindow(AsView(window), alpha);
 	return window;
 }
 
@@ -267,6 +287,25 @@ namespace windows {
 		}
 		double m_sigma = 1;
 	} const gaussian;
+
+	struct Kaiser {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return KaiserWindow(out, m_alpha);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return KaiserWindow<T, Domain>(length, T(m_alpha));
+		}
+		template <class T>
+		Kaiser alpha(T alpha) const {
+			auto copy = *this;
+			copy.m_alpha = double(alpha);
+			return copy;
+		}
+		double m_alpha = 1;
+	} const kaiser;
+
 } // namespace windows
 
 

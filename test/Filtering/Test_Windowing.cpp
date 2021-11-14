@@ -199,3 +199,25 @@ TEST_CASE("Gaussian complex", "[WindowFunctions]") {
 	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.37f).margin(0.01f));
 	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
 }
+
+TEST_CASE("Kaiser window", "[WindowFunctions]") {
+	auto window = windows::kaiser.alpha(1.0f).operator()<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.67f).margin(0.01f));
+}
+
+TEST_CASE("Kaiser complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::kaiser.alpha(0.5f)(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.85f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
