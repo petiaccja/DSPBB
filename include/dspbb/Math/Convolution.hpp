@@ -48,34 +48,34 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvFull) 
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset) {
+auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
 	if (offset + out.Size() > fullLength) {
 		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	}
 
 	const size_t length = out.Size();
-	kernels::Convolution(out.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, length);
+	kernels::Convolution(out.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, length, clearOut);
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull) {
+auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
 	if (out.Size() != fullLength) {
 		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
 	}
 	const size_t offset = 0;
-	Convolution(out, u, v, offset);
+	Convolution(out, u, v, offset, clearOut);
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral) {
+auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, bool clearOut = true) {
 	const size_t centralLength = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
 	if (out.Size() != centralLength) {
 		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
 	}
 	const size_t offset = std::min(u.Size() - 1, v.Size() - 1);
-	Convolution(out, u, v, offset);
+	Convolution(out, u, v, offset, clearOut);
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
@@ -85,8 +85,8 @@ auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t lengt
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
 	using R = product_type_t<T, U>;
 
-	Signal<R, Domain> out(length);
-	Convolution(out, u, v, offset);
+	Signal<R, Domain> out(length, R(0));
+	Convolution(out, u, v, offset, false);
 	return out;
 }
 

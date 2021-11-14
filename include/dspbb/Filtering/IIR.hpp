@@ -2,6 +2,7 @@
 
 #include "../LTISystems/DiscretizationTransforms.hpp"
 #include "../LTISystems/Systems.hpp"
+#include "FilterUtility.hpp"
 #include "IIR/BandTransforms.hpp"
 #include "IIR/Butterworth.hpp"
 #include "IIR/Descs.hpp"

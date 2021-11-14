@@ -57,9 +57,9 @@ namespace impl {
 
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, size_t chunkSize) {
+void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, size_t chunkSize, bool clearOut = true) {
 	if (u.Size() < v.Size()) {
-		return OverlapAdd(out, v, u, offset, chunkSize);
+		return OverlapAdd(out, v, u, offset, chunkSize, clearOut);
 	}
 	if (chunkSize < 2 * v.Size() - 1) {
 		throw std::invalid_argument("Chunk size must be at least the size of the filter.");
@@ -68,9 +68,13 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	if (offset + out.Size() > fullLength) {
 		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	}
+	if (clearOut) {
+		using R = typename signal_traits<std::decay_t<SignalR>>::type;
+		std::fill(out.begin(), out.end(), R(remove_complex_t<R>(0)));
+	}
 
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	using U = typename signal_traits<std::decay_t<SignalU>>::type;
+	using T = std::remove_cv_t<typename signal_traits<std::decay_t<SignalT>>::type>;
+	using U = std::remove_cv_t<typename signal_traits<std::decay_t<SignalU>>::type>;
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};
@@ -78,7 +82,6 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	Signal<U, Domain> filter(chunkSize, U(0));
 	std::copy(v.begin(), v.end(), filter.begin());
 	const auto filterFd = impl::ola::FftFilter(filter, is_complex_t, is_complex_u);
-
 
 	const Interval outExtent{ intptr_t(offset), intptr_t(offset + out.Size()) };
 	const Interval uExtent{ intptr_t(0), intptr_t(u.Size()) };
@@ -104,23 +107,23 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize) {
+void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
 	if (out.Size() != fullLength) {
 		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
 	}
 	size_t offset = 0;
-	OverlapAdd(out, u, v, offset, chunkSize);
+	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize) {
+void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize, bool clearOut = true) {
 	const size_t centralLength = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
 	if (out.Size() != centralLength) {
 		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
 	}
 	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
-	OverlapAdd(out, u, v, offset, chunkSize);
+	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }
 
 
@@ -131,8 +134,8 @@ auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length
 	using R = product_type_t<T, U>;
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 
-	Signal<R, Domain> out(length, R(0));
-	OverlapAdd(out, u, v, offset, chunkSize);
+	Signal<R, Domain> out(length, R(remove_complex_t<R>(0)));
+	OverlapAdd(out, u, v, offset, chunkSize, false);
 	return out;
 }
 

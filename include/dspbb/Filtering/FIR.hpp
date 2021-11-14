@@ -2,9 +2,10 @@
 
 #include "FIR/BandTransforms.hpp"
 #include "FIR/Descs.hpp"
+#include "FIR/Filter.hpp"
 #include "FIR/LeastSquares.hpp"
-#include "FIR/Utility.hpp"
 #include "FIR/Windowed.hpp"
+#include "FilterUtility.hpp"
 
 #include <algorithm>
 
@@ -31,8 +32,8 @@ void FirFilter(SignalR&& out, const impl::HighpassDesc<impl::FirMethodWindowed, 
 // Bandpass
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void FirFilter(SignalR&& out, const impl::BandpassDesc<impl::FirMethodWindowed, ParamType, WindowType>& desc) {
-	const ParamType bandWidth = desc.high - desc.low;
-	const ParamType bandCenter = (desc.high + desc.low) / ParamType(2);
+	const ParamType bandWidth = desc.upper - desc.lower;
+	const ParamType bandCenter = (desc.upper + desc.lower) / ParamType(2);
 	FirFilter(out, Lowpass(WINDOWED).Cutoff(bandWidth / ParamType(2)).Window(desc.window));
 	fir::ShiftResponse(out, out, bandCenter);
 }
@@ -40,7 +41,7 @@ void FirFilter(SignalR&& out, const impl::BandpassDesc<impl::FirMethodWindowed, 
 // Bandstop
 template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void FirFilter(SignalR&& out, const impl::BandstopDesc<impl::FirMethodWindowed, ParamType, WindowType>& desc) {
-	FirFilter(out, Bandpass(WINDOWED).Band(desc.low, desc.high).Window(desc.window));
+	FirFilter(out, Bandpass(WINDOWED).Band(desc.lower, desc.upper).Window(desc.window));
 	fir::ComplementaryResponse(out, out);
 }
 
@@ -75,16 +76,16 @@ namespace impl {
 
 	template <class F, class Desc>
 	auto LeastSquaresBandWeight(F frequency, const Desc& desc) {
-		if (frequency <= desc.cutoffBegin1) {
+		if (frequency <= desc.lowerBegin) {
 			return desc.weightLow;
 		}
-		if (frequency <= desc.cutoffEnd1) {
+		if (frequency <= desc.lowerEnd) {
 			return desc.weightTransition1;
 		}
-		if (frequency <= desc.cutoffBegin2) {
+		if (frequency <= desc.upperBegin) {
 			return desc.weightMid;
 		}
-		if (frequency <= desc.cutoffEnd2) {
+		if (frequency <= desc.upperEnd) {
 			return desc.weightTransition2;
 		}
 		return desc.weightHigh;
@@ -114,9 +115,9 @@ namespace impl {
 
 	template <class ParamType>
 	auto TranslateLeastSquares(const impl::BandpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
-		const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
+		const ParamType fmid = (desc.lowerEnd + desc.upperBegin) / ParamType(2);
 		const auto response = [desc, fmid](ParamType f) {
-			return f < fmid ? Smoothstep((f - desc.cutoffBegin1) / (desc.cutoffEnd1 - desc.cutoffBegin1)) : Smoothstep((f - desc.cutoffEnd2) / (desc.cutoffBegin2 - desc.cutoffEnd2));
+			return f < fmid ? Smoothstep((f - desc.lowerBegin) / (desc.lowerEnd - desc.lowerBegin)) : Smoothstep((f - desc.upperEnd) / (desc.upperBegin - desc.upperEnd));
 		};
 		const auto weight = [desc](ParamType f) {
 			return LeastSquaresBandWeight(f, desc);
@@ -126,9 +127,9 @@ namespace impl {
 
 	template <class ParamType>
 	auto TranslateLeastSquares(const impl::BandstopDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
-		const ParamType fmid = (desc.cutoffEnd1 + desc.cutoffBegin2) / ParamType(2);
+		const ParamType fmid = (desc.lowerEnd + desc.upperBegin) / ParamType(2);
 		const auto response = [desc, fmid](ParamType f) {
-			return f < fmid ? Smoothstep((f - desc.cutoffEnd1) / (desc.cutoffBegin1 - desc.cutoffEnd1)) : Smoothstep((f - desc.cutoffBegin2) / (desc.cutoffEnd2 - desc.cutoffBegin2));
+			return f < fmid ? Smoothstep((f - desc.lowerEnd) / (desc.lowerBegin - desc.lowerEnd)) : Smoothstep((f - desc.upperBegin) / (desc.upperEnd - desc.upperBegin));
 		};
 		const auto weight = [desc](ParamType f) {
 			return LeastSquaresBandWeight(f, desc);
@@ -164,7 +165,7 @@ namespace impl {
 
 	template <class ParamType>
 	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
-		const ParamType transitionBand = desc.transition;
+		const ParamType transitionBand = desc.transitionWidth;
 		return Lowpass(LEAST_SQUARES).Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand);
 	}
 

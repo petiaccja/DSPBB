@@ -37,17 +37,13 @@ public:
 	template <class Iter, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<Iter&>()), T&>, int> = 0>
 	SignalView(Iter first, size_t size);
 
-	iterator begin() { return first; }
-	const_iterator begin() const { return first; }
+	iterator begin() const { return first; }
 	const_iterator cbegin() const { return first; }
-	iterator end() { return last; }
-	const_iterator end() const { return last; }
+	iterator end() const { return last; }
 	const_iterator cend() const { return last; }
-	reverse_iterator rbegin() { return reverse_iterator{ last }; }
-	const_reverse_iterator rbegin() const { return const_reverse_iterator{ last }; }
+	reverse_iterator rbegin() const { return reverse_iterator{ last }; }
 	const_reverse_iterator crbegin() const { return const_reverse_iterator{ last }; }
-	reverse_iterator rend() { return reverse_iterator{ first }; }
-	const_reverse_iterator rend() const { return const_reverse_iterator{ first }; }
+	reverse_iterator rend() const { return reverse_iterator{ first }; }
 	const_reverse_iterator crend() const { return const_reverse_iterator{ first }; }
 
 	T& Front() const;

@@ -3,6 +3,10 @@ add_executable(UnitTest)
 
 target_sources(UnitTest PRIVATE main.cpp)
 
+if (${CMAKE_CXX_COMPILER} MATCHES "MSVC")
+	target_compile_options(UnitTest PRIVATE "/bigobj")
+endif()
+
 target_sources(UnitTest 
 	PRIVATE
 		"ComputeKernels/Test_Kernels.cpp" 

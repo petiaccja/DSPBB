@@ -61,21 +61,21 @@ namespace impl {
 
 	template <template <typename, typename...> class Desc, class ParamType, class WindowType>
 	struct BandDescWindowed {
-		ParamType low = ParamType(0.25);
-		ParamType high = ParamType(0.75);
+		ParamType lower = ParamType(0.25);
+		ParamType upper = ParamType(0.75);
 		WindowType window;
 
 		template <class NewParamType>
-		[[nodiscard]] auto Band(NewParamType lowNew, NewParamType highNew) {
-			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(lowNew), std::move(highNew), std::move(window) } };
+		[[nodiscard]] auto Band(NewParamType lowerNew, NewParamType upperNew) {
+			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(lowerNew), std::move(upperNew), std::move(window) } };
 		}
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
 		[[nodiscard]] auto Window(NewWindowType windowNew) {
-			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(low), std::move(high), std::move(windowNew) } };
+			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(lower), std::move(upper), std::move(windowNew) } };
 		}
 		template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
 		[[nodiscard]] auto Window(NewWindowType windowNew) {
-			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(low), std::move(high), std::move(windowNew) } };
+			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(lower), std::move(upper), std::move(windowNew) } };
 		}
 	};
 
@@ -168,40 +168,40 @@ namespace impl {
 		ParamType weightTransition = ParamType(0.0);
 		ParamType weightHigh = ParamType(1.0);
 
-		[[nodiscard]] auto Cutoff(ParamType begin, ParamType end) {
-			return Desc<FirMethodLeastSquares, ParamType>{ { begin, end, weightLow, weightTransition, weightHigh } };
+		[[nodiscard]] auto Cutoff(ParamType newBegin, ParamType newEnd) {
+			return Desc<FirMethodLeastSquares, ParamType>{ { newBegin, newEnd, weightLow, weightTransition, weightHigh } };
 		}
-		[[nodiscard]] auto Weight(ParamType low, ParamType transition, ParamType high) {
-			return Desc<FirMethodLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, low, transition, high } };
+		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition, ParamType newHigh) {
+			return Desc<FirMethodLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, newLow, newTransition, newHigh } };
 		}
 	};
 
 	template <template <typename, typename...> class Desc, class ParamType>
 	struct BandDescLeastSquares {
-		ParamType cutoffBegin1 = ParamType(0.2);
-		ParamType cutoffEnd1 = ParamType(0.3);
-		ParamType cutoffBegin2 = ParamType(0.7);
-		ParamType cutoffEnd2 = ParamType(0.8);
+		ParamType lowerBegin = ParamType(0.2);
+		ParamType lowerEnd = ParamType(0.3);
+		ParamType upperBegin = ParamType(0.7);
+		ParamType upperEnd = ParamType(0.8);
 		ParamType weightLow = ParamType(1.0);
 		ParamType weightTransition1 = ParamType(0.0);
 		ParamType weightMid = ParamType(1.0);
 		ParamType weightTransition2 = ParamType(0.0);
 		ParamType weightHigh = ParamType(1.0);
 
-		[[nodiscard]] auto Band(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
-			return Desc<FirMethodLeastSquares, ParamType>{ { begin1, end1, begin2, end2, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh } };
+		[[nodiscard]] auto Band(ParamType newLowerBegin, ParamType newLowerEnd, ParamType newUpperBegin, ParamType newUpperEnd) {
+			return Desc<FirMethodLeastSquares, ParamType>{ { newLowerBegin, newLowerEnd, newUpperBegin, newUpperEnd, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh } };
 		}
-		[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {
-			return Desc<FirMethodLeastSquares, ParamType>{ { cutoffBegin1, cutoffEnd1, cutoffBegin2, cutoffEnd2, low, transition1, mid, transition2, high } };
+		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition1, ParamType newMid, ParamType newTransition2, ParamType newHigh) {
+			return Desc<FirMethodLeastSquares, ParamType>{ { lowerBegin, lowerEnd, upperBegin, upperEnd, newLow, newTransition1, newMid, newTransition2, newHigh } };
 		}
 	};
 
 	template <class ParamType>
 	struct HilbertDesc<FirMethodLeastSquares, ParamType> {
-		ParamType transition = ParamType(1.0);
+		ParamType transitionWidth = ParamType(1.0);
 
-		[[nodiscard]] auto TransitionWidth(ParamType bandwidthNew) {
-			return HilbertDesc<FirMethodLeastSquares, ParamType>{ bandwidthNew };
+		[[nodiscard]] auto TransitionWidth(ParamType newTransitionWidth) {
+			return HilbertDesc<FirMethodLeastSquares, ParamType>{ newTransitionWidth };
 		}
 	};
 
@@ -220,8 +220,8 @@ namespace impl {
 	template <template <typename, typename...> class Desc>
 	struct BandDescLeastSquares<Desc, void> {
 		template <class ParamType>
-		[[nodiscard]] auto Band(ParamType begin1, ParamType end1, ParamType begin2, ParamType end2) {
-			return Desc<FirMethodLeastSquares, ParamType>{}.Band(begin1, end1, begin2, end2);
+		[[nodiscard]] auto Band(ParamType lowerBegin, ParamType lowerEnd, ParamType upperBegin, ParamType upperEnd) {
+			return Desc<FirMethodLeastSquares, ParamType>{}.Band(lowerBegin, lowerEnd, upperBegin, upperEnd);
 		}
 		template <class ParamType>
 		[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {
