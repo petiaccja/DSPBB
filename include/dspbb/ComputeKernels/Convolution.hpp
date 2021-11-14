@@ -11,7 +11,7 @@ namespace dspbb::kernels {
 template <class R, class U, class V>
 void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_t first, size_t count, bool clearOut = true) {
 	if (lenU < lenV) {
-		return Convolution(out, v, u, lenV, lenU, first, count);
+		return Convolution(out, v, u, lenV, lenU, first, count, clearOut);
 	}
 
 	if (clearOut) {

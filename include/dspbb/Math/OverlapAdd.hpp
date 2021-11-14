@@ -59,7 +59,7 @@ namespace impl {
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, size_t chunkSize, bool clearOut = true) {
 	if (u.Size() < v.Size()) {
-		return OverlapAdd(out, v, u, offset, chunkSize);
+		return OverlapAdd(out, v, u, offset, chunkSize, clearOut);
 	}
 	if (chunkSize < 2 * v.Size() - 1) {
 		throw std::invalid_argument("Chunk size must be at least the size of the filter.");
