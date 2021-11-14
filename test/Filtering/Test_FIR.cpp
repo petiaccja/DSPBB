@@ -90,7 +90,7 @@ TEST_CASE("Filter OLA continuity small fragments", "[FIR]") {
 	TimeSignal<double> result(length);
 
 	for (size_t i = 0; i < length; i += step) {
-		Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+		Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
 	}
 
 	REQUIRE(Max(Abs(result - expected)) < 1e-7);
@@ -134,7 +134,7 @@ TEST_CASE("Filter OLA continuity small alloc", "[FIR]") {
 	TimeSignal<double> result(length);
 
 	for (size_t i = 0; i < length; i += step) {
-		const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+		const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
 		const auto outBatch = AsView(result).SubSignal(i, step);
 		std::copy(batch.begin(), batch.end(), outBatch.begin());
 	}
