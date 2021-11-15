@@ -69,7 +69,7 @@ void FlatTopWindow(SignalR&& out) {
 
 	LinSpace(out, U(0), U(out.Size() - 1), true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k);
 		k = c0
 			+ c1 * std::cos(preSize1 * kreal)
 			+ c2 * std::cos(preSize2 * kreal)
@@ -102,7 +102,7 @@ void BlackmanWindow(SignalR&& out) {
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k);
 		k = U(0.42) - U(0.5) * std::cos(kreal) + U(0.08) * std::cos(2 * kreal);
 	});
 }
@@ -113,7 +113,7 @@ void BlackmanHarrisWindow(SignalR&& out) {
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k);
 		k = U(0.35875) - U(0.48829) * std::cos(kreal) + U(0.14128) * std::cos(2 * kreal) + U(-0.01168) * std::cos(3 * kreal);
 	});
 }
@@ -137,10 +137,21 @@ void KaiserWindow(SignalR&& out, V alpha) {
 	using U = remove_complex_t<R>;
 	LinSpace(out, -U(1), U(1), true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
-		const U kreal = std::real(k); // We can do that safely for std::complex, it's a POD type.
+		const U kreal = std::real(k);
 		const U piAlpha = pi_v<U> * U(alpha);
-		const U arg = std::sqrt(std::max(U(0), U(1) - kreal*kreal));
+		const U arg = std::sqrt(std::max(U(0), U(1) - kreal * kreal));
 		k = U(std::cyl_bessel_i(U(0), piAlpha * arg)) / U(std::cyl_bessel_i(U(0), U(piAlpha)));
+	});
+}
+
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+void LanczosWindow(SignalR&& out) {
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using U = remove_complex_t<R>;
+	LinSpace(out, -pi_v<U>, pi_v<U>, true);
+	std::for_each(out.begin(), out.end(), [&](R& k) {
+		const U kreal = std::real(k);
+		k = kreal != U(0) ? std::sin(kreal) / kreal : U(1);
 	});
 }
 
@@ -197,6 +208,13 @@ template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(1)) {
 	Signal<T, Domain> window(length);
 	KaiserWindow(AsView(window), alpha);
+	return window;
+}
+
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> LanczosWindow(size_t length) {
+	Signal<T, Domain> window(length);
+	LanczosWindow(AsView(window));
 	return window;
 }
 
@@ -305,6 +323,17 @@ namespace windows {
 		}
 		double m_alpha = 1;
 	} const kaiser;
+
+	struct Lanczos {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return LanczosWindow(out);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return LanczosWindow<T, Domain>(length);
+		}
+	} const lanczos;
 
 } // namespace windows
 

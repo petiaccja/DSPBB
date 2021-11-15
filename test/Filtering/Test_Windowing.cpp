@@ -221,3 +221,25 @@ TEST_CASE("Kaiser complex", "[WindowFunctions]") {
 	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.85f).margin(0.01f));
 	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
 }
+
+TEST_CASE("Lanczos window", "[WindowFunctions]") {
+	auto window = windows::lanczos.operator()<float>(255);
+
+	REQUIRE(window.Length() == 255);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.59f).margin(0.01f));
+}
+
+TEST_CASE("Lanczos complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(255);
+	windows::lanczos(window);
+
+	REQUIRE(window.Length() == 255);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.59f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
