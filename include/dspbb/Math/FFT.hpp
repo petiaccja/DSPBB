@@ -149,7 +149,7 @@ auto Fft(SignalR&& out, const SignalT& in) -> decltype(impl::Fft(AsView(out), As
 
 template <class SignalR, class SignalT>
 auto Ifft(SignalR&& out, const SignalT& in) -> decltype(impl::Ifft(AsView(out), AsView(in))) {
-	return impl::Fft(AsView(out), AsView(in));
+	return impl::Ifft(AsView(out), AsView(in));
 }
 
 

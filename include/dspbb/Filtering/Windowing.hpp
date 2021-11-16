@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Generators/Spaces.hpp"
+#include "../Math/FFT.hpp"
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
@@ -155,6 +156,56 @@ void LanczosWindow(SignalR&& out) {
 	});
 }
 
+namespace impl {
+	template <class T>
+	auto ChebyshevPoly(size_t n, const T& x) {
+		const T tn = static_cast<T>(n);
+		const T sign = n % 2 == 0 ? T(1) : T(-1);
+		if (x < -T(1)) {
+			return sign * std::cosh(tn * std::acosh(-x));
+		}
+		if (x <= T(1)) {
+			return std::cos(tn * std::acos(x));
+		}
+		return std::cosh(tn * std::acosh(x));
+	};
+} // namespace impl
+
+template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR> && !is_complex_v<typename std::decay_t<SignalR>::value_type>, int> = 0>
+void DolphChebyshevWindow(SignalR&& out, V attenuation) {
+	using T = typename std::decay_t<SignalR>::value_type;
+
+	const size_t M = out.Size() - 1;
+	const T beta = std::cosh(T(1) / M * std::acosh(T(1) / T(attenuation)));
+	Spectrum<std::complex<T>> spectrum(out.Size() / 2 + 1);
+	LinSpace(spectrum, T(0), pi_v<T> * (T(spectrum.Size() - 1) / T(out.Size())), true);
+	std::for_each(spectrum.begin(), spectrum.end(), [M, beta](auto& k) {
+		const auto i = std::complex<T>(0, 1);
+		const auto phase = std::exp(i * k * T(M % 2));
+		const auto amplitude = impl::ChebyshevPoly(M, beta * std::cos(std::real(k)));
+		k = phase * amplitude;
+	});
+
+	Ifft(out, spectrum);
+	FftShift(out, out);
+	const T normalization = kernels::MapReduceVectorized(
+		out.Data(), out.Size(), T(0),
+		[](const auto& acc, const auto& v) { return kernels::math_functions::max(acc, v); },
+		[](const auto& v) { return kernels::math_functions::abs(v); });
+	out *= T(1) / normalization;
+}
+
+template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR> && is_complex_v<typename std::decay_t<SignalR>::value_type>, int> = 0>
+void DolphChebyshevWindow(SignalR&& out, V attenuation) {
+	using R = typename std::decay_t<SignalR>::value_type;
+	using T = remove_complex_t<R>;
+	constexpr auto domain = signal_traits<std::decay_t<SignalR>>::domain;
+
+	Signal<T, domain> outReal(out.Size());
+	DolphChebyshevWindow(outReal, attenuation);
+	std::transform(outReal.begin(), outReal.end(), out.begin(), [](auto& v) { return R{ v, T(0) }; });
+}
+
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> HammingWindow(size_t length) {
@@ -215,6 +266,13 @@ template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 Signal<T, Domain> LanczosWindow(size_t length) {
 	Signal<T, Domain> window(length);
 	LanczosWindow(AsView(window));
+	return window;
+}
+
+template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+Signal<T, Domain> DolphChebyshevWindow(size_t length, T attenuation) {
+	Signal<T, Domain> window(length);
+	DolphChebyshevWindow(AsView(window), attenuation);
 	return window;
 }
 
@@ -334,6 +392,24 @@ namespace windows {
 			return LanczosWindow<T, Domain>(length);
 		}
 	} const lanczos;
+
+	struct DolphChebyshev {
+		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+		auto operator()(SignalR&& out) const {
+			return DolphChebyshevWindow(out, m_attenuation);
+		}
+		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
+		auto operator()(size_t length) const {
+			return DolphChebyshevWindow<T, Domain>(length, T(m_attenuation));
+		}
+		template <class T>
+		DolphChebyshev attenuation(T atten) const {
+			auto copy = *this;
+			copy.m_attenuation = double(atten);
+			return copy;
+		}
+		double m_attenuation = 1;
+	} const dolphChebyshev;
 
 } // namespace windows
 
