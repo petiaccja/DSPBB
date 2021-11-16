@@ -121,10 +121,6 @@ While the library is already quite capable, I'm planning to change the interface
     - ✔️ Expansion (zero-fill)
     - ✔️ Interpolation (polyphase)
     - ✔️ Arbitrary resampling (polyphase)
-  - ❌️ Wavelets
-    - ❌️ DWT
-    - ❌️ CWT
-    - ❌️ Wavelet design
   - ✔️ Windowing
     - ✔️ Derived properties
       - ✔️ Gain
@@ -140,6 +136,10 @@ While the library is already quite capable, I'm planning to change the interface
       - ✔️ Gaussian
       - ✔️ Dolph-Chebyshev
       - ✔️ Lanczos
+  - ❌️ Wavelets
+    - ❌️ DWT
+    - ❌️ CWT
+    - ❌️ Wavelet design
 - ❌️ Literals
   - ❌️ Hz, kHz, MHz, GHz, THz
   - ❌️ dB, dB10, dB20
