@@ -125,21 +125,21 @@ While the library is already quite capable, I'm planning to change the interface
     - ❌️ DWT
     - ❌️ CWT
     - ❌️ Wavelet design
-  - ❔️ Windowing
+  - ✔️ Windowing
     - ✔️ Derived properties
       - ✔️ Gain
       - ✔️ Energy
-    - ❔️ Functions
+    - ✔️ Functions
       - ✔️ Rectangular
       - ✔️ Triangular
       - ✔️ Hamming
       - ✔️ Blackman
       - ✔️ Blackman-Harris
       - ✔️ Flat top
-      - ❌️ Kaiser
+      - ✔️ Kaiser
       - ✔️ Gaussian
-      - ❌️ Dolph-Chebyshev
-      - ❌️ Lanczos
+      - ✔️ Dolph-Chebyshev
+      - ✔️ Lanczos
 - ❌️ Literals
   - ❌️ Hz, kHz, MHz, GHz, THz
   - ❌️ dB, dB10, dB20

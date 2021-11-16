@@ -1,3 +1,4 @@
+#include <dspbb/Filtering/FilterParameters.hpp>
 #include <dspbb/Filtering/Windowing.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
@@ -198,4 +199,75 @@ TEST_CASE("Gaussian complex", "[WindowFunctions]") {
 	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
 	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.37f).margin(0.01f));
 	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+TEST_CASE("Kaiser window", "[WindowFunctions]") {
+	auto window = windows::kaiser.alpha(1.0f).operator()<float>(256);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.67f).margin(0.01f));
+}
+
+TEST_CASE("Kaiser complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::kaiser.alpha(0.5f)(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.85f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+TEST_CASE("Lanczos window", "[WindowFunctions]") {
+	auto window = windows::lanczos.operator()<float>(255);
+
+	REQUIRE(window.Length() == 255);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(CoherentGain(window) == Approx(0.59f).margin(0.01f));
+}
+
+TEST_CASE("Lanczos complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(255);
+	windows::lanczos(window);
+
+	REQUIRE(window.Length() == 255);
+	REQUIRE(IsPeakCentered(window));
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(std::abs(CoherentGain(window)) == Approx(0.59f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+}
+
+TEST_CASE("Dolph-Chebyshev window", "[WindowFunctions]") {
+	auto window = windows::dolphChebyshev.attenuation(0.01f).operator()<float>(255);
+
+	REQUIRE(window.Length() == 255);
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+
+	const auto [amplitude, phase] = FrequencyResponse(window, 2048);
+	const auto atten = Max(AsView(amplitude).SubSignal(200)) / amplitude[0];
+	REQUIRE(atten == Approx(0.01f).epsilon(1e-3f));
+}
+
+TEST_CASE("Dolph-Chebyshev complex", "[WindowFunctions]") {
+	TimeSignal<std::complex<float>> window(256);
+	windows::dolphChebyshev.attenuation(0.001f)(window);
+	auto dbg = Real(window);
+
+	REQUIRE(window.Length() == 256);
+	REQUIRE(IsSymmetric(window));
+	REQUIRE(Max(Abs(window)) == Approx(1.0f).margin(0.01f));
+	REQUIRE(Sum(Abs(Imag(window))) == Approx(0.0f));
+
+	const auto [amplitude, phase] = FrequencyResponse(Real(window), 2048);
+	const auto atten = Max(AsView(amplitude).SubSignal(200)) / amplitude[0];
+	REQUIRE(atten == Approx(0.001f).epsilon(1e-3f));
 }
