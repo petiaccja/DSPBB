@@ -19,7 +19,7 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Butterworth(size_t order) {
 		++index;
 	}
 
-	return { T(1), {}, poles };
+	return { T(1), {}, std::move(poles) };
 }
 
 
