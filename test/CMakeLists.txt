@@ -28,6 +28,7 @@ target_sources(UnitTest
 		"Math/Test_Convolution.cpp"
 		"Math/Test_FFT.cpp"
 		"Math/Test_Functions.cpp"
+		"Math/Test_JacobiFunctions.cpp"
 		"Math/Test_Polynomials.cpp"
 		"Math/Test_RootTransforms.cpp"
 		"Math/Test_Statistics.cpp"
