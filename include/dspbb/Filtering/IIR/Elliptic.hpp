@@ -1,0 +1,33 @@
+#pragma once
+
+#include "../../Generators/Spaces.hpp"
+#include "../../LTISystems/Systems.hpp"
+#include "../../Utility/Numbers.hpp"
+
+
+namespace dspbb {
+
+namespace ellip {
+	template <class T>
+	T sn(T u, T k) {
+		
+	}
+}
+
+template <class T>
+ZeroPoleGain<T, eDiscretization::CONTINUOUS> Elliptic(size_t order) {
+	FactoredPolynomial<T> poles;
+	poles.Resize(order % 2, order / 2, -T(1));
+
+	size_t index = 0;
+	for (auto& root : poles.ComplexPairs()) {
+		const T phase = pi_v<T> * (T(0.5) + T(index) / T(order) + T(0.5) / T(order));
+		root = std::polar(T(1), std::real(phase));
+		++index;
+	}
+
+	return { T(1), {}, std::move(poles) };
+}
+
+
+} // namespace dspbb
