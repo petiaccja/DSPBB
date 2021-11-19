@@ -53,9 +53,11 @@ public:
 
 	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
 	friend bool operator==(const T& lhs, ApproxComplex const& rhs) {
+		const auto mag = std::abs(rhs.m_value);
+		const auto margin = std::max(rhs.m_margin, rhs.m_epsilon * (rhs.m_scale + std::fabs(std::isinf(mag) ? 0 : mag)));
 		auto lhs_v = static_cast<std::complex<double>>(lhs);
-		return Catch::Detail::Approx(rhs.m_value.real()).epsilon(rhs.m_epsilon).margin(rhs.m_margin).scale(rhs.m_scale) == lhs_v.real()
-			   && Catch::Detail::Approx(rhs.m_value.imag()).epsilon(rhs.m_epsilon).margin(rhs.m_margin).scale(rhs.m_scale) == lhs_v.imag();
+		return Catch::Detail::Approx(rhs.m_value.real()).margin(margin) == lhs_v.real()
+			   && Catch::Detail::Approx(rhs.m_value.imag()).margin(margin) == lhs_v.imag();
 	}
 
 	template <typename T, typename = typename std::enable_if<std::is_constructible_v<std::complex<double>, T>>::type>
