@@ -1,7 +1,10 @@
 #include "../TestUtils.hpp"
 
 #include <dspbb/Generators/Spaces.hpp>
+#include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/JacobiFunctions.hpp>
+#include <dspbb/Math/Statistics.hpp>
+#include <dspbb/Primitives/SignalView.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -453,7 +456,7 @@ std::mt19937_64 rne(7235472357);
 
 template <class T>
 std::vector<std::complex<T>> RandomTaus(size_t count) {
-	std::uniform_real_distribution<T> rngMagnitude(T(0), T(0.999));
+	std::uniform_real_distribution<T> rngMagnitude(T(0), T(0.5));
 	std::uniform_real_distribution<T> rngPhase(-pi_v<T>, pi_v<T>);
 
 	std::vector<std::complex<T>> taus;
@@ -484,7 +487,7 @@ std::vector<std::complex<T>> RandomZs(size_t count) {
 TEST_CASE("Performance measure", "[Jacobi functions]") {
 	using real_t = float;
 
-	constexpr size_t count = 10'000'000;
+	constexpr size_t count = 100'000;
 	auto taus = RandomTaus<real_t>(count);
 	auto zs = RandomZs<real_t>(count);
 
@@ -499,6 +502,73 @@ TEST_CASE("Performance measure", "[Jacobi functions]") {
 	const double nsPerOp = double(elapsed.count()) / double(count);
 	WARN(nsPerOp << " ns / op");
 	REQUIRE(s != 0.0f);
+}
+
+template <class T>
+size_t HistogramBin(T value, T low, T high, size_t count) {
+	const T t = (value - low) / (high - low);
+	const intptr_t index = std::clamp(intptr_t(T(count - 1) * t + T(0.5)), intptr_t(0), intptr_t(count - 1));
+	return size_t(index);
+}
+
+TEST_CASE("Accuracy measure", "[Jacobi functions]") {
+	constexpr size_t count = 100'000;
+	auto taus = RandomTaus<float>(count);
+	auto zs = RandomZs<float>(count);
+	std::vector<double> biterrs(count);
+	std::vector<std::complex<double>> results(count);
+	std::vector<std::complex<float>> resultfs(count);
+
+	for (size_t i = 0; i < count; ++i) {
+		const auto z = std::complex<double>(zs[i]);
+		const auto tau = std::complex<double>(taus[i]);
+		const auto zf = std::complex<float>(zs[i]);
+		const auto tauf = std::complex<float>(taus[i]);
+
+		const auto result = Theta(1, z, tau);
+		const auto resultf = Theta(1, zf, tauf);
+		results[i] = result;
+		resultfs[i] = resultf;
+
+		const auto err = result - std::complex<double>(resultf);
+		const auto biterr = std::abs(err) / std::abs(result) / double(std::numeric_limits<float>::epsilon());
+		if (abs(result) < 1000.0) {
+			biterrs[i] = biterr;
+		}
+	}
+
+	const auto view = AsView<DOMAINLESS>(biterrs.begin(), biterrs.end());
+	const auto maxIt = std::max_element(view.begin(), view.end());
+	WARN("outlier: " << *maxIt);
+	WARN("z =       " << zs[maxIt - view.begin()]);
+	WARN("tau =     " << taus[maxIt - view.begin()]);
+	WARN("r_f32 =   " << resultfs[maxIt - view.begin()]);
+	WARN("r_f64 =   " << results[maxIt - view.begin()]);
+	[[maybe_unused]] const auto max = Max(Abs(view));
+	[[maybe_unused]] const auto avg = Mean(Abs(view));
+	[[maybe_unused]] const auto rms = RootMeanSquare(view);
+	[[maybe_unused]] const auto std = CorrectedStandardDeviation(view);
+
+	std::vector<double> histogram(100);
+	for (size_t i = 0; i < count; ++i) {
+		const double magQ = std::exp(-pi_v<double> * taus[i].imag());
+		size_t bin = HistogramBin(magQ, 0.0, 1.0, histogram.size());
+		histogram[bin] = std::min(100.0, std::max(histogram[bin], biterrs[i]));
+	}
+
+	REQUIRE(std::abs(max) < 100);
+}
+
+TEST_CASE("Accuracy debug", "[Jacobi functions]") {
+	const auto z = -0.62151 - 0.535859i;
+	const auto tau = -0.889212 + 0.00102383i;
+
+	const auto result = Theta(1, z, tau);
+
+	bool inf = std::isinf(std::abs(result));
+	if (inf) {
+		throw std::runtime_error("failed to eval");
+	}
 }
 
 

@@ -29,8 +29,31 @@ def transform_tau_3(tau, max_iters=5):
     (tau, iter) = transform_tau_3_count(tau, max_iters)
     return tau
 
+matrices = []
+mrange = 10
+for a in range(-mrange,mrange):
+    for b in range(-mrange,mrange):
+        for c in range(-mrange,mrange):
+            for d in range(-mrange,mrange):
+                det = a*d - c*b
+                if det == 1:
+                    matrices.append((a,b,c,d))
+
+print(len(matrices))
+
+def transform_tau_4(tau):
+    max_imag = tau.imag
+    tau_best = tau
+    for m in matrices:
+        transformed = (m[0]*tau + m[1]) / (m[2]*tau + m[3])
+        if (abs(transformed.real) < 2000.0 and transformed.imag > max_imag):
+            tau_best = transformed
+    return tau_best
+
+
+
 # plot transform
-resolution = 10001
+resolution = 201
 real_span = 2
 imag_span = 1
 real_line = numpy.linspace(-real_span/2, real_span/2, resolution)
@@ -43,6 +66,7 @@ worst_tau = 0
 for x in range(plane.shape[0]):
     for y in range(plane.shape[1]):
         (tau, iter) = transform_tau_3_count(plane[x,y], 15)
+        (tau, iter) = (transform_tau_4(plane[x,y]), 0)
         if iter > worst_iter:
             worst_tau = plane[x,y]
             worst_iter = iter
@@ -52,5 +76,5 @@ print(worst_tau)
 print(worst_iter)
 
 plt.figure()
-plt.imshow(numpy.clip(numpy.imag(plane_transformed), -2, 2), extent=(-real_span/2, real_span/2, 0, imag_span), origin='lower')
+plt.imshow(numpy.clip(numpy.imag(plane_transformed), 0, 10), extent=(-real_span/2, real_span/2, 0, imag_span), origin='lower')
 plt.show()

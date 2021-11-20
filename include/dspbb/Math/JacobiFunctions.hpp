@@ -93,9 +93,9 @@ LatticeTransform<T> InvertTau(int variant, const std::complex<T>& z, const std::
 
 template <class T>
 LatticeTransform<T> RotateTau(int variant, const std::complex<T>& z, const std::complex<T>& tau) {
-	const auto [shiftedVariant, shiftedZ, shiftedTau, shiftMultiplier, _] = ShiftTau(variant, z, tau);
+	const auto [shiftedVariant, shiftedZ, shiftedTau, shiftMultiplier, shiftExponent] = ShiftTau(variant, z, tau);
 	const auto [invertedVariant, invertedZ, invertedTau, inverseMultiplier, inverseExponent] = InvertTau(shiftedVariant, shiftedZ, shiftedTau);
-	return { invertedVariant, invertedZ, invertedTau, shiftMultiplier * inverseMultiplier, inverseExponent };
+	return { invertedVariant, invertedZ, invertedTau, shiftMultiplier * inverseMultiplier, inverseExponent + shiftExponent };
 }
 
 //------------------------------------------------------------------------------
@@ -109,10 +109,13 @@ std::complex<T> ThetaSeriesElement(int variant, int n, const std::complex<T>& z,
 	const auto phase = variant == 1 ? i_v<T> : T(1);
 	const auto polarity = variant == 1 ? -T(1) : T(1);
 
-	const auto u = lambda * lambda * pi_v<T> * i_v<T> * tau;
-	const auto v = i_v<T> * T(2) * lambda * z;
+	const auto qExp = lambda * lambda * pi_v<T> * i_v<T> * tau;
+	const auto trigExp = i_v<T> * T(2) * lambda * z;
 
-	return phase * sign * (std::exp(u - v + bias) + polarity * std::exp(u + v + bias));
+	const auto v1 = std::exp(qExp - trigExp + bias);
+	const auto v2 = std::exp(qExp + trigExp + bias);
+
+	return phase * sign * (v1 + polarity * v2);
 }
 
 template <class T>
@@ -123,7 +126,7 @@ std::complex<T> ThetaSeries(int variant, const std::complex<T>& z, const std::co
 	const auto nLast = iterations;
 
 	std::complex<T> accumulator = std::exp(exponent) * T(symmetric);
-	for (int n = nFirst; n < nLast; ++n) {
+	for (int n = nLast - 1; n >= nFirst; --n) {
 		accumulator += ThetaSeriesElement(variant, n, z, tau, exponent);
 	}
 
