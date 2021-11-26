@@ -26,6 +26,7 @@ target_sources(UnitTest
 		"LTISystems/Test_DiscretizationTransforms.cpp"
 		"LTISystems/Test_Systems.cpp"
 		"Math/Test_Convolution.cpp"
+		"Math/Test_EllipticFunctions.cpp"
 		"Math/Test_FFT.cpp"
 		"Math/Test_Functions.cpp"
 		"Math/Test_Polynomials.cpp"
