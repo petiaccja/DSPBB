@@ -183,7 +183,7 @@ mp.mp.prec = 256
 
 # Test single values
 k = 0.4
-x = 2*scipy.special.ellipk(k*k)
+x = 3.6
 print("x = ", x, "k = ", k)
 truth_v = (mp.ellipfun('sn', x, k=k), mp.ellipfun('cn', x, k=k), mp.ellipfun('dn', x, k=k))
 agm_v = sncndn_agm(x, k)
