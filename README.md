@@ -95,9 +95,9 @@ While the library is already quite capable, I'm planning to change the interface
   - ❔️ IIR filtering
     - Methods:
       - ✔️ Butterworth
-      - ❌️ Chebyshev I
-      - ❌️ Chebyshev II
-      - ❌️ Elliptic
+      - ✔️ Chebyshev I
+      - ✔️ Chebyshev II
+      - ✔️ Elliptic
     - Types:
       - ✔️ Low-pass
       - ✔️ High-pass
