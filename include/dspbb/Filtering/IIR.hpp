@@ -50,7 +50,7 @@ auto IirFilter(size_t order, const impl::BandpassDesc<impl::IirMethodButterworth
 		throw std::invalid_argument("IIR bandpass filter must have an even order.");
 	}
 	const auto halfband = impl::PrototypeButterworth<T>(order);
-	auto filter = Halfband2Bandpass(halfband, desc.low, desc.high);
+	auto filter = Halfband2Bandpass(halfband, desc.lower, desc.upper);
 	return filter;
 }
 
@@ -61,7 +61,7 @@ auto IirFilter(size_t order, const impl::BandstopDesc<impl::IirMethodButterworth
 		throw std::invalid_argument("IIR bandstop filter must have an even order.");
 	}
 	const auto halfband = impl::PrototypeButterworth<T>(order);
-	auto filter = Halfband2Bandstop(halfband, desc.low, desc.high);
+	auto filter = Halfband2Bandstop(halfband, desc.lower, desc.upper);
 	return filter;
 }
 
