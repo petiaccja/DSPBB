@@ -22,7 +22,7 @@ namespace impl {
 	}
 
 	template <class T>
-	std::complex<T> Chebyshev2Zero(size_t index, size_t order, T epsilon) {
+	std::complex<T> Chebyshev2Zero(size_t index, size_t order) {
 		constexpr std::complex<T> i{ T(0), T(1) };
 		const std::complex<T> zero = -i * std::cos(pi_v<T> / T(2) * T(2 * index + 1) / T(order));
 		return T(1) / zero;
@@ -78,7 +78,7 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Chebyshev2(size_t order, T ripple) 
 
 	index = 0;
 	for (auto& root : zeros.ComplexPairs()) {
-		root = impl::Chebyshev2Zero(index, order, epsilon);
+		root = impl::Chebyshev2Zero<T>(index, order);
 		z.push_back(root);
 		++index;
 	}
