@@ -31,53 +31,45 @@ TEST_CASE("Butterworth odd", "[IIR Kernels]") {
 
 TEST_CASE("Chebyshev type I even", "[IIR Kernels]") {
 	constexpr auto ripple = 0.005;
-	auto tf = Chebyshev1(8, ripple);
-	REQUIRE(tf.zeros.NumRoots() == 0);
-	REQUIRE(tf.poles.NumRoots() == 8);
-	REQUIRE(std::abs(tf(0.0)) == Approx(1.0 - ripple).margin(1e-9));
-	REQUIRE(std::abs(tf(1.0i)) == Approx(1.0 - ripple));
+	for (auto order : { 2, 4, 6, 8 }) {
+		auto tf = Chebyshev1(order, ripple);
+		REQUIRE(tf.zeros.NumRoots() == 0);
+		REQUIRE(tf.poles.NumRoots() == order);
+		REQUIRE(std::abs(tf(0.0)) == Approx(1.0 - ripple).margin(1e-9));
+		REQUIRE(std::abs(tf(1.0i)) == Approx(1.0 - ripple));
+	}
 }
 
 TEST_CASE("Chebyshev type I odd", "[IIR Kernels]") {
 	constexpr auto ripple = 0.005;
-	auto tf = Chebyshev1(9, ripple);
-	REQUIRE(tf.zeros.NumRoots() == 0);
-	REQUIRE(tf.poles.NumRoots() == 9);
-	REQUIRE(std::abs(tf(0.0)) == Approx(1.0).margin(1e-9));
-	REQUIRE(std::abs(tf(1.0i)) == Approx(1.0 - ripple));
+	for (auto order : { 1, 3, 5, 7 }) {
+		auto tf = Chebyshev1(order, ripple);
+		REQUIRE(tf.zeros.NumRoots() == 0);
+		REQUIRE(tf.poles.NumRoots() == order);
+		REQUIRE(std::abs(tf(0.0)) == Approx(1.0).margin(1e-9));
+		REQUIRE(std::abs(tf(1.0i)) == Approx(1.0 - ripple));
+	}
 }
 
 TEST_CASE("Chebyshev type II even", "[IIR Kernels]") {
 	constexpr auto ripple = 0.005;
-	auto tf = Chebyshev2(8, ripple);
-	REQUIRE(tf.zeros.NumRoots() == 8);
-	REQUIRE(tf.poles.NumRoots() == 8);
-	REQUIRE(std::abs(tf(0.0)) == Approx(1.0).margin(1e-9));
-	REQUIRE(std::abs(tf(1.0i)) == Approx(ripple).margin(1e-9));
+	for (auto order : { 2, 4, 6, 8 }) {
+		auto tf = Chebyshev2(order, ripple);
+		REQUIRE(tf.zeros.NumRoots() == order);
+		REQUIRE(tf.poles.NumRoots() == order);
+		REQUIRE(std::abs(tf(0.0)) == Approx(1.0).margin(1e-9));
+		REQUIRE(std::abs(tf(1.0i)) == Approx(ripple).margin(1e-9));
+	}
 }
 
 TEST_CASE("Chebyshev type II odd", "[IIR Kernels]") {
 	constexpr auto ripple = 0.05;
-	auto tf = Chebyshev2(9, ripple);
-	REQUIRE(tf.zeros.NumRoots() == 8);
-	REQUIRE(tf.poles.NumRoots() == 9);
-	REQUIRE(std::abs(tf(0.0)) == Approx(1.0).margin(1e-9));
-	REQUIRE(std::abs(tf(1.0i)) == Approx(ripple).margin(1e-9));
-}
-
-TEST_CASE("Elliptic odd", "[IIR Kernels]") {
-	constexpr auto passbandRipple = 0.05;
-	constexpr auto stopbandRipple = 0.1;
-
 	for (auto order : { 1, 3, 5, 7 }) {
-		const auto [k, kp, K, Kp, k1, k1p, K1, K1p, epsilon] = impl::EllipticOrderRipples(order, passbandRipple, stopbandRipple);
-		const auto ws = 1.0 / k;
-
-		auto tf = Elliptic(order, passbandRipple, stopbandRipple);
-
-		REQUIRE(tf(0.0) == Approx(1.0).margin(1e-9));
-		REQUIRE(abs(tf(1.0i)) == Approx(1.0 - passbandRipple).margin(1e-9));
-		REQUIRE(abs(tf(1.0i * ws)) == Approx(stopbandRipple).margin(1e-9));
+		auto tf = Chebyshev2(order, ripple);
+		REQUIRE(tf.zeros.NumRoots() == order - 1);
+		REQUIRE(tf.poles.NumRoots() == order);
+		REQUIRE(std::abs(tf(0.0)) == Approx(1.0).margin(1e-9));
+		REQUIRE(std::abs(tf(1.0i)) == Approx(ripple).margin(1e-9));
 	}
 }
 
@@ -90,8 +82,28 @@ TEST_CASE("Elliptic even", "[IIR Kernels]") {
 		const auto ws = 1.0 / k;
 
 		auto tf = Elliptic(order, passbandRipple, stopbandRipple);
-		
+
+		REQUIRE(tf.zeros.NumRoots() == order);
+		REQUIRE(tf.poles.NumRoots() == order);
 		REQUIRE(tf(0.0) == Approx(1.0 - passbandRipple).margin(1e-9));
+		REQUIRE(abs(tf(1.0i)) == Approx(1.0 - passbandRipple).margin(1e-9));
+		REQUIRE(abs(tf(1.0i * ws)) == Approx(stopbandRipple).margin(1e-9));
+	}
+}
+
+TEST_CASE("Elliptic odd", "[IIR Kernels]") {
+	constexpr auto passbandRipple = 0.05;
+	constexpr auto stopbandRipple = 0.1;
+
+	for (auto order : { 1, 3, 5, 7 }) {
+		const auto [k, kp, K, Kp, k1, k1p, K1, K1p, epsilon] = impl::EllipticOrderRipples(order, passbandRipple, stopbandRipple);
+		const auto ws = 1.0 / k;
+
+		auto tf = Elliptic(order, passbandRipple, stopbandRipple);
+
+		REQUIRE(tf.zeros.NumRoots() == order - 1);
+		REQUIRE(tf.poles.NumRoots() == order);
+		REQUIRE(tf(0.0) == Approx(1.0).margin(1e-9));
 		REQUIRE(abs(tf(1.0i)) == Approx(1.0 - passbandRipple).margin(1e-9));
 		REQUIRE(abs(tf(1.0i * ws)) == Approx(stopbandRipple).margin(1e-9));
 	}
