@@ -128,9 +128,9 @@ TEST_CASE("Butterworth bandstop", "[IIR]") {
 	REQUIRE(params.upperPassbandRipple < butterRippleTolerance);
 }
 
-TEST_CASE("Butterworth bandpass even order", "[IIR]") {
-	constexpr int order = 8;
-	REQUIRE_NOTHROW(IirFilter<float>(order, Bandpass(BUTTERWORTH).Band(butterLower, butterUpper)));
+TEST_CASE("Butterworth bandpass odd order", "[IIR]") {
+	constexpr int order = 7;
+	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(BUTTERWORTH).Band(butterLower, butterUpper)));
 }
 
 TEST_CASE("Butterworth bandstop odd order", "[IIR]") {
@@ -199,9 +199,9 @@ TEST_CASE("Chebyshev 1 bandstop", "[IIR]") {
 	REQUIRE(params.upperPassbandRipple == Approx(cheby1Ripple).margin(0.005));
 }
 
-TEST_CASE("Chebyshev 1 bandpass even order", "[IIR]") {
-	constexpr int order = 8;
-	REQUIRE_NOTHROW(IirFilter<float>(order, Bandpass(CHEBYSHEV1).Band(cheby1Lower, cheby1Upper)));
+TEST_CASE("Chebyshev 1 bandpass odd order", "[IIR]") {
+	constexpr int order = 7;
+	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(CHEBYSHEV1).Band(cheby1Lower, cheby1Upper)));
 }
 
 TEST_CASE("Chebyshev 1 bandstop odd order", "[IIR]") {
@@ -271,9 +271,9 @@ TEST_CASE("Chebyshev 2 bandstop", "[IIR]") {
 	REQUIRE(params.upperPassbandRipple < cheby2RippleTolerance);
 }
 
-TEST_CASE("Chebyshev 2 bandpass even order", "[IIR]") {
-	constexpr int order = 8;
-	REQUIRE_NOTHROW(IirFilter<float>(order, Bandpass(CHEBYSHEV2).Band(cheby2Lower, cheby2Upper)));
+TEST_CASE("Chebyshev 2 bandpass odd order", "[IIR]") {
+	constexpr int order = 7;
+	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(CHEBYSHEV2).Band(cheby2Lower, cheby2Upper)));
 }
 
 TEST_CASE("Chebyshev 2 bandstop odd order", "[IIR]") {
@@ -342,9 +342,9 @@ TEST_CASE("Elliptic bandstop", "[IIR]") {
 	REQUIRE(params.upperPassbandRipple == Approx(ellipticPassRipple).margin(0.005));
 }
 
-TEST_CASE("Elliptic bandpass even order", "[IIR]") {
-	constexpr int order = 8;
-	REQUIRE_NOTHROW(IirFilter<float>(order, Bandpass(ELLIPTIC).Band(ellipticLower, ellipticUpper)));
+TEST_CASE("Elliptic bandpass odd order", "[IIR]") {
+	constexpr int order = 7;
+	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(ELLIPTIC).Band(ellipticLower, ellipticUpper)));
 }
 
 TEST_CASE("Elliptic bandstop odd order", "[IIR]") {
