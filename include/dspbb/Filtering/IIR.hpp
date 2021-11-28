@@ -5,7 +5,9 @@
 #include "FilterUtility.hpp"
 #include "IIR/BandTransforms.hpp"
 #include "IIR/Butterworth.hpp"
+#include "IIR/Chebyshev.hpp"
 #include "IIR/Descs.hpp"
+#include "IIR/Elliptic.hpp"
 #include "IIR/Filter.hpp"
 #include "IIR/Realizations.hpp"
 
@@ -14,20 +16,43 @@ namespace dspbb {
 
 
 //------------------------------------------------------------------------------
-// Butterworth method
+// Prototype filters
 //------------------------------------------------------------------------------
 
 namespace impl {
 	template <class T>
-	auto PrototypeButterworth(size_t order) {
+	DiscreteZeroPoleGain<T> DiscretizePrototype(const ContinuousZeroPoleGain<T>& sys) {
 		constexpr T sampleRate = T(2) / pi_v<T>;
-		const auto analog = Butterworth<T>(order);
-		auto halfband = BilinearTransform(analog, sampleRate, { T(1) });
+		auto halfband = BilinearTransform(sys, sampleRate, { T(1) });
 		return halfband;
+	}
+
+	template <class T>
+	auto PrototypeButterworth(size_t order) {
+		return DiscretizePrototype(Butterworth<T>(order));
+	}
+
+	template <class T>
+	auto PrototypeChebyshev1(size_t order, T passbandRipple) {
+		return DiscretizePrototype(Chebyshev1<T>(order, passbandRipple));
+	}
+
+	template <class T>
+	auto PrototypeChebyshev2(size_t order, T stopbandRipple) {
+		return DiscretizePrototype(Chebyshev2<T>(order, stopbandRipple));
+	}
+
+	template <class T>
+	auto PrototypeElliptic(size_t order, T passbandRipple, T stopbandRipple) {
+		return DiscretizePrototype(Elliptic<T>(order, passbandRipple, stopbandRipple));
 	}
 } // namespace impl
 
-// Lowpass
+
+//------------------------------------------------------------------------------
+// Butterworth method
+//------------------------------------------------------------------------------
+
 template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodButterworth, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeButterworth<T>(order);
@@ -35,7 +60,6 @@ auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodButterworth,
 	return filter;
 }
 
-// Highpass
 template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::HighpassDesc<impl::IirMethodButterworth, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeButterworth<T>(order);
@@ -43,25 +67,137 @@ auto IirFilter(size_t order, const impl::HighpassDesc<impl::IirMethodButterworth
 	return filter;
 }
 
-// Bandpass
 template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::BandpassDesc<impl::IirMethodButterworth, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	if (order % 2 != 0) {
 		throw std::invalid_argument("IIR bandpass filter must have an even order.");
 	}
 	const auto halfband = impl::PrototypeButterworth<T>(order);
-	auto filter = Halfband2Bandpass(halfband, desc.low, desc.high);
+	auto filter = Halfband2Bandpass(halfband, desc.lower, desc.upper);
 	return filter;
 }
 
-// Highpass
 template <class T, class ParamType>
 auto IirFilter(size_t order, const impl::BandstopDesc<impl::IirMethodButterworth, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	if (order % 2 != 0) {
 		throw std::invalid_argument("IIR bandstop filter must have an even order.");
 	}
 	const auto halfband = impl::PrototypeButterworth<T>(order);
-	auto filter = Halfband2Bandstop(halfband, desc.low, desc.high);
+	auto filter = Halfband2Bandstop(halfband, desc.lower, desc.upper);
+	return filter;
+}
+
+//------------------------------------------------------------------------------
+// Chebyshev 1 method
+//------------------------------------------------------------------------------
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodChebyshev1, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	const auto halfband = impl::PrototypeChebyshev1<T>(order, desc.passbandRipple);
+	auto filter = Halfband2Lowpass(halfband, desc.cutoff);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::HighpassDesc<impl::IirMethodChebyshev1, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	const auto halfband = impl::PrototypeChebyshev1<T>(order, desc.passbandRipple);
+	auto filter = Halfband2Highpass(halfband, desc.cutoff);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::BandpassDesc<impl::IirMethodChebyshev1, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	if (order % 2 != 0) {
+		throw std::invalid_argument("IIR bandpass filter must have an even order.");
+	}
+	const auto halfband = impl::PrototypeChebyshev1<T>(order, desc.passbandRipple);
+	auto filter = Halfband2Bandpass(halfband, desc.lower, desc.upper);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::BandstopDesc<impl::IirMethodChebyshev1, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	if (order % 2 != 0) {
+		throw std::invalid_argument("IIR bandstop filter must have an even order.");
+	}
+	const auto halfband = impl::PrototypeChebyshev1<T>(order, desc.passbandRipple);
+	auto filter = Halfband2Bandstop(halfband, desc.lower, desc.upper);
+	return filter;
+}
+
+//------------------------------------------------------------------------------
+// Chebyshev 2 method
+//------------------------------------------------------------------------------
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodChebyshev2, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	const auto halfband = impl::PrototypeChebyshev2<T>(order, desc.stopbandRipple);
+	auto filter = Halfband2Lowpass(halfband, desc.cutoff);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::HighpassDesc<impl::IirMethodChebyshev2, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	const auto halfband = impl::PrototypeChebyshev2<T>(order, desc.stopbandRipple);
+	auto filter = Halfband2Highpass(halfband, desc.cutoff);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::BandpassDesc<impl::IirMethodChebyshev2, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	if (order % 2 != 0) {
+		throw std::invalid_argument("IIR bandpass filter must have an even order.");
+	}
+	const auto halfband = impl::PrototypeChebyshev2<T>(order, desc.stopbandRipple);
+	auto filter = Halfband2Bandpass(halfband, desc.lower, desc.upper);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::BandstopDesc<impl::IirMethodChebyshev2, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	if (order % 2 != 0) {
+		throw std::invalid_argument("IIR bandstop filter must have an even order.");
+	}
+	const auto halfband = impl::PrototypeChebyshev2<T>(order, desc.stopbandRipple);
+	auto filter = Halfband2Bandstop(halfband, desc.lower, desc.upper);
+	return filter;
+}
+
+//------------------------------------------------------------------------------
+// Elliptic method
+//------------------------------------------------------------------------------
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::LowpassDesc<impl::IirMethodElliptic, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	const auto halfband = impl::PrototypeElliptic<T>(order, desc.passbandRipple, desc.stopbandRipple);
+	auto filter = Halfband2Lowpass(halfband, desc.cutoff);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::HighpassDesc<impl::IirMethodElliptic, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	const auto halfband = impl::PrototypeElliptic<T>(order, desc.passbandRipple, desc.stopbandRipple);
+	auto filter = Halfband2Highpass(halfband, desc.cutoff);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::BandpassDesc<impl::IirMethodElliptic, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	if (order % 2 != 0) {
+		throw std::invalid_argument("IIR bandpass filter must have an even order.");
+	}
+	const auto halfband = impl::PrototypeElliptic<T>(order, desc.passbandRipple, desc.stopbandRipple);
+	auto filter = Halfband2Bandpass(halfband, desc.lower, desc.upper);
+	return filter;
+}
+
+template <class T, class ParamType>
+auto IirFilter(size_t order, const impl::BandstopDesc<impl::IirMethodElliptic, ParamType>& desc) -> DiscreteZeroPoleGain<T> {
+	if (order % 2 != 0) {
+		throw std::invalid_argument("IIR bandstop filter must have an even order.");
+	}
+	const auto halfband = impl::PrototypeElliptic<T>(order, desc.passbandRipple, desc.stopbandRipple);
+	auto filter = Halfband2Bandstop(halfband, desc.lower, desc.upper);
 	return filter;
 }
 

@@ -126,6 +126,30 @@ constexpr float lsWeightMid = 0.1f;
 constexpr float lsWeightTr2 = 0.1f;
 constexpr float lsWeightHigh = 0.1f;
 
+TEST_CASE("Fresh least squares", "[FIR Descs]") {
+	const auto lpc = Lowpass(LEAST_SQUARES).Cutoff(lsBegin1, lsEnd1);
+	REQUIRE(lpc.cutoffBegin == lsBegin1);
+	REQUIRE(lpc.cutoffEnd == lsEnd1);
+
+	const auto lpw = Lowpass(LEAST_SQUARES).Weight(lsWeightLow, lsWeightTr1, lsWeightHigh);
+	REQUIRE(lpw.weightLow == lsWeightLow);
+	REQUIRE(lpw.weightTransition == lsWeightTr1);
+	REQUIRE(lpw.weightHigh == lsWeightHigh);
+
+	const auto bpc = Bandpass(LEAST_SQUARES).Band(lsBegin1, lsEnd1, lsBegin2, lsEnd2);
+	REQUIRE(bpc.lowerBegin == lsBegin1);
+	REQUIRE(bpc.lowerEnd == lsEnd1);
+	REQUIRE(bpc.upperBegin == lsBegin2);
+	REQUIRE(bpc.upperEnd == lsEnd2);
+
+	const auto bpw = Bandpass(LEAST_SQUARES).Weight(lsWeightLow, lsWeightTr1, lsWeightMid, lsWeightTr2, lsWeightHigh);
+	REQUIRE(bpw.weightLow == lsWeightLow);
+	REQUIRE(bpw.weightTransition1 == lsWeightTr1);
+	REQUIRE(bpw.weightMid == lsWeightMid);
+	REQUIRE(bpw.weightTransition2 == lsWeightTr2);
+	REQUIRE(bpw.weightHigh == lsWeightHigh);
+}
+
 TEST_CASE("Low pass least squares", "[FIR Descs]") {
 	const auto desc = Lowpass(LEAST_SQUARES).Cutoff(lsBegin1, lsEnd1).Weight(lsWeightLow, lsWeightTr1, lsWeightHigh);
 	REQUIRE(desc.cutoffBegin == lsBegin1);

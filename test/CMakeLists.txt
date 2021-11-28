@@ -31,6 +31,7 @@ target_sources(UnitTest
 		"Math/Test_Functions.cpp"
 		"Math/Test_Polynomials.cpp"
 		"Math/Test_RootTransforms.cpp"
+		"Math/Test_Solvers.cpp"
 		"Math/Test_Statistics.cpp"
 		"Primitives/Test_Signal.cpp"
 		"Primitives/Test_SignalArithmetic.cpp"
