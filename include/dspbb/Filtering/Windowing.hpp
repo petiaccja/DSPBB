@@ -17,7 +17,7 @@ namespace dspbb {
 // Assess properties of windows.
 //------------------------------------------------------------------------------
 template <class T, eSignalDomain Domain>
-T CoherentGain(SignalView<T, Domain> window) {
+T CoherentGain(BasicSignalView<T, Domain> window) {
 	return Sum(window) / remove_complex_t<T>(window.Size());
 }
 
@@ -27,7 +27,7 @@ T CoherentGain(const BasicSignal<T, Domain>& window) {
 }
 
 template <class T, eSignalDomain Domain>
-T EnergyGain(SignalView<T, Domain> window) {
+T EnergyGain(BasicSignalView<T, Domain> window) {
 	return SumSquare(window) / T(window.Size());
 }
 

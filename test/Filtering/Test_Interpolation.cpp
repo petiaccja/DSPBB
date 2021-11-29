@@ -47,8 +47,8 @@ TEST_CASE("Polyphase interpolation", "[Interpolation]") {
 
 	REQUIRE(output[0] == Approx(0).margin(0.001f));
 
-	const TimeSignalView<const float> frontView{ output.begin() + 100, output.begin() + 350 };
-	const TimeSignalView<const float> backView{ output.begin() + 101, output.begin() + 351 };
+	const SignalView<const float> frontView{ output.begin() + 100, output.begin() + 350 };
+	const SignalView<const float> backView{ output.begin() + 101, output.begin() + 351 };
 	const auto diff = backView - frontView;
 	REQUIRE(Mean(diff) == Approx(1.0f / numFilters).epsilon(0.001f));
 	REQUIRE(Min(diff) == Approx(1.0f / numFilters).epsilon(0.02f));
@@ -102,8 +102,8 @@ TEST_CASE("Polyphase resampling upsample ramp", "[Interpolation]") {
 
 	Resample(output, signal, polyphase, { 7, 11 }, { filter.Size(), numFilters });
 
-	const TimeSignalView<const float> frontView{ output.begin(), output.Size() - 1 };
-	const TimeSignalView<const float> backView{ output.begin() + 1, output.Size() - 1 };
+	const SignalView<const float> frontView{ output.begin(), output.Size() - 1 };
+	const SignalView<const float> backView{ output.begin() + 1, output.Size() - 1 };
 	const auto diff = backView - frontView;
 	REQUIRE(Mean(diff) == Approx(7.f / 11.f).epsilon(0.001f));
 	REQUIRE(Min(diff) == Approx(7.f / 11.f).epsilon(0.02f));
@@ -125,8 +125,8 @@ TEST_CASE("Polyphase resampling downsample ramp mild", "[Interpolation]") {
 
 	Resample(output, signal, polyphase, ratio, { filter.Size(), numFilters });
 
-	const TimeSignalView<const float> frontView{ output.begin(), output.Size() - 1 };
-	const TimeSignalView<const float> backView{ output.begin() + 1, output.Size() - 1 };
+	const SignalView<const float> frontView{ output.begin(), output.Size() - 1 };
+	const SignalView<const float> backView{ output.begin() + 1, output.Size() - 1 };
 	const auto diff = backView - frontView;
 	REQUIRE(Mean(diff) == Approx(ratioReal).epsilon(0.001f));
 	REQUIRE(Min(diff) == Approx(ratioReal).epsilon(0.02f));
@@ -148,8 +148,8 @@ TEST_CASE("Polyphase resampling downsample ramp strong", "[Interpolation]") {
 
 	Resample(output, signal, polyphase, ratio, { filter.Size(), numFilters });
 
-	const TimeSignalView<const float> frontView{ output.begin(), output.Size() - 1 };
-	const TimeSignalView<const float> backView{ output.begin() + 1, output.Size() - 1 };
+	const SignalView<const float> frontView{ output.begin(), output.Size() - 1 };
+	const SignalView<const float> backView{ output.begin() + 1, output.Size() - 1 };
 	const auto diff = backView - frontView;
 	REQUIRE(Mean(diff) == Approx(ratioReal).epsilon(0.001f));
 	REQUIRE(Min(diff) == Approx(ratioReal).epsilon(0.02f));

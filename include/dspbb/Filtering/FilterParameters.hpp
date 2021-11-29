@@ -459,7 +459,7 @@ namespace impl {
 
 
 template <class T>
-auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
+auto FrequencyResponse(const BasicSignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
 	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulse.Size() * 10;
 	const size_t paddedSize = impl::FrequencyResponseFftSize(impulse.Size(), gridSize);
 

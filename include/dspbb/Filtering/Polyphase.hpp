@@ -11,13 +11,13 @@ namespace dspbb {
 
 template <class T, eSignalDomain Domain>
 struct PolyphaseDecomposition {
-	SignalView<T, Domain> filterBank;
+	BasicSignalView<T, Domain> filterBank;
 	size_t numFilters;
-	SignalView<T, Domain> operator[](size_t index) {
+	BasicSignalView<T, Domain> operator[](size_t index) {
 		auto loc = SubSignalLocation(index);
 		return filterBank.SubSignal(loc.first, loc.second);
 	}
-	SignalView<const T, Domain> operator[](size_t index) const {
+	BasicSignalView<const T, Domain> operator[](size_t index) const {
 		auto loc = SubSignalLocation(index);
 		return filterBank.SubSignal(loc.first, loc.second);
 	}

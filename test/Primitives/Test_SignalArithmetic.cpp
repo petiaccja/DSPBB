@@ -15,18 +15,18 @@ static_assert(!is_mutable_signal_v<const BasicSignal<float, TIME_DOMAIN>>, "");
 static_assert(!is_mutable_signal_v<const BasicSignal<float, TIME_DOMAIN>&>, "");
 static_assert(!is_mutable_signal_v<const BasicSignal<float, TIME_DOMAIN>&&>, "");
 
-static_assert(is_mutable_signal_v<SignalView<float, TIME_DOMAIN>>, "");
-static_assert(is_mutable_signal_v<SignalView<float, TIME_DOMAIN>&>, "");
-static_assert(is_mutable_signal_v<SignalView<float, TIME_DOMAIN>&&>, "");
-static_assert(is_mutable_signal_v<const SignalView<float, TIME_DOMAIN>>, "");
-static_assert(is_mutable_signal_v<const SignalView<float, TIME_DOMAIN>&>, "");
-static_assert(is_mutable_signal_v<const SignalView<float, TIME_DOMAIN>&&>, "");
-static_assert(!is_mutable_signal_v<SignalView<const float, TIME_DOMAIN>>, "");
-static_assert(!is_mutable_signal_v<SignalView<const float, TIME_DOMAIN>&>, "");
-static_assert(!is_mutable_signal_v<SignalView<const float, TIME_DOMAIN>&&>, "");
-static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>>, "");
-static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>&>, "");
-static_assert(!is_mutable_signal_v<const SignalView<const float, TIME_DOMAIN>&&>, "");
+static_assert(is_mutable_signal_v<BasicSignalView<float, TIME_DOMAIN>>, "");
+static_assert(is_mutable_signal_v<BasicSignalView<float, TIME_DOMAIN>&>, "");
+static_assert(is_mutable_signal_v<BasicSignalView<float, TIME_DOMAIN>&&>, "");
+static_assert(is_mutable_signal_v<const BasicSignalView<float, TIME_DOMAIN>>, "");
+static_assert(is_mutable_signal_v<const BasicSignalView<float, TIME_DOMAIN>&>, "");
+static_assert(is_mutable_signal_v<const BasicSignalView<float, TIME_DOMAIN>&&>, "");
+static_assert(!is_mutable_signal_v<BasicSignalView<const float, TIME_DOMAIN>>, "");
+static_assert(!is_mutable_signal_v<BasicSignalView<const float, TIME_DOMAIN>&>, "");
+static_assert(!is_mutable_signal_v<BasicSignalView<const float, TIME_DOMAIN>&&>, "");
+static_assert(!is_mutable_signal_v<const BasicSignalView<const float, TIME_DOMAIN>>, "");
+static_assert(!is_mutable_signal_v<const BasicSignalView<const float, TIME_DOMAIN>&>, "");
+static_assert(!is_mutable_signal_v<const BasicSignalView<const float, TIME_DOMAIN>&&>, "");
 
 constexpr std::array<size_t, 2> sizes = { 1, 137 };
 

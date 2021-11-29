@@ -8,7 +8,7 @@ enum class eSignalDomain;
 template <class T, eSignalDomain Domain>
 class BasicSignal;
 template <class T, eSignalDomain Domain>
-class SignalView;
+class BasicSignalView;
 
 } // namespace dspbb
 
@@ -28,7 +28,7 @@ template <class T>
 struct is_signal_view : std::false_type {};
 
 template <class T, eSignalDomain Domain>
-struct is_signal_view<SignalView<T, Domain>> : std::true_type {};
+struct is_signal_view<BasicSignalView<T, Domain>> : std::true_type {};
 
 template <class T>
 constexpr bool is_signal_view_v = is_signal_view<T>::value;
@@ -51,7 +51,7 @@ struct signal_traits<BasicSignal<T, Domain>> {
 };
 
 template <class T, eSignalDomain Domain>
-struct signal_traits<SignalView<T, Domain>> {
+struct signal_traits<BasicSignalView<T, Domain>> {
 	using type = T;
 	static constexpr auto domain = Domain;
 };

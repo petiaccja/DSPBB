@@ -36,7 +36,7 @@ TEST_CASE("Logspace", "[Generators]") {
 	REQUIRE(s.Size() == 23);
 	REQUIRE(s[0] == Approx(100.f));
 	REQUIRE(s[22] == Approx(10000.f));
-	const auto quot = TimeSignalView<const float>(s.begin(), s.end() - 1) / TimeSignalView<const float>(s.begin() + 1, s.end());
+	const auto quot = SignalView<const float>(s.begin(), s.end() - 1) / SignalView<const float>(s.begin() + 1, s.end());
 	REQUIRE(Max(quot) == Approx(Min(quot)));
 }
 
@@ -116,7 +116,7 @@ TEST_CASE("Chirp phase", "[Generators]") {
 	REQUIRE(s[0] == Approx(phase));
 	REQUIRE(*(s.begin() + 1) - *(s.begin()) == Approx(2 * pi_v<double> * startFrequency / sampleRate).epsilon(0.01f));
 	REQUIRE(*(s.end() - 1) - *(s.end() - 2) == Approx(2 * pi_v<double> * endFrequency / sampleRate).epsilon(0.01f));
-	REQUIRE(Max(TimeSignalView<float>(s.begin(), s.end() - 1) - TimeSignalView<float>(s.begin() + 1, s.end())) < 0.0f);
+	REQUIRE(Max(SignalView<float>(s.begin(), s.end() - 1) - SignalView<float>(s.begin() + 1, s.end())) < 0.0f);
 }
 
 TEST_CASE("Square chirp", "[Generators]") {
