@@ -14,25 +14,25 @@ auto iden(T arg) {
 }
 
 
-#define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                                               \
-	TEST_CASE(NAME " real", "[Functions]") {                                                       \
-		using namespace std;                                                                       \
+#define TEST_CASE_FUNCTION_REAL(NAME, FUNC, STDFUNC)                                           \
+	TEST_CASE(NAME " real", "[Functions]") {                                                   \
+		using namespace std;                                                                   \
 		const Signal<float> signal = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f }; \
-		const auto applied = FUNC(signal);                                                         \
-		for (size_t i = 0; i < signal.Size(); ++i) {                                               \
-			REQUIRE(Approx(applied[i]) == STDFUNC(signal[i]));                                     \
-		}                                                                                          \
+		const auto applied = FUNC(signal);                                                     \
+		for (size_t i = 0; i < signal.Size(); ++i) {                                           \
+			REQUIRE(Approx(applied[i]) == STDFUNC(signal[i]));                                 \
+		}                                                                                      \
 	}
 
 
-#define TEST_CASE_FUNCTION_CPLX(NAME, FUNC, STDFUNC)                                   \
-	TEST_CASE(NAME " complex", "[Functions]") {                                        \
-		using namespace std;                                                           \
+#define TEST_CASE_FUNCTION_CPLX(NAME, FUNC, STDFUNC)                               \
+	TEST_CASE(NAME " complex", "[Functions]") {                                    \
+		using namespace std;                                                       \
 		const Signal<std::complex<float>> csignal = { -1.f + 0.7if, 8.f + 2.6if }; \
-		const auto capplied = FUNC(csignal);                                           \
-		for (size_t i = 0; i < csignal.Size(); ++i) {                                  \
-			REQUIRE(std::abs(capplied[i] - STDFUNC(csignal[i])) < 0.0001f);            \
-		}                                                                              \
+		const auto capplied = FUNC(csignal);                                       \
+		for (size_t i = 0; i < csignal.Size(); ++i) {                              \
+			REQUIRE(std::abs(capplied[i] - STDFUNC(csignal[i])) < 0.0001f);        \
+		}                                                                          \
 	}
 
 // Complex number functions.

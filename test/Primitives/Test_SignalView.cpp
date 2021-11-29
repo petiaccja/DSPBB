@@ -101,11 +101,11 @@ TEST_CASE("Data pointer", "[SignalView]") {
 TEST_CASE("Real/Imag pointer", "[SignalView]") {
 	using namespace std::complex_literals;
 	SignalCF signal = { 1.f + 2.if,
-							2.f + 3.if,
-							3.f + 6.if,
-							4.f + 7.if,
-							5.f + 8.if,
-							6.f + 9.if };
+						2.f + 3.if,
+						3.f + 6.if,
+						4.f + 7.if,
+						5.f + 8.if,
+						6.f + 9.if };
 
 	BasicSignalView<std::complex<float>, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(span.Data()->real() == 3);
@@ -120,11 +120,11 @@ TEST_CASE("Constant span", "[SignalView]") {
 	REQUIRE(*span.Data() == 3);
 
 	SignalCF csignal = { 1.f + 2.if,
-							 2.f + 3.if,
-							 3.f + 6.if,
-							 4.f + 7.if,
-							 5.f + 8.if,
-							 6.f + 9.if };
+						 2.f + 3.if,
+						 3.f + 6.if,
+						 4.f + 7.if,
+						 5.f + 8.if,
+						 6.f + 9.if };
 
 	BasicSignalView<const std::complex<float>, TIME_DOMAIN> cspan{ csignal.begin() + 2, csignal.begin() + 4 };
 	REQUIRE(cspan.Data()->real() == 3);
