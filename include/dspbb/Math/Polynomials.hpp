@@ -34,7 +34,7 @@ private:
 	U Eval(const U& x) const;
 
 private:
-	Signal<T, DOMAINLESS> m_coefficients;
+	BasicSignal<T, DOMAINLESS> m_coefficients;
 };
 
 
@@ -74,7 +74,7 @@ private:
 	U Eval(const U& x) const;
 
 private:
-	Signal<T, DOMAINLESS> m_mem;
+	BasicSignal<T, DOMAINLESS> m_mem;
 	SignalView<T, DOMAINLESS> m_real;
 	SignalView<std::complex<T>, DOMAINLESS> m_complex;
 };

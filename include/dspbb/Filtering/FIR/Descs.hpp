@@ -49,7 +49,7 @@ namespace impl {
 		[[nodiscard]] auto Cutoff(NewParamType cutoffNew) {
 			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(cutoffNew), std::move(window) } };
 		}
-		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
+		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
 		[[nodiscard]] auto Window(NewWindowType windowNew) {
 			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(cutoff), std::move(windowNew) } };
 		}
@@ -69,7 +69,7 @@ namespace impl {
 		[[nodiscard]] auto Band(NewParamType lowerNew, NewParamType upperNew) {
 			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(lowerNew), std::move(upperNew), std::move(window) } };
 		}
-		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
+		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
 		[[nodiscard]] auto Window(NewWindowType windowNew) {
 			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(lower), std::move(upper), std::move(windowNew) } };
 		}
@@ -88,7 +88,7 @@ namespace impl {
 		[[nodiscard]] auto Response(NewResponseFunc responseFuncNew) {
 			return ArbitraryDesc<FirMethodWindowed, NewResponseFunc, WindowType>{ std::move(responseFuncNew), std::move(window) };
 		}
-		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
+		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
 		[[nodiscard]] auto Window(NewWindowType windowNew) {
 			return ArbitraryDesc<FirMethodWindowed, ResponseFunc, NewWindowType>{ std::move(responseFunc), std::move(windowNew) };
 		}
@@ -102,7 +102,7 @@ namespace impl {
 	struct HilbertDesc<FirMethodWindowed, WindowType> {
 		WindowType window;
 
-		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, Signal<float, TIME_DOMAIN>&>, int> = 0>
+		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
 		[[nodiscard]] auto Window(NewWindowType windowNew) {
 			return HilbertDesc<FirMethodWindowed, NewWindowType>{ std::move(windowNew) };
 		}

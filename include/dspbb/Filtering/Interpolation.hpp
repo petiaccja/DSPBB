@@ -31,7 +31,7 @@ template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Decimate(const SignalT& input, size_t rate) {
 	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
 	constexpr auto domain = signal_traits<SignalT>::domain;
-	Signal<T, domain> output((input.Size() + rate - 1) / rate);
+	BasicSignal<T, domain> output((input.Size() + rate - 1) / rate);
 	Decimate(output, input, rate);
 	return output;
 }
@@ -63,7 +63,7 @@ template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Expand(const SignalT& input, size_t rate) {
 	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
 	constexpr auto domain = signal_traits<SignalT>::domain;
-	Signal<T, domain> output(input.Size() * rate);
+	BasicSignal<T, domain> output(input.Size() * rate);
 	Expand(output, input, rate);
 	return output;
 }
@@ -81,7 +81,7 @@ auto Expand(const SignalT& input, size_t rate) {
 template <class SignalR,
 		  class SignalT,
 		  class P, eSignalDomain D,
-		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, Signal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
+		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
 void Interpolate(SignalR&& output,
 				 const SignalT& input,
 				 const PolyphaseDecomposition<P, D>& polyphase,
@@ -122,7 +122,7 @@ void Interpolate(SignalR&& output,
 template <class SignalR,
 		  class SignalT,
 		  class P, eSignalDomain D,
-		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, Signal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
+		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
 std::pair<int64_t, uint64_t> Resample(SignalR&& output,
 									  const SignalT& input,
 									  const PolyphaseDecomposition<P, D>& polyphase,

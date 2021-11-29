@@ -85,7 +85,7 @@ auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t lengt
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
 	using R = product_type_t<T, U>;
 
-	Signal<R, Domain> out(length, R(0));
+	BasicSignal<R, Domain> out(length, R(0));
 	Convolution(out, u, v, offset, false);
 	return out;
 }

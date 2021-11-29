@@ -22,7 +22,7 @@ T CoherentGain(SignalView<T, Domain> window) {
 }
 
 template <class T, eSignalDomain Domain>
-T CoherentGain(const Signal<T, Domain>& window) {
+T CoherentGain(const BasicSignal<T, Domain>& window) {
 	return CoherentGain(AsConstView(window));
 }
 
@@ -32,7 +32,7 @@ T EnergyGain(SignalView<T, Domain> window) {
 }
 
 template <class T, eSignalDomain Domain>
-T EnergyGain(const Signal<T, Domain>& window) {
+T EnergyGain(const BasicSignal<T, Domain>& window) {
 	return EnergyGain(AsConstView(window));
 }
 
@@ -201,77 +201,77 @@ void DolphChebyshevWindow(SignalR&& out, V attenuation) {
 	using T = remove_complex_t<R>;
 	constexpr auto domain = signal_traits<std::decay_t<SignalR>>::domain;
 
-	Signal<T, domain> outReal(out.Size());
+	BasicSignal<T, domain> outReal(out.Size());
 	DolphChebyshevWindow(outReal, attenuation);
 	std::transform(outReal.begin(), outReal.end(), out.begin(), [](auto& v) { return R{ v, T(0) }; });
 }
 
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> HammingWindow(size_t length) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> HammingWindow(size_t length) {
+	BasicSignal<T, Domain> window(length);
 	HammingWindow(AsView(window));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> FlatTopWindow(size_t length) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> FlatTopWindow(size_t length) {
+	BasicSignal<T, Domain> window(length);
 	FlatTopWindow(AsView(window));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> RectangularWindow(size_t length) {
-	Signal<T, Domain> window(length, T(1.0));
+BasicSignal<T, Domain> RectangularWindow(size_t length) {
+	BasicSignal<T, Domain> window(length, T(1.0));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> TriangularWindow(size_t length) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> TriangularWindow(size_t length) {
+	BasicSignal<T, Domain> window(length);
 	TriangularWindow(AsView(window));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> BlackmanWindow(size_t length) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> BlackmanWindow(size_t length) {
+	BasicSignal<T, Domain> window(length);
 	BlackmanWindow(AsView(window));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> BlackmanHarrisWindow(size_t length) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> BlackmanHarrisWindow(size_t length) {
+	BasicSignal<T, Domain> window(length);
 	BlackmanHarrisWindow(AsView(window));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> GaussianWindow(size_t length, T sigma = T(1)) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> GaussianWindow(size_t length, T sigma = T(1)) {
+	BasicSignal<T, Domain> window(length);
 	GaussianWindow(AsView(window), sigma);
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> KaiserWindow(size_t length, T alpha = T(1)) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> KaiserWindow(size_t length, T alpha = T(1)) {
+	BasicSignal<T, Domain> window(length);
 	KaiserWindow(AsView(window), alpha);
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> LanczosWindow(size_t length) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> LanczosWindow(size_t length) {
+	BasicSignal<T, Domain> window(length);
 	LanczosWindow(AsView(window));
 	return window;
 }
 
 template <class T, eSignalDomain Domain = eSignalDomain::TIME>
-Signal<T, Domain> DolphChebyshevWindow(size_t length, T attenuation) {
-	Signal<T, Domain> window(length);
+BasicSignal<T, Domain> DolphChebyshevWindow(size_t length, T attenuation) {
+	BasicSignal<T, Domain> window(length);
 	DolphChebyshevWindow(AsView(window), attenuation);
 	return window;
 }

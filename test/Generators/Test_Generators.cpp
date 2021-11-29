@@ -108,7 +108,7 @@ TEST_CASE("Square wave", "[Generators]") {
 
 // Enough to test the base chirp phase function.
 TEST_CASE("Chirp phase", "[Generators]") {
-	TimeSignal<float> s(512);
+	Signal<float> s(512);
 	const double phase = 1.55;
 	const double startFrequency = 1150.;
 	const double endFrequency = 2320.;

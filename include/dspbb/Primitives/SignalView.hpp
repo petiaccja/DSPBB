@@ -24,10 +24,10 @@ public:
 	SignalView& operator=(SignalView&&) noexcept = default;
 	SignalView& operator=(const SignalView&) noexcept = default;
 
-	explicit SignalView(Signal<std::remove_const_t<T>, Domain>& signal);
+	explicit SignalView(BasicSignal<std::remove_const_t<T>, Domain>& signal);
 
 	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
-	explicit SignalView(const Signal<std::remove_const_t<T>, Domain>& signal);
+	explicit SignalView(const BasicSignal<std::remove_const_t<T>, Domain>& signal);
 
 	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
 	SignalView(const SignalView<std::remove_const_t<T>, Domain>& signal);
@@ -66,13 +66,13 @@ private:
 };
 
 template <class T, eSignalDomain Domain>
-SignalView<T, Domain>::SignalView(Signal<std::remove_const_t<T>, Domain>& signal)
+SignalView<T, Domain>::SignalView(BasicSignal<std::remove_const_t<T>, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
 template <class T, eSignalDomain Domain>
 template <class Q, std::enable_if_t<std::is_const_v<Q>, int>>
-SignalView<T, Domain>::SignalView(const Signal<std::remove_const_t<T>, Domain>& signal)
+SignalView<T, Domain>::SignalView(const BasicSignal<std::remove_const_t<T>, Domain>& signal)
 	: SignalView(signal.begin(), signal.end()) {
 }
 
@@ -148,12 +148,12 @@ SignalView<T, Domain> SignalView<T, Domain>::SubSignal(size_type offset, size_ty
 
 // Helpers
 template <class T, eSignalDomain Domain>
-auto AsView(Signal<T, Domain>& signal) -> SignalView<T, Domain> {
+auto AsView(BasicSignal<T, Domain>& signal) -> SignalView<T, Domain> {
 	return SignalView<T, Domain>{ signal };
 }
 
 template <class T, eSignalDomain Domain>
-auto AsView(const Signal<T, Domain>& signal) -> SignalView<const T, Domain> {
+auto AsView(const BasicSignal<T, Domain>& signal) -> SignalView<const T, Domain> {
 	return SignalView<const T, Domain>{ signal };
 }
 
@@ -168,7 +168,7 @@ auto AsView(SignalView<const T, Domain> view) -> SignalView<const T, Domain> {
 }
 
 template <class T, eSignalDomain Domain>
-auto AsConstView(const Signal<T, Domain>& signal) -> SignalView<const T, Domain> {
+auto AsConstView(const BasicSignal<T, Domain>& signal) -> SignalView<const T, Domain> {
 	return SignalView<const T, Domain>{ signal };
 }
 

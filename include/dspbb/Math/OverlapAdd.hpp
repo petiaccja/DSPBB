@@ -79,7 +79,7 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};
 
-	Signal<U, Domain> filter(chunkSize, U(0));
+	BasicSignal<U, Domain> filter(chunkSize, U(0));
 	std::copy(v.begin(), v.end(), filter.begin());
 	const auto filterFd = impl::ola::FftFilter(filter, is_complex_t, is_complex_u);
 
@@ -87,7 +87,7 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	const Interval uExtent{ intptr_t(0), intptr_t(u.Size()) };
 	const Interval loopInterval = Intersection(uExtent, EncompassingUnion(outExtent, outExtent + intptr_t(1) - intptr_t(v.Size())));
 
-	Signal<T, Domain> workingChunk(chunkSize, T(0));
+	BasicSignal<T, Domain> workingChunk(chunkSize, T(0));
 	Interval uInterval = { loopInterval.first, loopInterval.first + intptr_t(v.Size()) };
 	Interval outInterval = { loopInterval.first, loopInterval.first + intptr_t(chunkSize) };
 	for (; !IsDisjoint(outInterval, outExtent); uInterval += intptr_t(v.Size()), outInterval += intptr_t(v.Size())) {
@@ -134,7 +134,7 @@ auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length
 	using R = product_type_t<T, U>;
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 
-	Signal<R, Domain> out(length, R(remove_complex_t<R>(0)));
+	BasicSignal<R, Domain> out(length, R(remove_complex_t<R>(0)));
 	OverlapAdd(out, u, v, offset, chunkSize, false);
 	return out;
 }

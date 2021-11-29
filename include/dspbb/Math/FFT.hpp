@@ -108,26 +108,26 @@ namespace impl {
 	}
 
 	template <class T>
-	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, FftHalf, bool even) {
+	Signal<T> Ifft(SpectrumView<const std::complex<T>> in, FftHalf, bool even) {
 		const size_t halfSizeEven = in.Size() * 2 - 2;
 		const size_t halfSizeOdd = in.Size() * 2 - 1;
-		TimeSignal<T> out(even ? halfSizeEven : halfSizeOdd);
+		Signal<T> out(even ? halfSizeEven : halfSizeOdd);
 		Ifft(AsView(out), in);
 		return out;
 	}
 
 	template <class T>
-	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, FftFull) {
+	Signal<T> Ifft(SpectrumView<const std::complex<T>> in, FftFull) {
 		const size_t fullSize = in.Size();
-		TimeSignal<T> out(fullSize);
+		Signal<T> out(fullSize);
 		Ifft(AsView(out), in);
 		return out;
 	}
 
 	template <class T>
-	TimeSignal<std::complex<T>> Ifft(SpectrumView<const std::complex<T>> in) {
+	Signal<std::complex<T>> Ifft(SpectrumView<const std::complex<T>> in) {
 		const size_t size = in.Size();
-		TimeSignal<std::complex<T>> out(size);
+		Signal<std::complex<T>> out(size);
 		Ifft(AsView(out), in);
 		return out;
 	}

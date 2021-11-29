@@ -8,12 +8,12 @@
 
 using namespace dspbb;
 
-static_assert(is_mutable_signal_v<Signal<float, TIME_DOMAIN>>, "");
-static_assert(is_mutable_signal_v<Signal<float, TIME_DOMAIN>&>, "");
-static_assert(is_mutable_signal_v<Signal<float, TIME_DOMAIN>&&>, "");
-static_assert(!is_mutable_signal_v<const Signal<float, TIME_DOMAIN>>, "");
-static_assert(!is_mutable_signal_v<const Signal<float, TIME_DOMAIN>&>, "");
-static_assert(!is_mutable_signal_v<const Signal<float, TIME_DOMAIN>&&>, "");
+static_assert(is_mutable_signal_v<BasicSignal<float, TIME_DOMAIN>>, "");
+static_assert(is_mutable_signal_v<BasicSignal<float, TIME_DOMAIN>&>, "");
+static_assert(is_mutable_signal_v<BasicSignal<float, TIME_DOMAIN>&&>, "");
+static_assert(!is_mutable_signal_v<const BasicSignal<float, TIME_DOMAIN>>, "");
+static_assert(!is_mutable_signal_v<const BasicSignal<float, TIME_DOMAIN>&>, "");
+static_assert(!is_mutable_signal_v<const BasicSignal<float, TIME_DOMAIN>&&>, "");
 
 static_assert(is_mutable_signal_v<SignalView<float, TIME_DOMAIN>>, "");
 static_assert(is_mutable_signal_v<SignalView<float, TIME_DOMAIN>&>, "");

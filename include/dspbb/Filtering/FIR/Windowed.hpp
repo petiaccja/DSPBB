@@ -52,13 +52,13 @@ void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, const SignalW& 
 }
 
 
-template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && std::is_invocable_v<WindowFunc, Signal<float, TIME_DOMAIN>>, int> = 0>
+template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && std::is_invocable_v<WindowFunc, BasicSignal<float, TIME_DOMAIN>>, int> = 0>
 void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, WindowFunc windowFunc) {
 	assert(out.Size() % 2 == 1);
 	using R = typename signal_traits<SignalR>::type;
 	using ComplexR = std::complex<remove_complex_t<R>>;
 
-	Signal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.Size() / 2 + 1);
+	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.Size() / 2 + 1);
 	LinSpace(discreteResponse, R(0), R(1), true);
 	std::for_each(discreteResponse.begin(), discreteResponse.end(), [&response](auto& arg) { arg = response(std::real(arg)); });
 
@@ -77,7 +77,7 @@ void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, const S
 	using R = typename signal_traits<SignalR>::type;
 	using ComplexR = std::complex<remove_complex_t<R>>;
 
-	Signal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.Size() / 2 + 1);
+	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.Size() / 2 + 1);
 	LinSpace(discreteResponse, R(0), R(1), true);
 	std::for_each(discreteResponse.begin(), discreteResponse.end(), [&response](auto& arg) { arg = response(std::real(arg)); });
 

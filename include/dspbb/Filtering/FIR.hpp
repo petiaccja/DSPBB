@@ -193,7 +193,7 @@ void FirFilter(SignalR&& out, const impl::HilbertDesc<Method, Params...>& desc) 
 
 template <class T, eSignalDomain Domain, class ResponseDesc>
 auto FirFilter(size_t taps, ResponseDesc responseDesc) {
-	Signal<T, Domain> out(taps);
+	BasicSignal<T, Domain> out(taps);
 	FirFilter(out, responseDesc);
 	return out;
 }

@@ -28,8 +28,8 @@ public:
 	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
 
 private:
-	Signal<T, eSignalDomain::DOMAINLESS> recursiveState;
-	Signal<T, eSignalDomain::DOMAINLESS> forwardState;
+	BasicSignal<T, eSignalDomain::DOMAINLESS> recursiveState;
+	BasicSignal<T, eSignalDomain::DOMAINLESS> forwardState;
 };
 
 template <class T>
@@ -104,7 +104,7 @@ public:
 	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
 
 private:
-	Signal<T, eSignalDomain::DOMAINLESS> m_state;
+	BasicSignal<T, eSignalDomain::DOMAINLESS> m_state;
 };
 
 template <class T>

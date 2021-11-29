@@ -10,17 +10,17 @@ using namespace dspbb;
 
 
 TEST_CASE("Coherent gain", "[WindowFunctions]") {
-	Signal<float, TIME_DOMAIN> window(32, 0.5f);
+	BasicSignal<float, TIME_DOMAIN> window(32, 0.5f);
 	REQUIRE(CoherentGain(window) == Approx(0.5f));
 }
 
 TEST_CASE("Energy gain", "[WindowFunctions]") {
-	Signal<float, TIME_DOMAIN> window(32, 0.5f);
+	BasicSignal<float, TIME_DOMAIN> window(32, 0.5f);
 	REQUIRE(EnergyGain(window) == Approx(0.25f));
 }
 
 template <class T, eSignalDomain Domain>
-static bool IsSymmetric(const Signal<T, Domain>& window) {
+static bool IsSymmetric(const BasicSignal<T, Domain>& window) {
 	auto fw = window.begin();
 	auto rev = window.rbegin();
 	for (; fw <= rev.base(); ++fw, ++rev) {
@@ -33,7 +33,7 @@ static bool IsSymmetric(const Signal<T, Domain>& window) {
 }
 
 template <class T, eSignalDomain Domain>
-static bool IsPeakCentered(const Signal<T, Domain>& window) {
+static bool IsPeakCentered(const BasicSignal<T, Domain>& window) {
 	return std::abs(Max(Abs(window)) - std::abs(window[window.Size() / 2])) < 0.01f;
 }
 
@@ -49,7 +49,7 @@ TEST_CASE("Hamming window", "[WindowFunctions]") {
 
 
 TEST_CASE("Hamming window complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::hamming(window);
 
 	REQUIRE(window.Length() == 256);
@@ -73,7 +73,7 @@ TEST_CASE("Flat top window", "[WindowFunctions]") {
 
 
 TEST_CASE("Flat top complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::flattop(window);
 
 	REQUIRE(window.Length() == 256);
@@ -97,7 +97,7 @@ TEST_CASE("Rectangular window", "[WindowFunctions]") {
 
 
 TEST_CASE("Rectangular complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::rectangular(window);
 
 	REQUIRE(window.Length() == 256);
@@ -121,7 +121,7 @@ TEST_CASE("Triangular window", "[WindowFunctions]") {
 
 
 TEST_CASE("Triangular complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::triangular(window);
 
 	REQUIRE(window.Length() == 256);
@@ -144,7 +144,7 @@ TEST_CASE("Blackman window", "[WindowFunctions]") {
 
 
 TEST_CASE("Blackman complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::blackman(window);
 
 	REQUIRE(window.Length() == 256);
@@ -167,7 +167,7 @@ TEST_CASE("Blackman-Harris window", "[WindowFunctions]") {
 
 
 TEST_CASE("Blackman-Harris complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::blackmanHarris(window);
 
 	REQUIRE(window.Length() == 256);
@@ -190,7 +190,7 @@ TEST_CASE("Gaussian window", "[WindowFunctions]") {
 
 
 TEST_CASE("Gaussian complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::gaussian.sigma(0.3f)(window);
 
 	REQUIRE(window.Length() == 256);
@@ -212,7 +212,7 @@ TEST_CASE("Kaiser window", "[WindowFunctions]") {
 }
 
 TEST_CASE("Kaiser complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::kaiser.alpha(0.5f)(window);
 
 	REQUIRE(window.Length() == 256);
@@ -234,7 +234,7 @@ TEST_CASE("Lanczos window", "[WindowFunctions]") {
 }
 
 TEST_CASE("Lanczos complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(255);
+	Signal<std::complex<float>> window(255);
 	windows::lanczos(window);
 
 	REQUIRE(window.Length() == 255);
@@ -258,7 +258,7 @@ TEST_CASE("Dolph-Chebyshev window", "[WindowFunctions]") {
 }
 
 TEST_CASE("Dolph-Chebyshev complex", "[WindowFunctions]") {
-	TimeSignal<std::complex<float>> window(256);
+	Signal<std::complex<float>> window(256);
 	windows::dolphChebyshev.attenuation(0.001f)(window);
 	auto dbg = Real(window);
 

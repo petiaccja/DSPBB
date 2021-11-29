@@ -108,10 +108,10 @@ private:
 
 
 template <class T>
-dspbb::TimeSignal<T> RandomPositiveSignal(size_t size) {
+dspbb::Signal<T> RandomPositiveSignal(size_t size) {
 	thread_local std::mt19937 rne(772537547);
 	thread_local std::uniform_real_distribution<float> rng(1, 2);
-	dspbb::TimeSignal<T> s;
+	dspbb::Signal<T> s;
 	for (size_t i = 0; i < size; ++i) {
 		s.PushBack(rng(rne));
 	}
@@ -119,10 +119,10 @@ dspbb::TimeSignal<T> RandomPositiveSignal(size_t size) {
 }
 
 template <class T, dspbb::eSignalDomain Domain>
-dspbb::Signal<T, Domain> RandomSignal(size_t length) {
+dspbb::BasicSignal<T, Domain> RandomSignal(size_t length) {
 	thread_local std::mt19937_64 rne(723574);
 	thread_local std::uniform_real_distribution<float> rng;
-	dspbb::Signal<T, Domain> s(length);
+	dspbb::BasicSignal<T, Domain> s(length);
 	for (auto& v : s) {
 		if constexpr (dspbb::is_complex_v<T>) {
 			v.real(rng(rne));

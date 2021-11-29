@@ -17,7 +17,7 @@ TEST_CASE("Filter direct form I", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
 	DirectFormI<float> state{ order };
-	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
 	const auto filtered = Filter(signal, filter, state);
 	REQUIRE(filtered.Size() == signal.Size());
 }
@@ -26,7 +26,7 @@ TEST_CASE("Filter direct form II", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
 	DirectFormII<float> state{ order };
-	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
 	const auto filtered = Filter(signal, filter, state);
 	REQUIRE(filtered.Size() == signal.Size());
 }
@@ -35,7 +35,7 @@ TEST_CASE("Filter cascaded form", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = CascadedBiquad(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
 	CascadedForm<float> state{ order };
-	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
+	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
 	const auto filtered = Filter(signal, filter, state);
 	REQUIRE(filtered.Size() == signal.Size());
 }
@@ -44,8 +44,8 @@ TEST_CASE("Filter overrun", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
 	DirectFormI<float> state{ order };
-	const Signal<float, TIME_DOMAIN> signal(64, 1.0f);
-	Signal<float, TIME_DOMAIN> out(1000, 1.0f);
+	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
+	BasicSignal<float, TIME_DOMAIN> out(1000, 1.0f);
 	REQUIRE_THROWS(Filter(out, signal, filter, state));
 }
 
@@ -61,7 +61,7 @@ TEST_CASE("Filter continuity", "[IIR]") {
 	const auto expected = Filter(signal, filter, state);
 	state.Reset();
 
-	TimeSignal<double> result(length);
+	Signal<double> result(length);
 	Filter(AsView(result).SubSignal(0, length / 2), AsView(signal).SubSignal(0, length / 2), filter, state);
 	Filter(AsView(result).SubSignal(length / 2, length / 2), AsView(signal).SubSignal(length / 2, length / 2), filter, state);
 
