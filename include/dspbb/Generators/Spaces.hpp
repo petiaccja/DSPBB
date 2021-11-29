@@ -28,7 +28,7 @@ auto LinSpace(SignalR&& output,
 
 template <class T, eSignalDomain Domain>
 auto LinSpace(remove_complex_t<T> start, remove_complex_t<T> end, size_t count, bool inclusive = true) {
-	Signal<T, Domain> s(count);
+	BasicSignal<T, Domain> s(count);
 	LinSpace(s, start, end, inclusive);
 	return s;
 }
@@ -46,7 +46,7 @@ auto LogSpace(SignalR&& output,
 
 template <class T, eSignalDomain Domain>
 auto LogSpace(remove_complex_t<T> start, remove_complex_t<T> end, size_t count, remove_complex_t<T> base = remove_complex_t<T>(10), bool inclusive = true) {
-	Signal<T, Domain> s(count);
+	BasicSignal<T, Domain> s(count);
 	LogSpace(s, start, end, base, inclusive);
 	return s;
 }

@@ -22,7 +22,7 @@ namespace dspbb {
 	auto NAME(const SignalT& signal) {                                                           \
 		using R = decltype(std::FUNC(std::declval<typename signal_traits<SignalT>::type>()));    \
 		constexpr auto domain = signal_traits<SignalT>::domain;                                  \
-		Signal<R, domain> r(signal.Size());                                                      \
+		BasicSignal<R, domain> r(signal.Size());                                                 \
 		NAME(r, signal);                                                                         \
 		return r;                                                                                \
 	}

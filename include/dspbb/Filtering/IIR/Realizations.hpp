@@ -28,8 +28,8 @@ public:
 	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
 
 private:
-	Signal<T, eSignalDomain::DOMAINLESS> recursiveState;
-	Signal<T, eSignalDomain::DOMAINLESS> forwardState;
+	BasicSignal<T, eSignalDomain::DOMAINLESS> recursiveState;
+	BasicSignal<T, eSignalDomain::DOMAINLESS> forwardState;
 };
 
 template <class T>
@@ -65,8 +65,8 @@ T DirectFormI<T>::Feed(const T& input, const SignalT& forward, const SignalT& re
 	assert(!forwardState.Empty() && Order() + 1 >= std::max(forward.Size(), recursive.Size()));
 	using U = std::decay_t<typename SignalT::value_type>;
 
-	const auto fwView = SignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
-	const auto recView = SignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
+	const auto fwView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
+	const auto recView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
 	const auto normalization = *recursive.rbegin();
 
 	forwardState[0] = input;
@@ -104,7 +104,7 @@ public:
 	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
 
 private:
-	Signal<T, eSignalDomain::DOMAINLESS> m_state;
+	BasicSignal<T, eSignalDomain::DOMAINLESS> m_state;
 };
 
 template <class T>
@@ -138,8 +138,8 @@ T DirectFormII<T>::Feed(const T& input, const SignalT& forward, const SignalT& r
 	assert(!m_state.Empty() && Order() + 1 >= forward.Size());
 	using U = std::decay_t<typename SignalT::value_type>;
 
-	const auto fwView = SignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
-	const auto recView = SignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
+	const auto fwView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
+	const auto recView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
 	const auto stateFwView = AsView(m_state).SubSignal(m_state.Size() - forward.Size());
 	const auto stateRecView = AsView(m_state).SubSignal(m_state.Size() - recursive.Size() + 1);
 	const auto normalization = *recursive.rbegin();
@@ -202,14 +202,14 @@ T CascadedForm<T>::Feed(const T& input, CascadedBiquad<T> sys) {
 	assert(sys.sections.size() + 1 <= m_sections.size());
 	auto output = input;
 	for (size_t i = 0; i < m_sections.size(); ++i) {
-		SignalView<T, DOMAINLESS> stateFwView{ m_sections[i].begin(), m_sections[i].end() };
+		BasicSignalView<T, DOMAINLESS> stateFwView{ m_sections[i].begin(), m_sections[i].end() };
 		stateFwView[0] = output;
 		std::rotate(stateFwView.begin(), stateFwView.begin() + 1, stateFwView.end());
 
 		if (i < sys.sections.size()) {
-			SignalView<T, DOMAINLESS> stateRecView{ m_sections[i + 1].begin() + 1, m_sections[i + 1].end() };
-			SignalView<const T, DOMAINLESS> fwView{ sys.sections[i].numerator.begin(), sys.sections[i].numerator.end() };
-			SignalView<const T, DOMAINLESS> recView{ sys.sections[i].denominator.begin(), sys.sections[i].denominator.end() };
+			BasicSignalView<T, DOMAINLESS> stateRecView{ m_sections[i + 1].begin() + 1, m_sections[i + 1].end() };
+			BasicSignalView<const T, DOMAINLESS> fwView{ sys.sections[i].numerator.begin(), sys.sections[i].numerator.end() };
+			BasicSignalView<const T, DOMAINLESS> recView{ sys.sections[i].denominator.begin(), sys.sections[i].denominator.end() };
 
 			const auto fwSum = DotProduct(stateFwView, fwView);
 			const auto recSum = DotProduct(stateRecView, recView);

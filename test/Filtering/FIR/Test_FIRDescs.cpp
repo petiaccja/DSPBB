@@ -9,7 +9,7 @@ using namespace dspbb;
 // Windowed
 //------------------------------------------------------------------------------
 
-const Signal<float, TIME_DOMAIN> winWindow = { 1, 2, 3 };
+const BasicSignal<float, TIME_DOMAIN> winWindow = { 1, 2, 3 };
 constexpr float winCutoff = 0.3f;
 constexpr float winBandLow = 0.4f;
 constexpr float winBandHigh = 0.6f;
@@ -24,7 +24,7 @@ TEST_CASE("Low pass windowed view", "[FIR Descs]") {
 TEST_CASE("Low pass windowed function", "[FIR Descs]") {
 	const auto desc = Lowpass(WINDOWED).Cutoff(winCutoff).Window(windows::hamming);
 	REQUIRE(desc.cutoff == winCutoff);
-	Signal<float, TIME_DOMAIN> window(3);
+	BasicSignal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
 	REQUIRE(Max(window) == Approx(1));
@@ -40,7 +40,7 @@ TEST_CASE("High pass windowed view", "[FIR Descs]") {
 TEST_CASE("High pass windowed function", "[FIR Descs]") {
 	const auto desc = Highpass(WINDOWED).Cutoff(winCutoff).Window(windows::hamming);
 	REQUIRE(desc.cutoff == winCutoff);
-	Signal<float, TIME_DOMAIN> window(3);
+	BasicSignal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
 	REQUIRE(Max(window) == Approx(1));
@@ -58,7 +58,7 @@ TEST_CASE("Band pass windowed function", "[FIR Descs]") {
 	const auto desc = Bandpass(WINDOWED).Band(winBandLow, winBandHigh).Window(windows::hamming);
 	REQUIRE(desc.lower == winBandLow);
 	REQUIRE(desc.upper == winBandHigh);
-	Signal<float, TIME_DOMAIN> window(3);
+	BasicSignal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
 	REQUIRE(Max(window) == Approx(1));
@@ -76,7 +76,7 @@ TEST_CASE("Band stop windowed function", "[FIR Descs]") {
 	const auto desc = Bandstop(WINDOWED).Band(winBandLow, winBandHigh).Window(windows::hamming);
 	REQUIRE(desc.lower == winBandLow);
 	REQUIRE(desc.upper == winBandHigh);
-	Signal<float, TIME_DOMAIN> window(3);
+	BasicSignal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
 	REQUIRE(Max(window) == Approx(1));
@@ -92,7 +92,7 @@ TEST_CASE("Arbitrary windowed view", "[FIR Descs]") {
 TEST_CASE("Arbitrary windowed function", "[FIR Descs]") {
 	const auto desc = Arbitrary(WINDOWED).Response([](float) { return 1.f; }).Window(windows::blackman);
 	REQUIRE(desc.responseFunc(0.3f) == Approx(1.0f));
-	Signal<float, TIME_DOMAIN> window(3);
+	BasicSignal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
 	REQUIRE(Max(window) == Approx(1));
@@ -106,7 +106,7 @@ TEST_CASE("Hilbert windowed view", "[FIR Descs]") {
 
 TEST_CASE("Hilbert windowed function", "[FIR Descs]") {
 	const auto desc = Hilbert(WINDOWED).Window(windows::blackman);
-	Signal<float, TIME_DOMAIN> window(3);
+	BasicSignal<float, TIME_DOMAIN> window(3);
 	desc.window(window);
 	REQUIRE(window.Size() == 3);
 	REQUIRE(Max(window) == Approx(1));

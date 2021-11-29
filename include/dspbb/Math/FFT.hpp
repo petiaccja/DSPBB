@@ -21,7 +21,7 @@ namespace impl {
 	constexpr FftHalf FFT_HALF;
 
 	template <class T>
-	void Fft(SpectrumView<std::complex<T>> out, TimeSignalView<const T> in) {
+	void Fft(SpectrumView<std::complex<T>> out, SignalView<const T> in) {
 		const size_t halfSize = in.Size() / 2 + 1;
 		const size_t fullSize = in.Size();
 		if (out.Size() != halfSize && out.Size() != fullSize) {
@@ -44,7 +44,7 @@ namespace impl {
 	}
 
 	template <class T>
-	void Fft(SpectrumView<std::complex<T>> out, TimeSignalView<const std::complex<T>> in) {
+	void Fft(SpectrumView<std::complex<T>> out, SignalView<const std::complex<T>> in) {
 		if (out.Size() != in.Size()) {
 			throw std::invalid_argument("Output and input size must be the same.");
 		}
@@ -56,7 +56,7 @@ namespace impl {
 	}
 
 	template <class T>
-	void Ifft(TimeSignalView<T> out, SpectrumView<const std::complex<T>> in) {
+	void Ifft(SignalView<T> out, SpectrumView<const std::complex<T>> in) {
 		const size_t halfSize = out.Size() / 2 + 1;
 		const size_t fullSize = out.Size();
 		if (in.Size() != halfSize && in.Size() != fullSize) {
@@ -70,7 +70,7 @@ namespace impl {
 	}
 
 	template <class T>
-	void Ifft(TimeSignalView<std::complex<T>> out, SpectrumView<const std::complex<T>> in) {
+	void Ifft(SignalView<std::complex<T>> out, SpectrumView<const std::complex<T>> in) {
 		if (out.Size() != in.Size()) {
 			throw std::invalid_argument("Output and input size must be the same.");
 		}
@@ -83,7 +83,7 @@ namespace impl {
 
 
 	template <class T>
-	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, FftFull) {
+	Spectrum<std::complex<T>> Fft(SignalView<const T> in, FftFull) {
 		const size_t fullSize = in.Size();
 		Spectrum<std::complex<T>> out(fullSize);
 		Fft(AsView(out), in);
@@ -91,7 +91,7 @@ namespace impl {
 	}
 
 	template <class T>
-	Spectrum<std::complex<T>> Fft(TimeSignalView<const T> in, FftHalf) {
+	Spectrum<std::complex<T>> Fft(SignalView<const T> in, FftHalf) {
 		const size_t halfSize = in.Size() / 2 + 1;
 		Spectrum<std::complex<T>> out(halfSize);
 		Fft(AsView(out), in);
@@ -99,7 +99,7 @@ namespace impl {
 	}
 
 	template <class T>
-	Spectrum<std::complex<T>> Fft(TimeSignalView<const std::complex<T>> in) {
+	Spectrum<std::complex<T>> Fft(SignalView<const std::complex<T>> in) {
 		const size_t size = in.Size();
 
 		Spectrum<std::complex<T>> out(size);
@@ -108,26 +108,26 @@ namespace impl {
 	}
 
 	template <class T>
-	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, FftHalf, bool even) {
+	Signal<T> Ifft(SpectrumView<const std::complex<T>> in, FftHalf, bool even) {
 		const size_t halfSizeEven = in.Size() * 2 - 2;
 		const size_t halfSizeOdd = in.Size() * 2 - 1;
-		TimeSignal<T> out(even ? halfSizeEven : halfSizeOdd);
+		Signal<T> out(even ? halfSizeEven : halfSizeOdd);
 		Ifft(AsView(out), in);
 		return out;
 	}
 
 	template <class T>
-	TimeSignal<T> Ifft(SpectrumView<const std::complex<T>> in, FftFull) {
+	Signal<T> Ifft(SpectrumView<const std::complex<T>> in, FftFull) {
 		const size_t fullSize = in.Size();
-		TimeSignal<T> out(fullSize);
+		Signal<T> out(fullSize);
 		Ifft(AsView(out), in);
 		return out;
 	}
 
 	template <class T>
-	TimeSignal<std::complex<T>> Ifft(SpectrumView<const std::complex<T>> in) {
+	Signal<std::complex<T>> Ifft(SpectrumView<const std::complex<T>> in) {
 		const size_t size = in.Size();
-		TimeSignal<std::complex<T>> out(size);
+		Signal<std::complex<T>> out(size);
 		Ifft(AsView(out), in);
 		return out;
 	}

@@ -76,7 +76,7 @@ TEST_CASE("Parseval's relation", "[FFT]") {
 
 
 TEST_CASE("FFT - Full real even", "[FFT]") {
-	TimeSignal<float> even(64, 0.0f);
+	Signal<float> even(64, 0.0f);
 	even[30] = 1.0f;
 	const Spectrum<std::complex<float>> evenHalf = Fft(even, FFT_HALF);
 	const Spectrum<std::complex<float>> evenFull = Fft(even, FFT_FULL);
@@ -90,7 +90,7 @@ TEST_CASE("FFT - Full real even", "[FFT]") {
 }
 
 TEST_CASE("FFT - Full real odd", "[FFT]") {
-	TimeSignal<float> odd(63, 0.0f);
+	Signal<float> odd(63, 0.0f);
 	odd[30] = 1.0f;
 	Spectrum<std::complex<float>> evenHalf = Fft(odd, FFT_HALF);
 	Spectrum<std::complex<float>> evenFull = Fft(odd, FFT_FULL);
@@ -110,7 +110,7 @@ TEST_CASE("FFT - Full real identity", "[FFT]") {
 	for (auto s : sizes) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(s);
 		const Spectrum<std::complex<float>> spectrum = Fft(signal, FFT_FULL);
-		const TimeSignal<float> repro = Ifft(spectrum, FFT_FULL);
+		const Signal<float> repro = Ifft(spectrum, FFT_FULL);
 		REQUIRE(signal.Size() == repro.Size());
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}
@@ -122,7 +122,7 @@ TEST_CASE("FFT - Half real identity", "[FFT]") {
 	for (auto s : sizes) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(s);
 		const Spectrum<std::complex<float>> spectrum = Fft(signal, FFT_HALF);
-		const TimeSignal<float> repro = Ifft(spectrum, FFT_HALF, signal.Size() % 2 == 0);
+		const Signal<float> repro = Ifft(spectrum, FFT_HALF, signal.Size() % 2 == 0);
 		REQUIRE(signal.Size() == repro.Size());
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}

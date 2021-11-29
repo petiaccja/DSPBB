@@ -459,11 +459,11 @@ namespace impl {
 
 
 template <class T>
-auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
+auto FrequencyResponse(const BasicSignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
 	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulse.Size() * 10;
 	const size_t paddedSize = impl::FrequencyResponseFftSize(impulse.Size(), gridSize);
 
-	Signal<T, TIME_DOMAIN> padded(paddedSize, T(0));
+	BasicSignal<T, TIME_DOMAIN> padded(paddedSize, T(0));
 	std::copy(impulse.begin(), impulse.end(), padded.begin());
 
 	auto spectrum = Fft(padded, FFT_HALF);
@@ -474,7 +474,7 @@ auto FrequencyResponse(const SignalView<const T, TIME_DOMAIN>& impulse, size_t g
 }
 
 template <class T>
-auto FrequencyResponse(const Signal<T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
+auto FrequencyResponse(const BasicSignal<T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
 	return FrequencyResponse(AsView(impulse), gridSizeHint);
 }
 
@@ -485,8 +485,8 @@ auto FrequencyResponse(const DiscreteTransferFunction<T>& tf, size_t gridSizeHin
 	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulseSize * 20;
 	const size_t paddedSize = impl::FrequencyResponseFftSize(impulseSize, gridSize);
 
-	Signal<T, TIME_DOMAIN> num(paddedSize, T(0));
-	Signal<T, TIME_DOMAIN> den(paddedSize, T(0));
+	BasicSignal<T, TIME_DOMAIN> num(paddedSize, T(0));
+	BasicSignal<T, TIME_DOMAIN> den(paddedSize, T(0));
 	std::copy(tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end(), num.begin());
 	std::copy(tf.denominator.Coefficients().begin(), tf.denominator.Coefficients().end(), den.begin());
 

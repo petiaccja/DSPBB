@@ -71,8 +71,8 @@ void SineWave(SignalR&& output, uint64_t sampleRate, double frequency, double ph
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> SineWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> SineWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0) {
+	BasicSignal<T, Domain> signal(length);
 	SineWave(signal, sampleRate, frequency, phase);
 	return signal;
 }
@@ -84,8 +84,8 @@ void SawtoothWave(SignalR&& output, uint64_t sampleRate, double frequency, doubl
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> SawtoothWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0, double tilt = 1.0) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> SawtoothWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0, double tilt = 1.0) {
+	BasicSignal<T, Domain> signal(length);
 	SawtoothWave(signal, sampleRate, frequency, phase, tilt);
 	return signal;
 }
@@ -97,8 +97,8 @@ void PwmWave(SignalR&& output, uint64_t sampleRate, double frequency, double pha
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> PwmWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0, double fill = 0.5) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> PwmWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0, double fill = 0.5) {
+	BasicSignal<T, Domain> signal(length);
 	PwmWave(signal, sampleRate, frequency, phase, fill);
 	return signal;
 }
@@ -113,8 +113,8 @@ void SquareWave(SignalR&& output, uint64_t sampleRate, double frequency, double 
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> SquareWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> SquareWave(size_t length, uint64_t sampleRate, double frequency, double phase = 0) {
+	BasicSignal<T, Domain> signal(length);
 	SquareWave(signal, sampleRate, frequency, phase);
 	return signal;
 }
@@ -130,8 +130,8 @@ void SineChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, dou
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> SineChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> SineChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0) {
+	BasicSignal<T, Domain> signal(length);
 	SineChirp(signal, sampleRate, startFrequency, endFrequency, phase);
 	return signal;
 }
@@ -143,8 +143,8 @@ void SawtoothChirp(SignalR&& output, uint64_t sampleRate, double startFrequency,
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> SawtoothChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0, double tilt = 1.0) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> SawtoothChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0, double tilt = 1.0) {
+	BasicSignal<T, Domain> signal(length);
 	SawtoothChirp(signal, sampleRate, startFrequency, endFrequency, phase, tilt);
 	return signal;
 }
@@ -156,8 +156,8 @@ void PwmChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, doub
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> PwmChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0, double fill = 0.5) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> PwmChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0, double fill = 0.5) {
+	BasicSignal<T, Domain> signal(length);
 	PwmChirp(signal, sampleRate, startFrequency, endFrequency, phase, fill);
 	return signal;
 }
@@ -172,8 +172,8 @@ void SquareChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, d
 }
 
 template <class T, eSignalDomain Domain>
-Signal<T, Domain> SquareChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0) {
-	Signal<T, Domain> signal(length);
+BasicSignal<T, Domain> SquareChirp(size_t length, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0) {
+	BasicSignal<T, Domain> signal(length);
 	SquareChirp(signal, sampleRate, startFrequency, endFrequency, phase);
 	return signal;
 }

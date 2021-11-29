@@ -20,11 +20,11 @@ const DiscreteZeroPoleGain<real_t> sys = {
 const TransferFunction tf{ sys };
 const CascadedBiquad cascade{ sys };
 
-const Signal<real_t, TIME_DOMAIN> input = { 0.5f, 0.9f, 1.4f, -1.3f, -0.6f, -0.3f };
-const Signal<real_t, TIME_DOMAIN> response = []() {
-	TimeSignal<real_t> num{ tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end() };
-	TimeSignal<real_t> den{ tf.denominator.Coefficients().begin(), tf.denominator.Coefficients().end() };
-	TimeSignal<real_t> padded = input;
+const BasicSignal<real_t, TIME_DOMAIN> input = { 0.5f, 0.9f, 1.4f, -1.3f, -0.6f, -0.3f };
+const BasicSignal<real_t, TIME_DOMAIN> response = []() {
+	Signal<real_t> num{ tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end() };
+	Signal<real_t> den{ tf.denominator.Coefficients().begin(), tf.denominator.Coefficients().end() };
+	Signal<real_t> padded = input;
 	std::reverse(num.begin(), num.end());
 	std::reverse(den.begin(), den.end());
 	num.Resize(1000);
@@ -41,7 +41,7 @@ const Signal<real_t, TIME_DOMAIN> response = []() {
 //------------------------------------------------------------------------------
 
 TEST_CASE("Direct form I feed", "[IIR realizations]") {
-	TimeSignal<real_t> out;
+	Signal<real_t> out;
 
 	DirectFormI<real_t> state{ std::max(sys.zeros.NumRoots(), sys.poles.NumRoots()) };
 	for (size_t i = 0; i < 1000; ++i) {
@@ -54,7 +54,7 @@ TEST_CASE("Direct form I feed", "[IIR realizations]") {
 }
 
 TEST_CASE("Direct form II feed", "[IIR realizations]") {
-	TimeSignal<real_t> out;
+	Signal<real_t> out;
 
 	DirectFormII<real_t> state{ std::max(sys.zeros.NumRoots(), sys.poles.NumRoots()) };
 	for (size_t i = 0; i < 1000; ++i) {
@@ -67,7 +67,7 @@ TEST_CASE("Direct form II feed", "[IIR realizations]") {
 }
 
 TEST_CASE("Cascaded biquad form feed", "[IIR realizations]") {
-	TimeSignal<real_t> out;
+	Signal<real_t> out;
 
 	CascadedForm<real_t> state{ std::max(sys.zeros.NumRoots(), sys.poles.NumRoots()) };
 	for (size_t i = 0; i < 1000; ++i) {
@@ -101,8 +101,8 @@ TEST_CASE("Direct form I order", "[IIR realizations]") {
 
 TEST_CASE("Direct form I reset", "[IIR realizations]") {
 	DirectFormI<float> state{ 2 };
-	Signal<float, DOMAINLESS> b = { 1, 1, 1 };
-	Signal<float, DOMAINLESS> a = { 1, 1, 1 };
+	BasicSignal<float, DOMAINLESS> b = { 1, 1, 1 };
+	BasicSignal<float, DOMAINLESS> a = { 1, 1, 1 };
 	for (int i = 0; i < 10; ++i) {
 		REQUIRE(0.0f != state.Feed(1.0f, b, a));
 	}
@@ -134,8 +134,8 @@ TEST_CASE("Direct form II order", "[IIR realizations]") {
 
 TEST_CASE("Direct form II reset", "[IIR realizations]") {
 	DirectFormII<float> state{ 2 };
-	Signal<float, DOMAINLESS> b = { 1, 1, 1 };
-	Signal<float, DOMAINLESS> a = { 1, 1, 1 };
+	BasicSignal<float, DOMAINLESS> b = { 1, 1, 1 };
+	BasicSignal<float, DOMAINLESS> a = { 1, 1, 1 };
 	for (int i = 0; i < 10; ++i) {
 		REQUIRE(0.0f != state.Feed(1.0f, b, a));
 	}

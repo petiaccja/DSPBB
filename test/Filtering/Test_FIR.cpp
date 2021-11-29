@@ -25,8 +25,8 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 
 	const auto expected = Convolution(signal, filter, 0, length);
 
-	TimeSignal<double> state(taps - 1, 0.0f);
-	TimeSignal<double> result(length);
+	Signal<double> state(taps - 1, 0.0f);
+	Signal<double> result(length);
 
 	SECTION("Convolution large") {
 		constexpr int step = 40;

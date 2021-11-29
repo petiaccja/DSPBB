@@ -23,8 +23,8 @@ public:
 	void Resize(size_t numCoefficients, T value = T{});
 	size_t Size() const;
 
-	SignalView<const T, DOMAINLESS> Coefficients() const;
-	SignalView<T, DOMAINLESS> Coefficients();
+	BasicSignalView<const T, DOMAINLESS> Coefficients() const;
+	BasicSignalView<T, DOMAINLESS> Coefficients();
 
 	T operator()(const T& x) const;
 	std::complex<T> operator()(const std::complex<T>& x) const;
@@ -34,7 +34,7 @@ private:
 	U Eval(const U& x) const;
 
 private:
-	Signal<T, DOMAINLESS> m_coefficients;
+	BasicSignal<T, DOMAINLESS> m_coefficients;
 };
 
 
@@ -61,10 +61,10 @@ public:
 	size_t NumComplexRoots() const { return 2 * NumComplexPairs(); }
 	size_t NumComplexPairs() const { return m_complex.Size(); }
 
-	SignalView<const T, DOMAINLESS> RealRoots() const;
-	SignalView<const std::complex<T>, DOMAINLESS> ComplexPairs() const;
-	SignalView<T, DOMAINLESS> RealRoots();
-	SignalView<std::complex<T>, DOMAINLESS> ComplexPairs();
+	BasicSignalView<const T, DOMAINLESS> RealRoots() const;
+	BasicSignalView<const std::complex<T>, DOMAINLESS> ComplexPairs() const;
+	BasicSignalView<T, DOMAINLESS> RealRoots();
+	BasicSignalView<std::complex<T>, DOMAINLESS> ComplexPairs();
 
 	T operator()(const T& x) const;
 	std::complex<T> operator()(const std::complex<T>& x) const;
@@ -74,9 +74,9 @@ private:
 	U Eval(const U& x) const;
 
 private:
-	Signal<T, DOMAINLESS> m_mem;
-	SignalView<T, DOMAINLESS> m_real;
-	SignalView<std::complex<T>, DOMAINLESS> m_complex;
+	BasicSignal<T, DOMAINLESS> m_mem;
+	BasicSignalView<T, DOMAINLESS> m_real;
+	BasicSignalView<std::complex<T>, DOMAINLESS> m_complex;
 };
 
 
@@ -98,12 +98,12 @@ size_t Polynomial<T>::Size() const {
 }
 
 template <class T>
-SignalView<const T, DOMAINLESS> Polynomial<T>::Coefficients() const {
+BasicSignalView<const T, DOMAINLESS> Polynomial<T>::Coefficients() const {
 	return AsView(m_coefficients);
 }
 
 template <class T>
-SignalView<T, DOMAINLESS> Polynomial<T>::Coefficients() {
+BasicSignalView<T, DOMAINLESS> Polynomial<T>::Coefficients() {
 	return AsView(m_coefficients);
 }
 
@@ -254,22 +254,22 @@ void FactoredPolynomial<T>::Regroup(size_t numRealRoots, T realValue, std::compl
 }
 
 template <class T>
-SignalView<const T, DOMAINLESS> FactoredPolynomial<T>::RealRoots() const {
+BasicSignalView<const T, DOMAINLESS> FactoredPolynomial<T>::RealRoots() const {
 	return AsView(m_real);
 }
 
 template <class T>
-SignalView<const std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() const {
+BasicSignalView<const std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() const {
 	return AsView(m_complex);
 }
 
 template <class T>
-SignalView<T, DOMAINLESS> FactoredPolynomial<T>::RealRoots() {
+BasicSignalView<T, DOMAINLESS> FactoredPolynomial<T>::RealRoots() {
 	return AsView(m_real);
 }
 
 template <class T>
-SignalView<std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() {
+BasicSignalView<std::complex<T>, DOMAINLESS> FactoredPolynomial<T>::ComplexPairs() {
 	return AsView(m_complex);
 }
 
@@ -300,7 +300,7 @@ U FactoredPolynomial<T>::Eval(const U& x) const {
 
 namespace impl {
 	template <class T>
-	void MultiplyPolynomialBy1stOrder(SignalView<std::complex<T>, DOMAINLESS> coefficients, std::complex<T> c0) {
+	void MultiplyPolynomialBy1stOrder(BasicSignalView<std::complex<T>, DOMAINLESS> coefficients, std::complex<T> c0) {
 		for (auto it1 = coefficients.rbegin(); it1 != coefficients.rend(); ++it1) {
 			auto it0 = it1;
 			++it0;
@@ -311,7 +311,7 @@ namespace impl {
 	}
 
 	template <class T>
-	void MultiplyPolynomialBy1stOrder(SignalView<T, DOMAINLESS> coefficients, T c0) {
+	void MultiplyPolynomialBy1stOrder(BasicSignalView<T, DOMAINLESS> coefficients, T c0) {
 		for (auto it1 = coefficients.rbegin(); it1 != coefficients.rend(); ++it1) {
 			auto it0 = it1;
 			++it0;
@@ -322,7 +322,7 @@ namespace impl {
 	}
 
 	template <class T>
-	void MultiplyPolynomialBy2ndOrder(SignalView<T, DOMAINLESS> coefficients, T c0, T c1) {
+	void MultiplyPolynomialBy2ndOrder(BasicSignalView<T, DOMAINLESS> coefficients, T c0, T c1) {
 		for (auto it2 = coefficients.rbegin(); it2 != coefficients.rend(); ++it2) {
 			auto it1 = it2;
 			++it1;
