@@ -52,6 +52,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 
 # Subdirectories
-add_subdirectory(test)
 add_subdirectory(include/dspbb)
+add_subdirectory(test)
+add_subdirectory(examples)
 
