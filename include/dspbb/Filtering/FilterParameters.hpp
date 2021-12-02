@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Generators/Spaces.hpp"
 #include "../LTISystems/Systems.hpp"
 #include "../Math/FFT.hpp"
 #include "../Math/Functions.hpp"
@@ -479,30 +480,45 @@ auto FrequencyResponse(const BasicSignal<T, TIME_DOMAIN>& impulse, size_t gridSi
 }
 
 
-template <class T>
-auto FrequencyResponse(const DiscreteTransferFunction<T>& tf, size_t gridSizeHint = 0) {
-	const size_t impulseSize = std::max(tf.numerator.Size(), tf.denominator.Size());
-	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulseSize * 20;
-	const size_t paddedSize = impl::FrequencyResponseFftSize(impulseSize, gridSize);
+namespace impl {
 
-	BasicSignal<T, TIME_DOMAIN> num(paddedSize, T(0));
-	BasicSignal<T, TIME_DOMAIN> den(paddedSize, T(0));
-	std::copy(tf.numerator.Coefficients().begin(), tf.numerator.Coefficients().end(), num.begin());
-	std::copy(tf.denominator.Coefficients().begin(), tf.denominator.Coefficients().end(), den.begin());
+	template <class T, class System>
+	auto FrequencyResponse(const System& sys, size_t gridSizeHint = 0) -> std::pair<Spectrum<T>, Spectrum<T>> {
+		const size_t order = sys.Order();
+		const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : (1 + order) * 20;
 
-	const auto spectrumNum = Fft(num, FFT_HALF);
-	const auto spectrumDen = Fft(den, FFT_HALF);
-	auto spectrum = spectrumNum / spectrumDen;
-	auto amplitude = Abs(spectrum);
-	std::replace(spectrum.begin(), spectrum.end(), std::complex<T>{ T(0) }, std::complex<T>{ T(1) });
-	auto phase = Arg(spectrum);
-	return std::make_pair(std::move(amplitude), std::move(phase));
-}
+		Spectrum<T> amplitude(gridSize);
+		Spectrum<T> phase(gridSize);
+
+		LinSpace(amplitude, 0.0f, pi_v<T>, true);
+
+		for (size_t i = 0; i < gridSize; ++i) {
+			const T freq = amplitude[i];
+			const std::complex<T> point = std::polar(T(1), freq);
+			const std::complex<T> response = sys(point);
+			amplitude[i] = std::abs(response);
+			phase[i] = std::arg(response);
+		}
+
+		return { std::move(amplitude), std::move(phase) };
+	}
+
+} // namespace impl
+
 
 template <class T>
 auto FrequencyResponse(const DiscreteZeroPoleGain<T>& zpk, size_t gridSizeHint = 0) {
-	const DiscreteTransferFunction<T> tf = TransferFunction(zpk);
-	return FrequencyResponse(tf, gridSizeHint);
+	return impl::FrequencyResponse<T>(zpk, gridSizeHint);
+}
+
+template <class T>
+auto FrequencyResponse(const CascadedBiquad<T>& biquad, size_t gridSizeHint = 0) {
+	return impl::FrequencyResponse<T>(biquad, gridSizeHint);
+}
+
+template <class T>
+auto FrequencyResponse(const DiscreteTransferFunction<T>& tf, size_t gridSizeHint = 0) {
+	return impl::FrequencyResponse<T>(tf, gridSizeHint);
 }
 
 

@@ -46,15 +46,15 @@ namespace impl {
 		WindowType window;
 
 		template <class NewParamType>
-		[[nodiscard]] auto Cutoff(NewParamType cutoffNew) {
+		[[nodiscard]] auto Cutoff(NewParamType cutoffNew) const {
 			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(cutoffNew), std::move(window) } };
 		}
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(cutoff), std::move(windowNew) } };
 		}
 		template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(cutoff), std::move(windowNew) } };
 		}
 	};
@@ -66,15 +66,15 @@ namespace impl {
 		WindowType window;
 
 		template <class NewParamType>
-		[[nodiscard]] auto Band(NewParamType lowerNew, NewParamType upperNew) {
+		[[nodiscard]] auto Band(NewParamType lowerNew, NewParamType upperNew) const {
 			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(lowerNew), std::move(upperNew), std::move(window) } };
 		}
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(lower), std::move(upper), std::move(windowNew) } };
 		}
 		template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return Desc<FirMethodWindowed, ParamType, NewWindowType>{ { std::move(lower), std::move(upper), std::move(windowNew) } };
 		}
 	};
@@ -85,15 +85,15 @@ namespace impl {
 		WindowType window;
 
 		template <class NewResponseFunc, std::enable_if_t<std::is_invocable_v<NewResponseFunc, float>, int> = 0>
-		[[nodiscard]] auto Response(NewResponseFunc responseFuncNew) {
+		[[nodiscard]] auto Response(NewResponseFunc responseFuncNew) const {
 			return ArbitraryDesc<FirMethodWindowed, NewResponseFunc, WindowType>{ std::move(responseFuncNew), std::move(window) };
 		}
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return ArbitraryDesc<FirMethodWindowed, ResponseFunc, NewWindowType>{ std::move(responseFunc), std::move(windowNew) };
 		}
 		template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return ArbitraryDesc<FirMethodWindowed, ResponseFunc, NewWindowType>{ std::move(responseFunc), std::move(windowNew) };
 		}
 	};
@@ -103,11 +103,11 @@ namespace impl {
 		WindowType window;
 
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return HilbertDesc<FirMethodWindowed, NewWindowType>{ std::move(windowNew) };
 		}
 		template <class NewWindowType, std::enable_if_t<is_signal_like_v<NewWindowType>, int> = 0>
-		[[nodiscard]] auto Window(NewWindowType windowNew) {
+		[[nodiscard]] auto Window(NewWindowType windowNew) const {
 			return HilbertDesc<FirMethodWindowed, NewWindowType>{ std::move(windowNew) };
 		}
 	};
@@ -168,10 +168,10 @@ namespace impl {
 		ParamType weightTransition = ParamType(0.0);
 		ParamType weightHigh = ParamType(1.0);
 
-		[[nodiscard]] auto Cutoff(ParamType newBegin, ParamType newEnd) {
+		[[nodiscard]] auto Cutoff(ParamType newBegin, ParamType newEnd) const {
 			return Desc<FirMethodLeastSquares, ParamType>{ { newBegin, newEnd, weightLow, weightTransition, weightHigh } };
 		}
-		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition, ParamType newHigh) {
+		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition, ParamType newHigh) const {
 			return Desc<FirMethodLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, newLow, newTransition, newHigh } };
 		}
 	};
@@ -188,10 +188,10 @@ namespace impl {
 		ParamType weightTransition2 = ParamType(0.0);
 		ParamType weightHigh = ParamType(1.0);
 
-		[[nodiscard]] auto Band(ParamType newLowerBegin, ParamType newLowerEnd, ParamType newUpperBegin, ParamType newUpperEnd) {
+		[[nodiscard]] auto Band(ParamType newLowerBegin, ParamType newLowerEnd, ParamType newUpperBegin, ParamType newUpperEnd) const {
 			return Desc<FirMethodLeastSquares, ParamType>{ { newLowerBegin, newLowerEnd, newUpperBegin, newUpperEnd, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh } };
 		}
-		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition1, ParamType newMid, ParamType newTransition2, ParamType newHigh) {
+		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition1, ParamType newMid, ParamType newTransition2, ParamType newHigh) const {
 			return Desc<FirMethodLeastSquares, ParamType>{ { lowerBegin, lowerEnd, upperBegin, upperEnd, newLow, newTransition1, newMid, newTransition2, newHigh } };
 		}
 	};
@@ -200,7 +200,7 @@ namespace impl {
 	struct HilbertDesc<FirMethodLeastSquares, ParamType> {
 		ParamType transitionWidth = ParamType(1.0);
 
-		[[nodiscard]] auto TransitionWidth(ParamType newTransitionWidth) {
+		[[nodiscard]] auto TransitionWidth(ParamType newTransitionWidth) const {
 			return HilbertDesc<FirMethodLeastSquares, ParamType>{ newTransitionWidth };
 		}
 	};
@@ -208,11 +208,11 @@ namespace impl {
 	template <template <typename, typename...> class Desc>
 	struct SplitDescLeastSquares<Desc, void> {
 		template <class ParamType>
-		[[nodiscard]] auto Cutoff(ParamType begin, ParamType end) {
+		[[nodiscard]] auto Cutoff(ParamType begin, ParamType end) const {
 			return Desc<FirMethodLeastSquares, ParamType>{}.Cutoff(begin, end);
 		}
 		template <class ParamType>
-		[[nodiscard]] auto Weight(ParamType low, ParamType transition, ParamType high) {
+		[[nodiscard]] auto Weight(ParamType low, ParamType transition, ParamType high) const {
 			return Desc<FirMethodLeastSquares, ParamType>{}.Weight(low, transition, high);
 		}
 	};
@@ -220,11 +220,11 @@ namespace impl {
 	template <template <typename, typename...> class Desc>
 	struct BandDescLeastSquares<Desc, void> {
 		template <class ParamType>
-		[[nodiscard]] auto Band(ParamType lowerBegin, ParamType lowerEnd, ParamType upperBegin, ParamType upperEnd) {
+		[[nodiscard]] auto Band(ParamType lowerBegin, ParamType lowerEnd, ParamType upperBegin, ParamType upperEnd) const {
 			return Desc<FirMethodLeastSquares, ParamType>{}.Band(lowerBegin, lowerEnd, upperBegin, upperEnd);
 		}
 		template <class ParamType>
-		[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) {
+		[[nodiscard]] auto Weight(ParamType low, ParamType transition1, ParamType mid, ParamType transition2, ParamType high) const {
 			return Desc<FirMethodLeastSquares, ParamType>{}.Weight(low, transition1, mid, transition2, high);
 		}
 	};
@@ -235,11 +235,11 @@ namespace impl {
 		WeightFunc weightFunc;
 
 		template <class NewResponseFunc, std::enable_if_t<std::is_invocable_v<NewResponseFunc, float>, int> = 0>
-		[[nodiscard]] auto Response(NewResponseFunc responseFuncNew) {
+		[[nodiscard]] auto Response(NewResponseFunc responseFuncNew) const {
 			return ArbitraryDesc<FirMethodLeastSquares, NewResponseFunc, WeightFunc>{ std::move(responseFuncNew), std::move(weightFunc) };
 		}
 		template <class NewWeightFunc, std::enable_if_t<std::is_invocable_v<NewWeightFunc, float>, int> = 0>
-		[[nodiscard]] auto Weight(NewWeightFunc weightFuncNew) {
+		[[nodiscard]] auto Weight(NewWeightFunc weightFuncNew) const {
 			return ArbitraryDesc<FirMethodLeastSquares, ResponseFunc, NewWeightFunc>{ std::move(responseFunc), std::move(weightFuncNew) };
 		}
 	};

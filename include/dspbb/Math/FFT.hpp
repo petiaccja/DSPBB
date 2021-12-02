@@ -188,11 +188,11 @@ auto Ifft(const SignalT& in) -> decltype(impl::Ifft(AsView(in))) {
 // Utilities
 //------------------------------------------------------------------------------
 
-inline double FourierBin2Frequency(size_t binIdx, size_t numBins, uint64_t sampleRate) {
+constexpr double FourierBin2Frequency(size_t binIdx, size_t numBins, uint64_t sampleRate) {
 	return double(binIdx) / double(numBins) * double(sampleRate);
 }
 
-inline size_t FourierFrequency2Bin(double frequency, size_t numBins, uint64_t sampleRate) {
+constexpr size_t FourierFrequency2Bin(double frequency, size_t numBins, uint64_t sampleRate) {
 	return size_t(std::round(frequency / double(sampleRate) * double(numBins)));
 }
 

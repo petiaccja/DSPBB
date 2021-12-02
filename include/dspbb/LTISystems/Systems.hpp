@@ -19,6 +19,8 @@ struct ZeroPoleGain {
 
 	std::complex<T> operator()(const std::complex<T>& x) const { return gain * zeros(x) / poles(x); }
 	T operator()(const T& x) const { return gain * zeros(x) / poles(x); }
+
+	size_t Order() const { return std::max(zeros.Order(), poles.Order()); }
 };
 
 
@@ -32,6 +34,8 @@ struct TransferFunction {
 
 	std::complex<T> operator()(const std::complex<T>& x) const { return numerator(x) / denominator(x); }
 	T operator()(const T& x) const { return numerator(x) / denominator(x); }
+
+	size_t Order() const { return std::max(numerator.Order(), denominator.Order()); }
 };
 
 
@@ -50,6 +54,8 @@ struct CascadedBiquad {
 
 	std::complex<T> operator()(const std::complex<T>& x) const;
 	T operator()(const T& x) const;
+
+	size_t Order() const;
 
 private:
 	template <class Iter>
@@ -115,6 +121,17 @@ T CascadedBiquad<T>::operator()(const T& x) const {
 	return std::transform_reduce(sections.begin(), sections.end(), T(1), std::multiplies{}, [&x](const auto& section) {
 		return EvalSection(section, x);
 	});
+}
+
+template <class T>
+size_t CascadedBiquad<T>::Order() const {
+	size_t numOrder = 1;
+	size_t denOrder = 1;
+	for (auto& section : sections) {
+		numOrder += section.numOrder;
+		denOrder += section.denOrder;
+	}
+	return sections.empty() ? 0 : std::max(numOrder, denOrder);
 }
 
 template <class T>
