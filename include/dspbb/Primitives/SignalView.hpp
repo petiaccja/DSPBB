@@ -24,10 +24,10 @@ public:
 	BasicSignalView& operator=(BasicSignalView&&) noexcept = default;
 	BasicSignalView& operator=(const BasicSignalView&) noexcept = default;
 
-	explicit BasicSignalView(BasicSignal<std::remove_const_t<T>, Domain>& signal);
+	BasicSignalView(BasicSignal<std::remove_const_t<T>, Domain>& signal);
 
 	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
-	explicit BasicSignalView(const BasicSignal<std::remove_const_t<T>, Domain>& signal);
+	BasicSignalView(const BasicSignal<std::remove_const_t<T>, Domain>& signal);
 
 	template <class Q = T, std::enable_if_t<std::is_const_v<Q>, int> = 0>
 	BasicSignalView(const BasicSignalView<std::remove_const_t<T>, Domain>& signal);
