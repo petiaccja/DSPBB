@@ -133,7 +133,7 @@ std::pair<int64_t, uint64_t> Resample(SignalR&& output,
 	assert(sampleRates.second > 0);
 	assert(startPoint.second > 0);
 	assert(polyphase.numFilters > 0);
-	const size_t commonRate = sampleRates.first * sampleRates.second * startPoint.second * polyphase.numFilters; // Use smallest common multiple instead.
+	const size_t commonRate = std::lcm(std::lcm(std::lcm(sampleRates.first, sampleRates.second), startPoint.second), polyphase.numFilters);
 
 	// All these are in common rate.
 	const int64_t commonStartPoint = startPoint.first * commonRate / startPoint.second;
