@@ -23,7 +23,9 @@ public:
 	void Reset();
 	size_t Order() const;
 
-	T Feed(const T& input, DiscreteTransferFunction<T> sys);
+	T Feed(const T& input, const DiscreteTransferFunction<T>& sys);
+	template <class U>
+	T Feed(const U& input, const DiscreteTransferFunction<T>& sys) { return Feed(static_cast<T>(input), sys); }
 	template <class SignalT>
 	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
 
@@ -55,7 +57,7 @@ size_t DirectFormI<T>::Order() const {
 }
 
 template <class T>
-T DirectFormI<T>::Feed(const T& input, DiscreteTransferFunction<T> sys) {
+T DirectFormI<T>::Feed(const T& input, const DiscreteTransferFunction<T>& sys) {
 	return Feed(input, sys.numerator.Coefficients(), sys.denominator.Coefficients());
 }
 
@@ -99,7 +101,9 @@ public:
 	void Reset();
 	size_t Order() const;
 
-	T Feed(const T& input, DiscreteTransferFunction<T> sys);
+	T Feed(const T& input, const DiscreteTransferFunction<T>& sys);
+	template <class U>
+	T Feed(const U& input, const DiscreteTransferFunction<T>& sys) { return Feed(static_cast<T>(input), sys); }
 	template <class SignalT>
 	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
 
@@ -128,7 +132,7 @@ size_t DirectFormII<T>::Order() const {
 }
 
 template <class T>
-T DirectFormII<T>::Feed(const T& input, DiscreteTransferFunction<T> sys) {
+T DirectFormII<T>::Feed(const T& input, const DiscreteTransferFunction<T>& sys) {
 	return Feed(input, sys.numerator.Coefficients(), sys.denominator.Coefficients());
 }
 
@@ -165,7 +169,9 @@ public:
 	void Reset();
 	size_t Order() const;
 
-	T Feed(const T& input, CascadedBiquad<T> sys);
+	T Feed(const T& input, const CascadedBiquad<T>& sys);
+	template <class U>
+	T Feed(const U& input, const CascadedBiquad<T>& sys) { return Feed(static_cast<T>(input), sys); }
 
 private:
 	using Section = std::array<T, 3>;
@@ -198,7 +204,7 @@ size_t CascadedForm<T>::Order() const {
 }
 
 template <class T>
-T CascadedForm<T>::Feed(const T& input, CascadedBiquad<T> sys) {
+T CascadedForm<T>::Feed(const T& input, const CascadedBiquad<T>& sys) {
 	assert(sys.sections.size() + 1 <= m_sections.size());
 	auto output = input;
 	for (size_t i = 0; i < m_sections.size(); ++i) {

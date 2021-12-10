@@ -193,7 +193,7 @@ constexpr double FourierBin2Frequency(size_t binIdx, size_t numBins, uint64_t sa
 }
 
 constexpr size_t FourierFrequency2Bin(double frequency, size_t numBins, uint64_t sampleRate) {
-	return size_t(std::round(frequency / double(sampleRate) * double(numBins)));
+	return size_t(frequency / double(sampleRate) * double(numBins) + 0.5f);
 }
 
 namespace impl {
