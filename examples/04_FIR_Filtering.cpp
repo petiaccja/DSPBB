@@ -113,11 +113,11 @@ int main() {
 			equalizer.SetLevels(bass, mid, treble);
 
 			size_t currentSample = 0;
-			PlayStereo(sampleRate, [&left, &right, &currentSample, &equalizer](SignalView<float> leftOut, SignalView<float> rightOut) -> size_t {
+			PlayStereo(sampleRate, [left = AsView(left), right = AsView(right), &currentSample, &equalizer](SignalView<float> leftOut, SignalView<float> rightOut) -> size_t {
 				assert(leftOut.Size() == rightOut.Size());
 				const size_t validSize = std::min(left.Size() - currentSample, leftOut.Size());
-				equalizer.Filter(AsView(left).SubSignal(currentSample, validSize),
-								 AsView(right).SubSignal(currentSample, validSize),
+				equalizer.Filter(left.SubSignal(currentSample, validSize),
+								 right.SubSignal(currentSample, validSize),
 								 leftOut.SubSignal(0, validSize),
 								 rightOut.SubSignal(0, validSize));
 				currentSample += validSize;
