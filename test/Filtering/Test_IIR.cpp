@@ -81,6 +81,7 @@ constexpr float butterRippleTolerance = 1e-4f;
 TEST_CASE("Butterworth lowpass", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(butterCutoff)));
+	REQUIRE(filter.Order() == 7);
 	const auto [amplitude, phase] = FrequencyResponse(filter);
 	const auto params = ParametrizeLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge < butterCutoff);
@@ -92,6 +93,7 @@ TEST_CASE("Butterworth lowpass", "[IIR]") {
 TEST_CASE("Butterworth highpass", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Highpass(BUTTERWORTH).Cutoff(0.75f)));
+	REQUIRE(filter.Order() == 7);
 	const auto [amplitude, phase] = FrequencyResponse(filter);
 	const auto params = ParametrizeHighpassFilter(amplitude);
 	REQUIRE(params.passbandEdge > butterCutoff);
@@ -103,6 +105,7 @@ TEST_CASE("Butterworth highpass", "[IIR]") {
 TEST_CASE("Butterworth bandpass", "[IIR]") {
 	constexpr int order = 8;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandpass(BUTTERWORTH).Band(butterLower, butterUpper)));
+	REQUIRE(filter.Order() == 8);
 	const auto [amplitude, phase] = FrequencyResponse(filter);
 	const auto params = ParametrizeBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge < butterLower);
@@ -117,6 +120,7 @@ TEST_CASE("Butterworth bandpass", "[IIR]") {
 TEST_CASE("Butterworth bandstop", "[IIR]") {
 	constexpr int order = 8;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandstop(BUTTERWORTH).Band(butterLower, butterUpper)));
+	REQUIRE(filter.Order() == 8);
 	const auto [amplitude, phase] = FrequencyResponse(filter);
 	const auto params = ParametrizeBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge < butterLower);
@@ -152,6 +156,7 @@ constexpr float cheby1RippleTolerance = 5e-4f;
 TEST_CASE("Chebyshev 1 lowpass", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(CHEBYSHEV1).Cutoff(cheby1Cutoff).PassbandRipple(cheby1Ripple)));
+	REQUIRE(filter.Order() == 7);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge < cheby1Cutoff);
@@ -163,6 +168,7 @@ TEST_CASE("Chebyshev 1 lowpass", "[IIR]") {
 TEST_CASE("Chebyshev 1 highpass", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Highpass(CHEBYSHEV1).Cutoff(0.75f).PassbandRipple(cheby1Ripple)));
+	REQUIRE(filter.Order() == 7);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeHighpassFilter(amplitude);
 	REQUIRE(params.passbandEdge > cheby1Cutoff);
@@ -174,6 +180,7 @@ TEST_CASE("Chebyshev 1 highpass", "[IIR]") {
 TEST_CASE("Chebyshev 1 bandpass", "[IIR]") {
 	constexpr int order = 8;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandpass(CHEBYSHEV1).Band(cheby1Lower, cheby1Upper).PassbandRipple(cheby1Ripple)));
+	REQUIRE(filter.Order() == 8);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge < cheby1Lower);
@@ -188,6 +195,7 @@ TEST_CASE("Chebyshev 1 bandpass", "[IIR]") {
 TEST_CASE("Chebyshev 1 bandstop", "[IIR]") {
 	constexpr int order = 8;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandstop(CHEBYSHEV1).Band(cheby1Lower, cheby1Upper).PassbandRipple(cheby1Ripple)));
+	REQUIRE(filter.Order() == 8);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge < cheby1Lower);
@@ -224,6 +232,7 @@ constexpr float cheby2RippleTolerance = 2e-3f;
 TEST_CASE("Chebyshev 2 lowpass", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(CHEBYSHEV2).Cutoff(cheby2Cutoff).StopbandRipple(cheby2Ripple)));
+	REQUIRE(filter.Order() == 7);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge < cheby2Cutoff);
@@ -235,6 +244,7 @@ TEST_CASE("Chebyshev 2 lowpass", "[IIR]") {
 TEST_CASE("Chebyshev 2 highpass", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Highpass(CHEBYSHEV2).Cutoff(0.75f).StopbandRipple(cheby2Ripple)));
+	REQUIRE(filter.Order() == 7);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeHighpassFilter(amplitude);
 	REQUIRE(params.passbandEdge > cheby2Cutoff);
@@ -246,6 +256,7 @@ TEST_CASE("Chebyshev 2 highpass", "[IIR]") {
 TEST_CASE("Chebyshev 2 bandpass", "[IIR]") {
 	constexpr int order = 8;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandpass(CHEBYSHEV2).Band(cheby2Lower, cheby2Upper).StopbandRipple(cheby2Ripple)));
+	REQUIRE(filter.Order() == 8);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge < cheby2Lower);
@@ -260,6 +271,7 @@ TEST_CASE("Chebyshev 2 bandpass", "[IIR]") {
 TEST_CASE("Chebyshev 2 bandstop", "[IIR]") {
 	constexpr int order = 8;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandstop(CHEBYSHEV2).Band(cheby2Lower, cheby2Upper).StopbandRipple(cheby2Ripple)));
+	REQUIRE(filter.Order() == 8);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge < cheby2Lower);
@@ -295,6 +307,7 @@ constexpr float ellipticStopRipple = 0.05f;
 TEST_CASE("Elliptic lowpass", "[IIR]") {
 	constexpr int order = 5;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(ELLIPTIC).Cutoff(ellipticCutoff).PassbandRipple(ellipticPassRipple).StopbandRipple(ellipticStopRipple)));
+	REQUIRE(filter.Order() == 5);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge < ellipticCutoff);
@@ -306,6 +319,7 @@ TEST_CASE("Elliptic lowpass", "[IIR]") {
 TEST_CASE("Elliptic highpass", "[IIR]") {
 	constexpr int order = 5;
 	const auto filter = TransferFunction(IirFilter<float>(order, Highpass(ELLIPTIC).Cutoff(0.75f).PassbandRipple(ellipticPassRipple).StopbandRipple(ellipticStopRipple)));
+	REQUIRE(filter.Order() == 5);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeHighpassFilter(amplitude);
 	REQUIRE(params.passbandEdge > ellipticCutoff);
@@ -317,6 +331,7 @@ TEST_CASE("Elliptic highpass", "[IIR]") {
 TEST_CASE("Elliptic bandpass", "[IIR]") {
 	constexpr int order = 6;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandpass(ELLIPTIC).Band(ellipticLower, ellipticUpper).PassbandRipple(ellipticPassRipple).StopbandRipple(ellipticStopRipple)));
+	REQUIRE(filter.Order() == 6);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge < ellipticLower);
@@ -331,6 +346,7 @@ TEST_CASE("Elliptic bandpass", "[IIR]") {
 TEST_CASE("Elliptic bandstop", "[IIR]") {
 	constexpr int order = 6;
 	const auto filter = TransferFunction(IirFilter<float>(order, Bandstop(ELLIPTIC).Band(ellipticLower, ellipticUpper).PassbandRipple(ellipticPassRipple).StopbandRipple(ellipticStopRipple)));
+	REQUIRE(filter.Order() == 6);
 	const auto [amplitude, phase] = FrequencyResponse(filter, 8192);
 	const auto params = ParametrizeBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge < ellipticLower);

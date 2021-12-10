@@ -22,6 +22,7 @@ public:
 
 	void Resize(size_t numCoefficients, T value = T{});
 	size_t Size() const;
+	size_t Order() const;
 
 	BasicSignalView<const T, DOMAINLESS> Coefficients() const;
 	BasicSignalView<T, DOMAINLESS> Coefficients();
@@ -60,6 +61,7 @@ public:
 	size_t NumRealRoots() const { return m_real.Size(); }
 	size_t NumComplexRoots() const { return 2 * NumComplexPairs(); }
 	size_t NumComplexPairs() const { return m_complex.Size(); }
+	size_t Order() const { return NumRoots(); }
 
 	BasicSignalView<const T, DOMAINLESS> RealRoots() const;
 	BasicSignalView<const std::complex<T>, DOMAINLESS> ComplexPairs() const;
@@ -98,6 +100,11 @@ size_t Polynomial<T>::Size() const {
 }
 
 template <class T>
+size_t Polynomial<T>::Order() const {
+	return Size() != 0 ? Size() - 1 : 0;
+}
+
+template <class T>
 BasicSignalView<const T, DOMAINLESS> Polynomial<T>::Coefficients() const {
 	return AsView(m_coefficients);
 }
@@ -120,13 +127,12 @@ std::complex<T> Polynomial<T>::operator()(const std::complex<T>& x) const {
 template <class T>
 template <class U>
 U Polynomial<T>::Eval(const U& x) const {
-	U xpow = T(1);
-	U acc = T(0);
-	for (const auto& coeff : m_coefficients) {
-		acc += xpow * coeff;
-		xpow *= x;
+	U y = U(0);
+	for (auto it = m_coefficients.rbegin(); it != m_coefficients.rend(); ++it) {
+		const auto& c = *it;
+		y = x * y + c;
 	}
-	return acc;
+	return y;
 }
 
 

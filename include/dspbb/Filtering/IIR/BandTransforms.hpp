@@ -136,5 +136,24 @@ DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system,
 	return impl::MapZDomain(system, s, a0, a1, a2);
 }
 
+template <class T, class T2, std::enable_if_t<std::is_convertible_v<T2, T>, int> = 0>
+DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, T2 to) {
+	return Halfband2Lowpass(system, static_cast<T>(to));
+}
+
+template <class T, class T2, std::enable_if_t<std::is_convertible_v<T2, T>, int> = 0>
+DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system, T2 to) {
+	return Halfband2Highpass(system, static_cast<T>(to));
+}
+
+template <class T, class T2, class T3, std::enable_if_t<std::is_convertible_v<T2, T> && std::is_convertible_v<T3, T>, int> = 0>
+DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system, T2 to1, T3 to2) {
+	return Halfband2Bandpass(system, static_cast<T>(to1), static_cast<T>(to2));
+}
+
+template <class T, class T2, class T3, std::enable_if_t<std::is_convertible_v<T2, T> && std::is_convertible_v<T3, T>, int> = 0>
+DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system, T2 to1, T3 to2) {
+	return Halfband2Bandstop(system, static_cast<T>(to1), static_cast<T>(to2));
+}
 
 } // namespace dspbb

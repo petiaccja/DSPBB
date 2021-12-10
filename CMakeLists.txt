@@ -44,7 +44,7 @@ conan_cmake_configure(
 	GENERATORS cmake_find_package
 )
 conan_cmake_autodetect(conan_settings)
-conan_cmake_install(PATH_OR_REFERENCE . BUILD missing SETTINGS ${conan_settings})
+conan_cmake_install(PATH_OR_REFERENCE . BUILD missing SETTINGS ${conan_settings} OUTPUT_QUIET)
 
 # Output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
