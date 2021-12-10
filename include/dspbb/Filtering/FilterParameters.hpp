@@ -7,6 +7,7 @@
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
+#include "../Utility/Numbers.hpp"
 
 #include <optional>
 #include <variant>
