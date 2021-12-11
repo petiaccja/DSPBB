@@ -117,7 +117,7 @@ auto EllipticAM(T x, T k) {
 	int n = 0;
 
 	while (std::abs(cn) > epsilon) {
-		std::forward_as_tuple(an, bn, cn) = std::make_tuple(T(0.5) * (an + bn), std::sqrt(an * bn), T(0.5) * (an - bn));
+		std::tie(an, bn, cn) = std::make_tuple(T(0.5) * (an + bn), std::sqrt(an * bn), T(0.5) * (an - bn));
 		factors[n] = cn / an;
 		++n;
 

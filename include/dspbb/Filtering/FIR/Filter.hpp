@@ -33,7 +33,7 @@ using impl::FILTER_OLA;
 
 
 template <class SignalR, class SignalU, class SignalV, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU, SignalV>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize) {
+auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize = 0) {
 	OverlapAdd(out, signal, filter, CONV_CENTRAL, chunkSize);
 }
 
@@ -43,7 +43,7 @@ auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::C
 }
 
 template <class SignalR, class SignalU, class SignalV, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU, SignalV>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize) {
+auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize = 0) {
 	OverlapAdd(out, signal, filter, CONV_FULL, chunkSize);
 }
 
@@ -57,7 +57,7 @@ template <class SignalR,
 		  class SignalV,
 		  class SignalS,
 		  std::enable_if_t<is_mutable_signal_v<SignalR> && is_mutable_signal_v<SignalS> && is_same_domain_v<SignalR, SignalU, SignalV, SignalS>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS& state, impl::FilterOla, size_t chunkSize) {
+auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS& state, impl::FilterOla, size_t chunkSize = 0) {
 	if (state.Size() != filter.Size() - 1) {
 		throw std::invalid_argument("State must have a length one less than the filter.");
 	}
@@ -91,7 +91,7 @@ auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS
 }
 
 template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize) {
+auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize = 0) {
 	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.Size(), filter.Size(), CONV_CENTRAL));
 	Filter(out, signal, filter, CONV_CENTRAL, FILTER_OLA, chunkSize);
 	return out;
@@ -105,7 +105,7 @@ auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, imp
 }
 
 template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize) {
+auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize = 0) {
 	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.Size(), filter.Size(), CONV_FULL));
 	Filter(out, signal, filter, CONV_FULL, FILTER_OLA, chunkSize);
 	return out;
@@ -122,7 +122,7 @@ template <class SignalU,
 		  class SignalV,
 		  class SignalS,
 		  std::enable_if_t<is_mutable_signal_v<SignalS> && is_same_domain_v<SignalU, SignalV, SignalS>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, SignalS&& state, impl::FilterOla, size_t chunkSize) {
+auto Filter(const SignalU& signal, const SignalV& filter, SignalS&& state, impl::FilterOla, size_t chunkSize = 0) {
 	impl::ProductSignalT<SignalU, SignalV> out(signal.Size());
 	Filter(out, signal, filter, state, FILTER_OLA, chunkSize);
 	return out;
