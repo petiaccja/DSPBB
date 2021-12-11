@@ -39,7 +39,7 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 		constexpr int step = 40;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
+			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA);
 		}
 	}
 	SECTION("Convolution small") {
@@ -53,7 +53,7 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 		constexpr int step = 4;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
+			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA);
 		}
 	}
 	SECTION("Convolution copy") {
@@ -69,7 +69,7 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 		constexpr int step = 4;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA, 16);
+			const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA);
 			const auto outBatch = AsView(result).SubSignal(i, step);
 			std::copy(batch.begin(), batch.end(), outBatch.begin());
 		}
@@ -92,7 +92,7 @@ TEST_CASE("Filter central", "[FIR]") {
 		REQUIRE(Max(Abs(result - expected)) < 1e-7);
 	}
 	SECTION("OLA") {
-		const auto result = Filter(signal, filter, CONV_CENTRAL, FILTER_OLA, 16);
+		const auto result = Filter(signal, filter, CONV_CENTRAL, FILTER_OLA);
 		REQUIRE(Max(Abs(result - expected)) < 1e-7);
 	}
 }
@@ -112,7 +112,7 @@ TEST_CASE("Filter full", "[FIR]") {
 	}
 
 	SECTION("OLA") {
-		const auto result = Filter(signal, filter, CONV_FULL, FILTER_OLA, 16);
+		const auto result = Filter(signal, filter, CONV_FULL, FILTER_OLA);
 		REQUIRE(Max(Abs(result - expected)) < 1e-7);
 	}
 }
