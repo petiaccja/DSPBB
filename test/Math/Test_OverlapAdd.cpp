@@ -181,3 +181,42 @@ TEST_CASE("OLA too small chunk size", "[OverlapAdd]") {
 	REQUIRE_THROWS(OverlapAdd(u, v, CONV_FULL, 30));
 	REQUIRE_NOTHROW(OverlapAdd(u, v, CONV_CENTRAL, 31));
 }
+
+TEST_CASE("OLA optimal theoretical FFT size", "[OverlapAdd]") {
+	const double s1 = impl::ola::OptimalTheoreticalSize(12, 6, 1, 2);
+	REQUIRE(s1 == Approx(65.114).margin(0.001f));
+
+	const double s2 = impl::ola::OptimalTheoreticalSize(30, 6, 1, 2);
+	REQUIRE(s2 == Approx(195.815).margin(0.001f));
+
+	const double s3 = impl::ola::OptimalTheoreticalSize(1024, 6, 1, 2);
+	REQUIRE(s3 == Approx(10789.169).margin(0.001f));
+
+	const double s4 = impl::ola::OptimalTheoreticalSize(6144, 6, 1, 2);
+	REQUIRE(s4 == Approx(76793.054).margin(0.001f));
+}
+
+TEST_CASE("OLA optimal practical FFT size", "[OverlapAdd]") {
+	const size_t s1 = impl::ola::OptimalPracticalSize(55000, 12, 6, 1, 2);
+	REQUIRE(s1 == 128);
+
+	const size_t s2 = impl::ola::OptimalPracticalSize(55000, 30, 6, 1, 2);
+	REQUIRE(s2 == 256);
+
+	const size_t s3 = impl::ola::OptimalPracticalSize(55000, 1024, 6, 1, 2);
+	REQUIRE(s3 == 16384);
+
+	const size_t s4 = impl::ola::OptimalPracticalSize(550000, 6144, 6, 1, 2);
+	REQUIRE(s4 == 131072);
+}
+
+TEST_CASE("OLA optimal practical FFT size short signal", "[OverlapAdd]") {
+	const size_t s1 = impl::ola::OptimalPracticalSize(49, 12, 6, 1, 2);
+	REQUIRE(s1 == 60);
+
+	const size_t s2 = impl::ola::OptimalPracticalSize(84, 12, 6, 1, 2);
+	REQUIRE(s2 == 95);
+
+	const size_t s3 = impl::ola::OptimalPracticalSize(86, 12, 6, 1, 2);
+	REQUIRE(s3 == 128);
+}
