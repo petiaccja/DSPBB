@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 option(ENABLE_LLVM_COV "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(ENABLE_LLVM_ADDRESS_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(ENABLE_LLVM_MEMORY_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
+option(BUILD_EXAMPLES "Include or exclude examples in the project." ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (ENABLE_LLVM_COV)
@@ -52,6 +53,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 
 # Subdirectories
-add_subdirectory(test)
 add_subdirectory(include/dspbb)
+add_subdirectory(test)
+if (${BUILD_EXAMPLES})
+	add_subdirectory(examples)
+endif()
 
