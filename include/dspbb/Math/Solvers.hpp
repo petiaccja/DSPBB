@@ -4,10 +4,9 @@ namespace dspbb {
 
 template <class Func, class T>
 T Bisect(Func func, T a, T b, T tolerance = T(0)) {
-	if (b < a) {
-		std::swap(a, b);
-	}
 	T c = (a + b) / T(2);
+	T err = std::numeric_limits<T>::max();
+	T errPrev = err;
 	do {
 		const auto fa = func(a);
 		const auto fc = func(c);
@@ -18,7 +17,9 @@ T Bisect(Func func, T a, T b, T tolerance = T(0)) {
 			a = c;
 		}
 		c = (a + b) / T(2);
-	} while (b - c > tolerance && c - a > tolerance);
+		errPrev = err;
+		err = std::abs(b - a);
+	} while (err > tolerance && err < errPrev);
 
 	return c;
 }
@@ -26,10 +27,14 @@ T Bisect(Func func, T a, T b, T tolerance = T(0)) {
 template <class Func, class Derivative, class T>
 T NewtonRaphson(Func func, Derivative der, T x0, T tolerance = T(0)) {
 	T x1 = x0;
+	T err = std::numeric_limits<T>::max();
+	T errPrev = err;
 	do {
 		x0 = x1;
 		x1 = x0 - func(x0) / der(x0);
-	} while (std::abs(x1 - x0) > tolerance);
+		errPrev = err;
+		err = std::abs(x1 - x0);
+	} while (err > tolerance && err < errPrev);
 	return x1;
 }
 
