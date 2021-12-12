@@ -262,8 +262,8 @@ TEST_CASE("Windowed hilbert magnitude", "[FIR]") {
 TEST_CASE("Windowed methods equal", "[FIR]") {
 	constexpr size_t numTaps = 127;
 	constexpr float cutoff = 0.3f;
-	constexpr float bandHigh = 0.2f;
-	constexpr float bandLow = 0.6f;
+	constexpr float bandLow = 0.2f;
+	constexpr float bandHigh = 0.6f;
 
 	const auto lp1 = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
 	const auto lp2 = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
