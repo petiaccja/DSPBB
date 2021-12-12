@@ -59,86 +59,97 @@ namespace impl {
 
 	template <class T>
 	T Smoothstep(const T& x) {
-		const float c = std::clamp(x, T(0), T(1));
+		const T c = std::clamp(x, T(0), T(1));
 		return T(3) * c * c - T(2) * c * c * c;
+	}
+
+	template <class T>
+	T LerpParam(T x, T lower, T upper) {
+		return (x - lower) / (upper - lower);
 	}
 
 	template <class F, class Desc>
 	auto LeastSquaresSplitWeight(F frequency, const Desc& desc) {
-		if (frequency <= desc.cutoffBegin) {
-			return desc.weightLow;
+		if (frequency <= static_cast<F>(desc.cutoffBegin)) {
+			return static_cast<F>(desc.weightLow);
 		}
-		if (frequency <= desc.cutoffEnd) {
-			return desc.weightTransition;
+		if (frequency <= static_cast<F>(desc.cutoffEnd)) {
+			return static_cast<F>(desc.weightTransition);
 		}
-		return desc.weightHigh;
+		return static_cast<F>(desc.weightHigh);
 	}
 
 	template <class F, class Desc>
 	auto LeastSquaresBandWeight(F frequency, const Desc& desc) {
-		if (frequency <= desc.lowerBegin) {
-			return desc.weightLow;
+		if (frequency <= static_cast<F>(desc.lowerBegin)) {
+			return static_cast<F>(desc.weightLow);
 		}
-		if (frequency <= desc.lowerEnd) {
-			return desc.weightTransition1;
+		if (frequency <= static_cast<F>(desc.lowerEnd)) {
+			return static_cast<F>(desc.weightTransition1);
 		}
-		if (frequency <= desc.upperBegin) {
-			return desc.weightMid;
+		if (frequency <= static_cast<F>(desc.upperBegin)) {
+			return static_cast<F>(desc.weightMid);
 		}
-		if (frequency <= desc.upperEnd) {
-			return desc.weightTransition2;
+		if (frequency <= static_cast<F>(desc.upperEnd)) {
+			return static_cast<F>(desc.weightTransition2);
 		}
-		return desc.weightHigh;
+		return static_cast<F>(desc.weightHigh);
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::LowpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
-		const auto response = [desc](ParamType f) {
-			return Smoothstep((f - desc.cutoffEnd) / (desc.cutoffBegin - desc.cutoffEnd));
+	auto TranslateLeastSquares(const LowpassDesc<FirMethodLeastSquares, ParamType>& desc) {
+		const auto response = [desc](auto f) {
+			using F = std::decay_t<decltype(f)>;
+			return Smoothstep(LerpParam(f, F(desc.cutoffEnd), F(desc.cutoffBegin)));
 		};
-		const auto weight = [desc](ParamType f) {
+		const auto weight = [desc](auto f) {
 			return LeastSquaresSplitWeight(f, desc);
 		};
 		return std::make_tuple(response, weight);
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::HighpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
-		const auto response = [desc](ParamType f) {
-			return Smoothstep((f - desc.cutoffBegin) / (desc.cutoffEnd - desc.cutoffBegin));
+	auto TranslateLeastSquares(const HighpassDesc<FirMethodLeastSquares, ParamType>& desc) {
+		const auto response = [desc](auto f) {
+			using F = std::decay_t<decltype(f)>;
+			return Smoothstep(LerpParam(f, F(desc.cutoffBegin), F(desc.cutoffEnd)));
 		};
-		const auto weight = [desc](ParamType f) {
+		const auto weight = [desc](auto f) {
 			return LeastSquaresSplitWeight(f, desc);
 		};
 		return std::make_tuple(response, weight);
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::BandpassDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
+	auto TranslateLeastSquares(const BandpassDesc<FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType fmid = (desc.lowerEnd + desc.upperBegin) / ParamType(2);
-		const auto response = [desc, fmid](ParamType f) {
-			return f < fmid ? Smoothstep((f - desc.lowerBegin) / (desc.lowerEnd - desc.lowerBegin)) : Smoothstep((f - desc.upperEnd) / (desc.upperBegin - desc.upperEnd));
+		const auto response = [desc, fmid](auto f) {
+			using F = std::decay_t<decltype(f)>;
+			return f < fmid ? Smoothstep(LerpParam(f, F(desc.lowerBegin), F(desc.lowerEnd)))
+							: Smoothstep(LerpParam(f, F(desc.upperEnd), F(desc.upperBegin)));
 		};
-		const auto weight = [desc](ParamType f) {
+		const auto weight = [desc](auto f) {
 			return LeastSquaresBandWeight(f, desc);
 		};
 		return std::make_tuple(response, weight);
 	}
 
 	template <class ParamType>
-	auto TranslateLeastSquares(const impl::BandstopDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
+	auto TranslateLeastSquares(const BandstopDesc<FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType fmid = (desc.lowerEnd + desc.upperBegin) / ParamType(2);
-		const auto response = [desc, fmid](ParamType f) {
-			return f < fmid ? Smoothstep((f - desc.lowerEnd) / (desc.lowerBegin - desc.lowerEnd)) : Smoothstep((f - desc.upperBegin) / (desc.upperEnd - desc.upperBegin));
+		const auto response = [desc, fmid](auto f) {
+			using F = std::decay_t<decltype(f)>;
+			return f < fmid ? Smoothstep(LerpParam(f, F(desc.lowerEnd), F(desc.lowerBegin)))
+							: Smoothstep(LerpParam(f, F(desc.upperBegin), F(desc.upperEnd)));
 		};
-		const auto weight = [desc](ParamType f) {
+		const auto weight = [desc](auto f) {
 			return LeastSquaresBandWeight(f, desc);
 		};
 		return std::make_tuple(response, weight);
 	}
 
 	template <class ResponseFunc, class WeightFunc>
-	auto TranslateLeastSquares(const impl::ArbitraryDesc<impl::FirMethodLeastSquares, ResponseFunc, WeightFunc>& desc) {
+	auto TranslateLeastSquares(const ArbitraryDesc<FirMethodLeastSquares, ResponseFunc, WeightFunc>& desc) {
 		return std::make_tuple(desc.responseFunc, desc.weightFunc);
 	}
 
@@ -159,12 +170,12 @@ auto FirFilter(SignalR&& out, const Desc<impl::FirMethodLeastSquares, Params...>
 namespace impl {
 
 	template <class WindowType>
-	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::FirMethodWindowed, WindowType>& desc) {
+	auto TranslateHilbert2HalfbandDesc(const HilbertDesc<FirMethodWindowed, WindowType>& desc) {
 		return Lowpass(WINDOWED).Cutoff(0.5f).Window(desc.window);
 	}
 
 	template <class ParamType>
-	auto TranslateHilbert2HalfbandDesc(const impl::HilbertDesc<impl::FirMethodLeastSquares, ParamType>& desc) {
+	auto TranslateHilbert2HalfbandDesc(const HilbertDesc<FirMethodLeastSquares, ParamType>& desc) {
 		const ParamType transitionBand = desc.transitionWidth;
 		return Lowpass(LEAST_SQUARES).Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand);
 	}
