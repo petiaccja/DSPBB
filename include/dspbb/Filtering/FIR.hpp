@@ -148,7 +148,7 @@ template <class SignalR, template <typename, typename...> class Desc, class... P
 auto FirFilter(SignalR&& out, const Desc<impl::FirMethodLeastSquares, Params...>& desc)
 	-> decltype(void(impl::TranslateLeastSquares(desc))) {
 	const auto [response, weight] = impl::TranslateLeastSquares(desc);
-	fir::KernelLeastSquares(out, response, weight);
+	fir::KernelLeastSquares(out, response, weight, desc.grid);
 }
 
 

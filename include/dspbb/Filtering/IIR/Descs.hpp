@@ -40,7 +40,7 @@ namespace impl {
 		template <class NewParamType>
 		[[nodiscard]] auto Cutoff(NewParamType cutoffNew) const {
 			impl::ThrowIfNotNormalized(cutoffNew);
-			return Desc<IirMethodButterworth, NewParamType>{ { std::move(cutoffNew) } };
+			return Desc<IirMethodButterworth, NewParamType>{ { cutoffNew } };
 		}
 	};
 
@@ -54,7 +54,7 @@ namespace impl {
 			impl::ThrowIfNotNormalized(lowerNew);
 			impl::ThrowIfNotNormalized(upperNew);
 			impl::ThrowIfNotSorted(lowerNew, upperNew);
-			return Desc<IirMethodButterworth, NewParamType>{ { std::move(lowerNew), std::move(upperNew) } };
+			return Desc<IirMethodButterworth, NewParamType>{ { lowerNew, upperNew } };
 		}
 	};
 
