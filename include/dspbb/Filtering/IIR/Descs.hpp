@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../FilterUtility.hpp"
+
 #include <type_traits>
 #include <utility>
 
@@ -37,6 +39,7 @@ namespace impl {
 
 		template <class NewParamType>
 		[[nodiscard]] auto Cutoff(NewParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodButterworth, NewParamType>{ { std::move(cutoffNew) } };
 		}
 	};
@@ -48,6 +51,9 @@ namespace impl {
 
 		template <class NewParamType>
 		[[nodiscard]] auto Band(NewParamType lowerNew, NewParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodButterworth, NewParamType>{ { std::move(lowerNew), std::move(upperNew) } };
 		}
 	};
@@ -95,6 +101,7 @@ namespace impl {
 		ParamType passbandRipple = ParamType(0.1);
 
 		[[nodiscard]] auto Cutoff(ParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodChebyshev1, ParamType>{ { cutoffNew, passbandRipple } };
 		}
 		[[nodiscard]] auto PassbandRipple(ParamType rippleNew) const {
@@ -109,6 +116,9 @@ namespace impl {
 		ParamType passbandRipple = ParamType(0.1);
 
 		[[nodiscard]] auto Band(ParamType lowerNew, ParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodChebyshev1, ParamType>{ { lowerNew, upperNew, passbandRipple } };
 		}
 		[[nodiscard]] auto PassbandRipple(ParamType rippleNew) const {
@@ -120,6 +130,7 @@ namespace impl {
 	struct SplitDescChebyshev1<Desc, void> {
 		template <class ParamType>
 		[[nodiscard]] auto Cutoff(ParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodChebyshev1, ParamType>{}.Cutoff(cutoffNew);
 		}
 		template <class ParamType>
@@ -132,6 +143,9 @@ namespace impl {
 	struct BandDescChebyshev1<Desc, void> {
 		template <class ParamType>
 		[[nodiscard]] auto Band(ParamType lowerNew, ParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodChebyshev1, ParamType>{}.Band(lowerNew, upperNew);
 		}
 		template <class ParamType>
@@ -182,6 +196,7 @@ namespace impl {
 		ParamType stopbandRipple = ParamType(0.1);
 
 		[[nodiscard]] auto Cutoff(ParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodChebyshev2, ParamType>{ { cutoffNew, stopbandRipple } };
 		}
 		[[nodiscard]] auto StopbandRipple(ParamType rippleNew) const {
@@ -196,6 +211,9 @@ namespace impl {
 		ParamType stopbandRipple = ParamType(0.1);
 
 		[[nodiscard]] auto Band(ParamType lowerNew, ParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodChebyshev2, ParamType>{ { lowerNew, upperNew, stopbandRipple } };
 		}
 		[[nodiscard]] auto StopbandRipple(ParamType rippleNew) const {
@@ -207,6 +225,7 @@ namespace impl {
 	struct SplitDescChebyshev2<Desc, void> {
 		template <class ParamType>
 		[[nodiscard]] auto Cutoff(ParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodChebyshev2, ParamType>{}.Cutoff(cutoffNew);
 		}
 		template <class ParamType>
@@ -219,6 +238,9 @@ namespace impl {
 	struct BandDescChebyshev2<Desc, void> {
 		template <class ParamType>
 		[[nodiscard]] auto Band(ParamType lowerNew, ParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodChebyshev2, ParamType>{}.Band(lowerNew, upperNew);
 		}
 		template <class ParamType>
@@ -271,6 +293,7 @@ namespace impl {
 		ParamType stopbandRipple = ParamType(0.1);
 
 		[[nodiscard]] auto Cutoff(ParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodElliptic, ParamType>{ { cutoffNew, passbandRipple, stopbandRipple } };
 		}
 		[[nodiscard]] auto PassbandRipple(ParamType rippleNew) const {
@@ -289,6 +312,9 @@ namespace impl {
 		ParamType stopbandRipple = ParamType(0.1);
 
 		[[nodiscard]] auto Band(ParamType lowerNew, ParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodElliptic, ParamType>{ { lowerNew, upperNew, passbandRipple, stopbandRipple } };
 		}
 		[[nodiscard]] auto PassbandRipple(ParamType rippleNew) const {
@@ -303,6 +329,7 @@ namespace impl {
 	struct SplitDescElliptic<Desc, void> {
 		template <class ParamType>
 		[[nodiscard]] auto Cutoff(ParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<IirMethodElliptic, ParamType>{}.Cutoff(cutoffNew);
 		}
 		template <class ParamType>
@@ -319,6 +346,9 @@ namespace impl {
 	struct BandDescElliptic<Desc, void> {
 		template <class ParamType>
 		[[nodiscard]] auto Band(ParamType lowerNew, ParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<IirMethodElliptic, ParamType>{}.Band(lowerNew, upperNew);
 		}
 		template <class ParamType>

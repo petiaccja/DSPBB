@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Primitives/Signal.hpp"
+#include "../FilterUtility.hpp"
 #include "../Windowing.hpp"
 
 #include <type_traits>
@@ -47,6 +48,7 @@ namespace impl {
 
 		template <class NewParamType>
 		[[nodiscard]] auto Cutoff(NewParamType cutoffNew) const {
+			impl::ThrowIfNotNormalized(cutoffNew);
 			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(cutoffNew), std::move(window) } };
 		}
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
@@ -67,6 +69,9 @@ namespace impl {
 
 		template <class NewParamType>
 		[[nodiscard]] auto Band(NewParamType lowerNew, NewParamType upperNew) const {
+			impl::ThrowIfNotNormalized(lowerNew);
+			impl::ThrowIfNotNormalized(upperNew);
+			impl::ThrowIfNotSorted(lowerNew, upperNew);
 			return Desc<FirMethodWindowed, NewParamType, WindowType>{ { std::move(lowerNew), std::move(upperNew), std::move(window) } };
 		}
 		template <class NewWindowType, std::enable_if_t<!is_signal_like_v<NewWindowType> && std::is_invocable_v<WindowType, BasicSignal<float, TIME_DOMAIN>&>, int> = 0>
@@ -168,8 +173,11 @@ namespace impl {
 		ParamType weightTransition = ParamType(0.0);
 		ParamType weightHigh = ParamType(1.0);
 
-		[[nodiscard]] auto Cutoff(ParamType newBegin, ParamType newEnd) const {
-			return Desc<FirMethodLeastSquares, ParamType>{ { newBegin, newEnd, weightLow, weightTransition, weightHigh } };
+		[[nodiscard]] auto Cutoff(ParamType cutoffBeginNew, ParamType cutoffEndNew) const {
+			impl::ThrowIfNotNormalized(cutoffBeginNew);
+			impl::ThrowIfNotNormalized(cutoffEndNew);
+			impl::ThrowIfNotSorted(cutoffBeginNew, cutoffEndNew);
+			return Desc<FirMethodLeastSquares, ParamType>{ { cutoffBeginNew, cutoffEndNew, weightLow, weightTransition, weightHigh } };
 		}
 		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition, ParamType newHigh) const {
 			return Desc<FirMethodLeastSquares, ParamType>{ { cutoffBegin, cutoffEnd, newLow, newTransition, newHigh } };
@@ -188,11 +196,16 @@ namespace impl {
 		ParamType weightTransition2 = ParamType(0.0);
 		ParamType weightHigh = ParamType(1.0);
 
-		[[nodiscard]] auto Band(ParamType newLowerBegin, ParamType newLowerEnd, ParamType newUpperBegin, ParamType newUpperEnd) const {
-			return Desc<FirMethodLeastSquares, ParamType>{ { newLowerBegin, newLowerEnd, newUpperBegin, newUpperEnd, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh } };
+		[[nodiscard]] auto Band(ParamType lowerBeginNew, ParamType lowerEndNew, ParamType upperBeginNew, ParamType upperEndNew) const {
+			impl::ThrowIfNotNormalized(lowerBeginNew);
+			impl::ThrowIfNotNormalized(lowerEndNew);
+			impl::ThrowIfNotNormalized(upperBeginNew);
+			impl::ThrowIfNotNormalized(upperEndNew);
+			impl::ThrowIfNotSorted(lowerBeginNew, lowerEndNew, upperBeginNew, upperEndNew);
+			return Desc<FirMethodLeastSquares, ParamType>{ { lowerBeginNew, lowerEndNew, upperBeginNew, upperEndNew, weightLow, weightTransition1, weightMid, weightTransition2, weightHigh } };
 		}
-		[[nodiscard]] auto Weight(ParamType newLow, ParamType newTransition1, ParamType newMid, ParamType newTransition2, ParamType newHigh) const {
-			return Desc<FirMethodLeastSquares, ParamType>{ { lowerBegin, lowerEnd, upperBegin, upperEnd, newLow, newTransition1, newMid, newTransition2, newHigh } };
+		[[nodiscard]] auto Weight(ParamType lowNew, ParamType transition1New, ParamType midNew, ParamType transition2New, ParamType highNew) const {
+			return Desc<FirMethodLeastSquares, ParamType>{ { lowerBegin, lowerEnd, upperBegin, upperEnd, lowNew, transition1New, midNew, transition2New, highNew } };
 		}
 	};
 
