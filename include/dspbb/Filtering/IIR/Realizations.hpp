@@ -23,11 +23,8 @@ public:
 	void Reset();
 	size_t Order() const;
 
-	T Feed(const T& input, const DiscreteTransferFunction<T>& sys);
-	template <class U>
-	T Feed(const U& input, const DiscreteTransferFunction<T>& sys) { return Feed(static_cast<T>(input), sys); }
-	template <class SignalT>
-	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
+	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
+	T Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
 private:
 	BasicSignal<T, eSignalDomain::DOMAINLESS> recursiveState;
@@ -57,35 +54,30 @@ size_t DirectFormI<T>::Order() const {
 }
 
 template <class T>
-T DirectFormI<T>::Feed(const T& input, const DiscreteTransferFunction<T>& sys) {
-	return Feed(input, sys.numerator.Coefficients(), sys.denominator.Coefficients());
-}
+template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
+T DirectFormI<T>::Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!forwardState.Empty() && Order() >= sys.Order());
 
-template <class T>
-template <class SignalT>
-T DirectFormI<T>::Feed(const T& input, const SignalT& forward, const SignalT& recursive) {
-	assert(!forwardState.Empty() && Order() + 1 >= std::max(forward.Size(), recursive.Size()));
-	using U = std::decay_t<typename SignalT::value_type>;
+	const auto fwFull = AsConstView(sys.numerator.Coefficients());
+	const auto recFull = AsConstView(sys.denominator.Coefficients());
+	const auto recSec = recFull.SubSignal(0, recFull.Size() - 1);
 
-	const auto fwView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
-	const auto recView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
-	const auto normalization = *recursive.rbegin();
+	const auto normalization = *recFull.rbegin();
 
-	forwardState[0] = input;
+	forwardState[0] = static_cast<T>(input);
 	std::rotate(forwardState.begin(), ++forwardState.begin(), forwardState.end());
 
-	const auto fwSum = DotProduct(AsView(forwardState).SubSignal(forwardState.Size() - forward.Size()), fwView);
-	const auto recSum = DotProduct(AsView(recursiveState).SubSignal(recursiveState.Size() - recursive.Size() + 1), recView);
+	const auto fwSum = DotProduct(AsView(forwardState).SubSignal(forwardState.Size() - fwFull.Size()), fwFull);
+	const auto recSum = DotProduct(AsView(recursiveState).SubSignal(recursiveState.Size() - recSec.Size()), recSec);
 	const auto out = (fwSum - recSum) / normalization;
 
 	if (recursiveState.Size() > 0) {
-		recursiveState[0] = out;
+		recursiveState[0] = static_cast<T>(out);
 		std::rotate(recursiveState.begin(), ++recursiveState.begin(), recursiveState.end());
 	}
 
-	return out;
+	return static_cast<T>(out);
 }
-
 
 //------------------------------------------------------------------------------
 // Direct form II
@@ -101,11 +93,8 @@ public:
 	void Reset();
 	size_t Order() const;
 
-	T Feed(const T& input, const DiscreteTransferFunction<T>& sys);
-	template <class U>
-	T Feed(const U& input, const DiscreteTransferFunction<T>& sys) { return Feed(static_cast<T>(input), sys); }
-	template <class SignalT>
-	T Feed(const T& input, const SignalT& forward, const SignalT& recursive);
+	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
+	T Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
 private:
 	BasicSignal<T, eSignalDomain::DOMAINLESS> m_state;
@@ -132,27 +121,23 @@ size_t DirectFormII<T>::Order() const {
 }
 
 template <class T>
-T DirectFormII<T>::Feed(const T& input, const DiscreteTransferFunction<T>& sys) {
-	return Feed(input, sys.numerator.Coefficients(), sys.denominator.Coefficients());
-}
+template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
+T DirectFormII<T>::Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!m_state.Empty() && Order() >= sys.Order());
 
-template <class T>
-template <class SignalT>
-T DirectFormII<T>::Feed(const T& input, const SignalT& forward, const SignalT& recursive) {
-	assert(!m_state.Empty() && Order() + 1 >= forward.Size());
-	using U = std::decay_t<typename SignalT::value_type>;
+	const auto fwFull = AsConstView(sys.numerator.Coefficients());
+	const auto recFull = AsConstView(sys.denominator.Coefficients());
+	const auto recSec = recFull.SubSignal(0, recFull.Size() - 1);
 
-	const auto fwView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ forward.begin(), forward.end() };
-	const auto recView = BasicSignalView<const U, eSignalDomain::DOMAINLESS>{ recursive.begin(), recursive.end() - 1 };
-	const auto stateFwView = AsView(m_state).SubSignal(m_state.Size() - forward.Size());
-	const auto stateRecView = AsView(m_state).SubSignal(m_state.Size() - recursive.Size() + 1);
-	const auto normalization = *recursive.rbegin();
+	const auto stateFwView = AsView(m_state).SubSignal(m_state.Size() - fwFull.Size());
+	const auto stateRecView = AsView(m_state).SubSignal(m_state.Size() - recSec.Size());
+	const auto normalization = *recFull.rbegin();
 
-	const T stateNext = input / normalization - DotProduct(recView, stateRecView);
-	m_state[0] = stateNext;
+	const auto stateNext = input / normalization - DotProduct(recSec, stateRecView);
+	m_state[0] = static_cast<T>(stateNext);
 	std::rotate(m_state.begin(), ++m_state.begin(), m_state.end());
 
-	return DotProduct(fwView, stateFwView);
+	return static_cast<T>(DotProduct(fwFull, stateFwView));
 }
 
 //------------------------------------------------------------------------------
@@ -169,9 +154,8 @@ public:
 	void Reset();
 	size_t Order() const;
 
-	T Feed(const T& input, const CascadedBiquad<T>& sys);
-	template <class U>
-	T Feed(const U& input, const CascadedBiquad<T>& sys) { return Feed(static_cast<T>(input), sys); }
+	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
+	T Feed(const InputT& input, const CascadedBiquad<SystemT>& sys);
 
 private:
 	using Section = std::array<T, 3>;
@@ -204,26 +188,26 @@ size_t CascadedForm<T>::Order() const {
 }
 
 template <class T>
-T CascadedForm<T>::Feed(const T& input, const CascadedBiquad<T>& sys) {
+template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
+T CascadedForm<T>::Feed(const InputT& input, const CascadedBiquad<SystemT>& sys) {
 	assert(sys.sections.size() + 1 <= m_sections.size());
-	auto output = input;
+	T output = static_cast<T>(input);
 	for (size_t i = 0; i < m_sections.size(); ++i) {
-		BasicSignalView<T, DOMAINLESS> stateFwView{ m_sections[i].begin(), m_sections[i].end() };
+		const BasicSignalView<T, DOMAINLESS> stateFwView{ m_sections[i].begin(), m_sections[i].end() };
 		stateFwView[0] = output;
 		std::rotate(stateFwView.begin(), stateFwView.begin() + 1, stateFwView.end());
 
 		if (i < sys.sections.size()) {
-			BasicSignalView<T, DOMAINLESS> stateRecView{ m_sections[i + 1].begin() + 1, m_sections[i + 1].end() };
-			BasicSignalView<const T, DOMAINLESS> fwView{ sys.sections[i].numerator.begin(), sys.sections[i].numerator.end() };
-			BasicSignalView<const T, DOMAINLESS> recView{ sys.sections[i].denominator.begin(), sys.sections[i].denominator.end() };
+			const BasicSignalView<T, DOMAINLESS> stateRecView{ m_sections[i + 1].begin() + 1, m_sections[i + 1].end() };
+			BasicSignalView<const SystemT, DOMAINLESS> fwView{ sys.sections[i].numerator.begin(), sys.sections[i].numerator.end() };
+			BasicSignalView<const SystemT, DOMAINLESS> recView{ sys.sections[i].denominator.begin(), sys.sections[i].denominator.end() };
 
 			const auto fwSum = DotProduct(stateFwView, fwView);
 			const auto recSum = DotProduct(stateRecView, recView);
-			output = fwSum - recSum;
+			output = static_cast<T>(fwSum - recSum);
 		}
 	}
 	return output;
 }
-
 
 } // namespace dspbb

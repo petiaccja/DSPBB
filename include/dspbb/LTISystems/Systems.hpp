@@ -27,6 +27,8 @@ struct ZeroPoleGain {
 template <class T, eDiscretization Discretization>
 struct TransferFunction {
 	TransferFunction() = default;
+	TransferFunction(Polynomial<T> numerator, Polynomial<T> denominator)
+		: numerator(std::move(numerator)), denominator(std::move(denominator)) {}
 	explicit TransferFunction(const ZeroPoleGain<T, Discretization>& zpk);
 
 	Polynomial<T> numerator;
