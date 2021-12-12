@@ -1,9 +1,13 @@
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable : 4800)
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4800 4244)
+#endif
 #include <xsimd/xsimd.hpp>
-#pragma warning(pop)
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
 #include <numeric>
 
