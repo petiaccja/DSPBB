@@ -10,7 +10,7 @@ endif()
 target_sources(UnitTest 
 	PRIVATE
 		"ComputeKernels/Test_Kernels.cpp" 
-		"Filtering/FIR/Test_FIRDescs.cpp"
+		"Filtering/FIR/Test_Descs.cpp"
 		"Filtering/IIR/Test_BandTransforms.cpp"
 		"Filtering/IIR/Test_Descs.cpp"
 		"Filtering/IIR/Test_Kernels.cpp"
