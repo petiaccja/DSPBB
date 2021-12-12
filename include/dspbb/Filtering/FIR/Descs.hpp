@@ -323,7 +323,7 @@ namespace impl {
 
 	template <>
 	struct HilbertDesc<FirMethodLeastSquares>
-		: HilbertDesc<FirMethodLeastSquares, float> {};
+		: HilbertDesc<FirMethodLeastSquares, void> {};
 
 } // namespace impl
 
