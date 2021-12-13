@@ -191,7 +191,7 @@ template <class T>
 template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
 T CascadedForm<T>::Feed(const InputT& input, const CascadedBiquad<SystemT>& sys) {
 	assert(sys.sections.size() + 1 <= m_sections.size());
-	T output = static_cast<T>(input);
+	auto output = static_cast<T>(input);
 	for (size_t i = 0; i < m_sections.size(); ++i) {
 		const BasicSignalView<T, DOMAINLESS> stateFwView{ m_sections[i].begin(), m_sections[i].end() };
 		stateFwView[0] = output;

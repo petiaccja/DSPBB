@@ -100,28 +100,28 @@ const auto tff = TransferFunction{ sysf };
 const auto cascadef = CascadedBiquad{ sysf };
 
 TEST_CASE("Direct form I feed float/double", "[IIR realizations]") {
-	constexpr float input = 1.0f;
+	constexpr float inputf = 1.0f;
 	DirectFormI<float> df1{ sys.Order() };
 	DirectFormII<float> df2{ sys.Order() };
 	CascadedForm<float> cf{ sys.Order() };
 
-	const auto out1 = df1.Feed(input, tfd);
-	const auto out2 = df2.Feed(input, tfd);
-	const auto out3 = cf.Feed(input, cascaded);
+	[[maybe_unused]] const auto out1 = df1.Feed(inputf, tfd);
+	[[maybe_unused]] const auto out2 = df2.Feed(inputf, tfd);
+	[[maybe_unused]] const auto out3 = cf.Feed(inputf, cascaded);
 	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out1)>>);
 	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out2)>>);
 	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out3)>>);
 }
 
 TEST_CASE("Direct form I feed complex<float>/float", "[IIR realizations]") {
-	constexpr std::complex<float> input = 1.0f;
+	constexpr std::complex<float> inputcf = 1.0f;
 	DirectFormI<std::complex<float>> df1{ sys.Order() };
 	DirectFormII<std::complex<float>> df2{ sys.Order() };
 	CascadedForm<std::complex<float>> cf{ sys.Order() };
 
-	const auto out1 = df1.Feed(input, tff);
-	const auto out2 = df2.Feed(input, tff);
-	const auto out3 = cf.Feed(input, cascadef);
+	[[maybe_unused]] const auto out1 = df1.Feed(inputcf, tff);
+	[[maybe_unused]] const auto out2 = df2.Feed(inputcf, tff);
+	[[maybe_unused]] const auto out3 = cf.Feed(inputcf, cascadef);
 	REQUIRE(std::is_same_v<std::complex<float>, std::decay_t<decltype(out1)>>);
 	REQUIRE(std::is_same_v<std::complex<float>, std::decay_t<decltype(out2)>>);
 	REQUIRE(std::is_same_v<std::complex<float>, std::decay_t<decltype(out3)>>);
