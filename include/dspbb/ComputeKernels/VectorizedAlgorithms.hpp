@@ -321,7 +321,7 @@ R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductO
 template <class R, class T, class U, class ProductOp, class ReduceOp, std::enable_if_t<is_inner_product_vectorized<R, T, U, ProductOp, ReduceOp>::value, int> = 0>
 R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
 	using TV = xsimd::simd_type<T>;
-	using UV = xsimd::simd_type<T>;
+	using UV = xsimd::simd_type<U>;
 	using RV = xsimd::simd_type<R>;
 	constexpr size_t vsize = xsimd::simd_traits<T>::size;
 

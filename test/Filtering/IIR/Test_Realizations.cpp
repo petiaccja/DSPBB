@@ -80,6 +80,54 @@ TEST_CASE("Cascaded biquad form feed", "[IIR realizations]") {
 }
 
 //------------------------------------------------------------------------------
+// Feed different input type
+//------------------------------------------------------------------------------
+
+const DiscreteZeroPoleGain<double> sysd = {
+	0.0,
+	{ -0.6i, 0.6i },
+	{ -0.55i, 0.55i }
+};
+const auto tfd = TransferFunction{ sysd };
+const auto cascaded = CascadedBiquad{ sysd };
+
+const DiscreteZeroPoleGain<float> sysf = {
+	0.0f,
+	{ -0.6if, 0.6if },
+	{ -0.55if, 0.55if }
+};
+const auto tff = TransferFunction{ sysf };
+const auto cascadef = CascadedBiquad{ sysf };
+
+TEST_CASE("Direct form I feed float/double", "[IIR realizations]") {
+	constexpr float inputf = 1.0f;
+	DirectFormI<float> df1{ sys.Order() };
+	DirectFormII<float> df2{ sys.Order() };
+	CascadedForm<float> cf{ sys.Order() };
+
+	[[maybe_unused]] const auto out1 = df1.Feed(inputf, tfd);
+	[[maybe_unused]] const auto out2 = df2.Feed(inputf, tfd);
+	[[maybe_unused]] const auto out3 = cf.Feed(inputf, cascaded);
+	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out1)>>);
+	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out2)>>);
+	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out3)>>);
+}
+
+TEST_CASE("Direct form I feed complex<float>/float", "[IIR realizations]") {
+	constexpr std::complex<float> inputcf = 1.0f;
+	DirectFormI<std::complex<float>> df1{ sys.Order() };
+	DirectFormII<std::complex<float>> df2{ sys.Order() };
+	CascadedForm<std::complex<float>> cf{ sys.Order() };
+
+	[[maybe_unused]] const auto out1 = df1.Feed(inputcf, tff);
+	[[maybe_unused]] const auto out2 = df2.Feed(inputcf, tff);
+	[[maybe_unused]] const auto out3 = cf.Feed(inputcf, cascadef);
+	REQUIRE(std::is_same_v<std::complex<float>, std::decay_t<decltype(out1)>>);
+	REQUIRE(std::is_same_v<std::complex<float>, std::decay_t<decltype(out2)>>);
+	REQUIRE(std::is_same_v<std::complex<float>, std::decay_t<decltype(out3)>>);
+}
+
+//------------------------------------------------------------------------------
 // Direct form I
 //------------------------------------------------------------------------------
 
@@ -101,14 +149,13 @@ TEST_CASE("Direct form I order", "[IIR realizations]") {
 
 TEST_CASE("Direct form I reset", "[IIR realizations]") {
 	DirectFormI<float> state{ 2 };
-	BasicSignal<float, DOMAINLESS> b = { 1, 1, 1 };
-	BasicSignal<float, DOMAINLESS> a = { 1, 1, 1 };
+	DiscreteTransferFunction<float> tf2{ Polynomial<float>{ 1, 1, 1 }, Polynomial<float>{ 1, 1, 1 } };
 	for (int i = 0; i < 10; ++i) {
-		REQUIRE(0.0f != state.Feed(1.0f, b, a));
+		REQUIRE(0.0f != state.Feed(1.0f, tf2));
 	}
 	state.Reset();
 	for (int i = 0; i < 10; ++i) {
-		REQUIRE(0.0f == state.Feed(0.0f, b, a));
+		REQUIRE(0.0f == state.Feed(0.0f, tf2));
 	}
 }
 
@@ -134,14 +181,13 @@ TEST_CASE("Direct form II order", "[IIR realizations]") {
 
 TEST_CASE("Direct form II reset", "[IIR realizations]") {
 	DirectFormII<float> state{ 2 };
-	BasicSignal<float, DOMAINLESS> b = { 1, 1, 1 };
-	BasicSignal<float, DOMAINLESS> a = { 1, 1, 1 };
+	DiscreteTransferFunction<float> tf2{ Polynomial<float>{ 1, 1, 1 }, Polynomial<float>{ 1, 1, 1 } };
 	for (int i = 0; i < 10; ++i) {
-		REQUIRE(0.0f != state.Feed(1.0f, b, a));
+		REQUIRE(0.0f != state.Feed(1.0f, tf2));
 	}
 	state.Reset();
 	for (int i = 0; i < 10; ++i) {
-		REQUIRE(0.0f == state.Feed(0.0f, b, a));
+		REQUIRE(0.0f == state.Feed(0.0f, tf2));
 	}
 }
 
