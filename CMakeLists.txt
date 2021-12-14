@@ -14,6 +14,7 @@ option(ENABLE_LLVM_COV "Adds compiler flags to generate LLVM source-based code c
 option(ENABLE_LLVM_ADDRESS_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(ENABLE_LLVM_MEMORY_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(BUILD_EXAMPLES "Include or exclude examples in the project." ON)
+option(BUILD_BENCHMARKS "Include or exclude benchmarks in the project." ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (ENABLE_LLVM_COV)
@@ -57,5 +58,8 @@ add_subdirectory(include/dspbb)
 add_subdirectory(test)
 if (${BUILD_EXAMPLES})
 	add_subdirectory(examples)
+endif()
+if (${BUILD_BENCHMARKS})
+	add_subdirectory(benchmark)
 endif()
 
