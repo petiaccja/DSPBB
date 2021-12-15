@@ -19,3 +19,4 @@ conan_cmake_install(PATH_OR_REFERENCE . BUILD missing SETTINGS ${conan_settings}
 
 find_package(celero REQUIRED)
 target_link_libraries(Benchmark celero::celero DSPBB)
+target_compile_options(Benchmark PRIVATE "/arch:AVX2")

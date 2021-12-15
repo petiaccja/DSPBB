@@ -2,40 +2,57 @@
 #include <dspbb/ComputeKernels/VectorizedAlgorithms.hpp>
 
 #include <array>
+#include <vector>
 #include <celero/Celero.h>
-#include <iostream>
 #include <iterator>
-#include <memory_resource>
+#include <numeric>
 #include <random>
-#include <stack>
 
 using namespace dspbb;
 
-float LinearSum(const float* u, size_t count) {
-	return std::accumulate(u, u + count, 0.0f);
-}
+
+static constexpr std::array reductionSizes = {
+	//2,
+	//4,
+	//6,
+	//8,
+	//10,
+	//16,
+	//32,
+	//64,
+	//96,
+	//384,
+	//1536,
+	6144,
+	//24576,
+	//98304,
+	//393216,
+	//1572864,
+	//6291456,
+	//25165824,
+	//100663296,
+};
 
 std::minstd_rand rne;
 std::uniform_real_distribution<float> randomFloat(-1, 1);
 
-class RandomArrayFicture : public celero::TestFixture {
+template <class T>
+class RandomArrayFixture : public celero::TestFixture {
 public:
-	static constexpr std::array sizes = { 32, 256, 1024, 4096, 16384, 131072, 1048576, 8388608, 67108864 };
-
 	std::vector<ExperimentValue> getExperimentValues() const override {
 		std::vector<ExperimentValue> experimentValues;
-		std::transform(sizes.begin(), sizes.end(), std::back_inserter(experimentValues), [](size_t size) {
-			return ExperimentValue{ int64_t(size), std::max(int64_t(1), int64_t(8388608 / size)) };
+		std::transform(reductionSizes.begin(), reductionSizes.end(), std::back_inserter(experimentValues), [](size_t size) {
+			return ExperimentValue{ int64_t(size), std::max(int64_t(1), int64_t(10485760 / size)) };
 		});
 		return experimentValues;
 	}
 
 	virtual void setUp(const ExperimentValue& experimentValue) {
 		size_t arraySize = experimentValue.Value;
-		array = std::vector<float>(arraySize);
-		std::array<float, 16> pattern;
+		array = std::vector<T>(arraySize);
+		std::array<T, 16> pattern;
 		for (auto& v : pattern) {
-			v = randomFloat(rne);
+			v = static_cast<T>(randomFloat(rne));
 		}
 		size_t index = 0;
 		for (auto& v : array) {
@@ -44,15 +61,54 @@ public:
 		}
 	}
 
-	std::vector<float> array;
+	std::vector<T> array;
 };
 
-BASELINE_F(Reduce, Linear, RandomArrayFicture, 25, 500) {
-	const float result = LinearSum(array.data(), array.size());
+template <class T>
+T AccumulateSum(const T* u, size_t count) {
+	return std::accumulate(u, u + count, static_cast<T>(0.0f));
+}
+template <class T>
+T ReduceSum(const T* u, size_t count) {
+	return std::reduce(u, u + count, static_cast<T>(0.0f));
+}
+
+BASELINE_F(Reduce_Float, std_accumulate, RandomArrayFixture<float>, 25, 500) {
+	const auto result = AccumulateSum(array.data(), array.size());
 	celero::DoNotOptimizeAway(result);
 }
 
-BENCHMARK_F(Reduce, Vectorized, RandomArrayFicture, 25, 500) {
-	const float result = kernels::ReduceVectorized(array.data(), array.size(), 0.0f, [](const auto& acc, const auto& x) { return acc + x; });
+BENCHMARK_F(Reduce_Float, std_reduce, RandomArrayFixture<float>, 25, 500) {
+	const auto result = ReduceSum(array.data(), array.size());
+	celero::DoNotOptimizeAway(result);
+}
+
+BENCHMARK_F(Reduce_Float, dspbb_reduce, RandomArrayFixture<float>, 25, 500) {
+	const auto result = kernels::Reduce(array.data(), array.size(), 0.0f, std::plus<>{});
+	celero::DoNotOptimizeAway(result);
+}
+
+BENCHMARK_F(Reduce_Float, dspbb_reduce_comp, RandomArrayFixture<float>, 25, 500) {
+	const auto result = kernels::Reduce(array.data(), array.size(), 0.0f, kernels::plus_compensated<>{});
+	celero::DoNotOptimizeAway(result);
+}
+
+BASELINE_F(Reduce_ComplexFloat, std_accumulate, RandomArrayFixture<std::complex<float>>, 25, 500) {
+	const auto result = AccumulateSum(array.data(), array.size());
+	celero::DoNotOptimizeAway(result);
+}
+
+BENCHMARK_F(Reduce_ComplexFloat, std_reduce, RandomArrayFixture<std::complex<float>>, 25, 500) {
+	const auto result = ReduceSum(array.data(), array.size());
+	celero::DoNotOptimizeAway(result);
+}
+
+BENCHMARK_F(Reduce_ComplexFloat, dspbb_reduce, RandomArrayFixture<std::complex<float>>, 25, 500) {
+	const auto result = kernels::Reduce(array.data(), array.size(), std::complex<float>(0.0f), std::plus<>{});
+	celero::DoNotOptimizeAway(result);
+}
+
+BENCHMARK_F(Reduce_ComplexFloat, dspbb_reduce_comp, RandomArrayFixture<std::complex<float>>, 25, 500) {
+	const auto result = kernels::Reduce(array.data(), array.size(), std::complex<float>(0.0f), kernels::plus_compensated<>{});
 	celero::DoNotOptimizeAway(result);
 }

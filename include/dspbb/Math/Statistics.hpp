@@ -16,7 +16,7 @@ namespace dspbb {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Sum(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return kernels::ReduceVectorized(signal.Data(), signal.Size(), T(0), [](const auto& a, const auto& b) { return a + b; });
+	return kernels::Reduce(signal.Data(), signal.Size(), T(0), [](const auto& a, const auto& b) { return a + b; });
 }
 
 
@@ -60,14 +60,14 @@ auto Norm(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Max(const SignalT& signal) {
 	assert(!signal.Empty());
-	return kernels::ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::max(a, b); });
+	return kernels::Reduce(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::max(a, b); });
 }
 
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Min(const SignalT& signal) {
 	assert(!signal.Empty());
-	return kernels::ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::min(a, b); });
+	return kernels::Reduce(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::min(a, b); });
 }
 
 

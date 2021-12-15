@@ -9,6 +9,8 @@
 	#pragma warning(pop)
 #endif
 
+#include "dspbb/Utility/TypeTraits.hpp"
+
 #include <numeric>
 
 
@@ -221,41 +223,138 @@ void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
 // Reduction.
 //------------------------------------------------------------------------------
 
-template <class R, class T, class Op>
-R Reduce(const T* in, size_t length, R init, Op op) {
-	// TODO: use C++17 std::reduce
-	return std::accumulate(in, in + length, init, op);
-}
+struct compensated_operator_tag {};
 
-template <class R, class T, class Op, std::enable_if_t<!is_reduce_vectorized<R, T, Op>::value, int> = 0>
-R ReduceVectorized(const T* in, size_t length, R init, Op op) {
-	return Reduce(in, length, init, op);
-}
-
-template <class R, class T, class Op, std::enable_if_t<is_reduce_vectorized<R, T, Op>::value, int> = 0>
-R ReduceVectorized(const T* in, size_t length, R init, Op op) {
-	using TV = xsimd::simd_type<T>;
-	using RV = xsimd::simd_type<R>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
-
-	const size_t vlength = (length / vsize) * vsize;
-	const R* vlast = in + vlength;
-	if (vlength > 0) {
-		RV acc;
-		acc.load_unaligned(in);
-		in += vsize;
-		for (; in < vlast; in += vsize) {
-			TV vin;
-			vin.load_unaligned(in);
-			acc = op(acc, vin);
-		}
-		alignas(alignof(RV)) std::array<R, vsize> arr;
-		acc.store_aligned(arr.data());
-		init = Reduce(arr.data(), arr.size(), init, op);
+template <class T = void>
+struct plus_compensated : compensated_operator_tag {
+	inline constexpr T operator()(const T& lhs, const T& rhs) const {
+		return lhs + rhs;
 	}
+	inline constexpr T make_carry(const T& init) const {
+		return init - init; // Type may not be constructable from literal zero.
+	}
+	inline constexpr T operator()(T& carry, const T& sum, const T& item) const {
+		const T y = item - carry;
+		const T t = sum + y;
+		carry = (t - sum) - y;
+		sum = t;
+		return sum;
+	}
+};
 
-	return Reduce(in, length - vlength, init, op);
+template <>
+struct plus_compensated<void> : compensated_operator_tag {
+	template <class T, class U>
+	inline constexpr auto operator()(T&& lhs, U&& rhs) const -> sum_type_t<T, U> {
+		return lhs + rhs;
+	}
+	template <class T, class U>
+	inline constexpr auto make_carry(const sum_type_t<T, U>& init) const -> sum_type_t<T, U> {
+		return init - init; // Type may not be constructable from literal zero.
+	}
+	template <class T, class U>
+	inline constexpr auto operator()(sum_type_t<T, U>& carry, T&& sum, U&& item) const -> sum_type_t<T, U> {
+		const auto y = item - carry;
+		const auto t = sum + y;
+		carry = (t - sum) - y;
+		return t;
+	}
+};
+
+template <class Operator>
+struct is_operator_compensated : std::is_base_of<compensated_operator_tag, Operator> {};
+
+template <class Operator>
+constexpr bool is_operator_compensated_v = is_operator_compensated<Operator>::value;
+
+template <class Arg1, class Arg2, class CarryT, class Operator>
+inline auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::template make_carry<Arg1, Arg2>), Operator*, CarryT> {
+	return op.template make_carry<Arg1, Arg2>(init);
 }
+
+template <class Arg1, class Arg2, class CarryT, class Operator>
+inline auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::make_carry), Operator*, CarryT> {
+	return op.make_carry(init);
+}
+
+template <class Arg1, class Arg2, class CarryT, class Operator>
+inline auto make_compensation_carry(const Operator&, const CarryT&) -> std::enable_if_t<!is_operator_compensated_v<Operator>, compensated_operator_tag> {
+	return compensated_operator_tag{}; // Return a useless tag just for the sake of compiling in generic contexts.
+}
+
+
+constexpr size_t reduceVectorizeThreshold = 2;
+constexpr size_t reduceExplicitThreshold = 64;
+
+template <class R, class T, class ReduceOp>
+__declspec(noinline) auto ReduceExplicit(const T* data, size_t count, const R& init, ReduceOp reduceOp) -> R {
+	R acc = init;
+	[[maybe_unused]] auto carry = make_compensation_carry<R, T>(reduceOp, init);
+
+	size_t count8 = count / 8;
+	const bool do4 = (count & 4) != 0;
+	const bool do2 = (count & 2) != 0;
+	const bool do1 = (count & 1) != 0;
+
+	if (do1) {
+		acc = reduceOp(acc, data[0]);
+		data += 1;
+	}
+	if (do2) {
+		acc = reduceOp(acc, reduceOp(data[0], data[1]));
+		data += 2;
+	}
+	if (do4) {
+		acc = reduceOp(acc, reduceOp(reduceOp(data[0], data[1]), reduceOp(data[2], data[3])));
+		data += 4;
+	}
+	while (count8-- != 0) {
+		if constexpr (!is_operator_compensated_v<ReduceOp>) {
+			acc = reduceOp(acc,
+						   reduceOp(reduceOp(reduceOp(data[0], data[1]), reduceOp(data[2], data[3])),
+									reduceOp(reduceOp(data[4], data[5]), reduceOp(data[6], data[7]))));
+		}
+		else {
+			acc = reduceOp(carry, acc,
+						   reduceOp(reduceOp(reduceOp(data[0], data[1]), reduceOp(data[2], data[3])),
+									reduceOp(reduceOp(data[4], data[5]), reduceOp(data[6], data[7]))));
+		}
+		data += 8;
+	}
+	return acc;
+}
+
+template <class R, class T, class ReduceOp>
+inline auto ReduceDecompose(const T* data, size_t count, const R& init, ReduceOp reduceOp) -> R {
+	if (count < reduceExplicitThreshold) {
+		return ReduceExplicit(data, count, init, reduceOp);
+	}
+	const auto split = count / 2;
+	const auto accumulator = ReduceDecompose(data, split, init, reduceOp);
+	return ReduceDecompose(data + split, count - split, accumulator, reduceOp);
+}
+
+template <class R, class T, class ReduceOp>
+auto Reduce(const T* data, size_t count, R init, ReduceOp reduceOp) -> R {
+	if constexpr (is_reduce_vectorized<R, T, ReduceOp>::value) {
+		constexpr size_t vectorWidth = xsimd::simd_traits<T>::size;
+		constexpr size_t vectorAlignment = alignof(xsimd::simd_type<T>);
+		alignas(vectorAlignment) std::array<R, vectorWidth> vectorResultMem;
+
+		const size_t vectorCount = count / vectorWidth;
+		if (vectorCount >= reduceVectorizeThreshold) {
+			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(data);
+			auto& vectorResult = reinterpret_cast<xsimd::simd_type<T>&>(*vectorResultMem.data());
+			vectorResult = ReduceExplicit(vectorData + 1, vectorCount - 1, vectorData[0], reduceOp);
+			data = data + vectorCount * vectorWidth;
+			count = count - vectorCount * vectorWidth;
+			init = ReduceExplicit(vectorResultMem.data(), vectorResultMem.size(), init, reduceOp);
+		}
+		return ReduceExplicit(data, count, init, reduceOp);
+	}
+	return ReduceExplicit(data, count, init, reduceOp);
+}
+
 
 template <class R, class T, class ReduceOp, class MapOp>
 R MapReduce(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
