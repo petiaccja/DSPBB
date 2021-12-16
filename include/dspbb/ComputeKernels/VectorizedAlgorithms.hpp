@@ -11,13 +11,13 @@
 
 #include "dspbb/Utility/TypeTraits.hpp"
 
-#include <cassert>
 #include <numeric>
 
 
 namespace dspbb::kernels {
 
 
+// deprecated
 template <class T>
 struct is_vectorized {
 	static constexpr bool value = xsimd::simd_traits<T>::size > 1;
@@ -31,7 +31,34 @@ struct is_unary_vectorized {
 			  class Op_ = Op,
 			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
 								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
-								   && std::is_same_v<xsimd::simd_type<R_>, std::invoke_result_t<Op, xsimd::simd_type<T_>>>,
+								   && std::is_convertible_v<std::invoke_result_t<Op, xsimd::simd_type<T_>>, xsimd::simd_type<R_>>,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
+
+
+template <class T, class U, class UnaryOp>
+struct is_transform_vectorized_1 {
+	constexpr static bool get(...) { return false; }
+	template <class T_ = T, class U_ = U, class UnaryOp_ = UnaryOp,
+			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
+								   && xsimd::simd_traits<T_>::size == xsimd::simd_traits<U_>::size
+								   && std::is_convertible_v<std::invoke_result_t<UnaryOp, xsimd::simd_type<T_>>, xsimd::simd_type<U_>>,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
+template <class T1, class T2, class U, class BinaryOp>
+struct is_transform_vectorized_2 {
+	constexpr static bool get(...) { return false; }
+	template <class T1_ = T1, class T2_ = T2, class U_ = U, class BinaryOp_ = BinaryOp,
+			  std::enable_if_t<(xsimd::simd_traits<T1_>::size > 1)
+								   && xsimd::simd_traits<T1_>::size == xsimd::simd_traits<U_>::size
+								   && xsimd::simd_traits<T2_>::size == xsimd::simd_traits<U_>::size
+								   && std::is_convertible_v<std::invoke_result_t<BinaryOp, xsimd::simd_type<T1_>, xsimd::simd_type<T2_>>, xsimd::simd_type<U_>>,
 							   int> = 0>
 	constexpr static bool get(int) { return true; }
 	static constexpr bool value = get(0);
@@ -85,7 +112,7 @@ struct is_inner_product_vectorized {
 
 
 //------------------------------------------------------------------------------
-// Binary operations.
+// Binary operations -- DEPRECATED BY TRANSFORM
 //------------------------------------------------------------------------------
 
 template <class R, class T, class U, class Op>
@@ -296,6 +323,63 @@ template <class T>
 inline T Load(const T* p) {
 	return *p;
 }
+
+//------------------------------------------------------------------------------
+// Transform.
+//------------------------------------------------------------------------------
+
+template <class InputIter, class OutputIter, class UnaryOp>
+inline auto Transform(InputIter first, InputIter last, OutputIter out, UnaryOp unaryOp)
+	-> std::enable_if_t<is_random_access_iterator_v<InputIter> && is_random_access_iterator_v<OutputIter>, OutputIter> {
+	using T = typename std::iterator_traits<InputIter>::value_type;
+	using U = typename std::iterator_traits<OutputIter>::value_type;
+	const auto count = std::distance(first, last);
+	const T* pfirst = std::addressof(*first);
+	const T* plast = pfirst + count;
+	U* pout = std::addressof(*out);
+
+	if constexpr (is_transform_vectorized_1<T, U, UnaryOp>::value) {
+		constexpr size_t vectorWidth = xsimd::simd_traits<T>::size;
+
+		const size_t vectorCount = count / vectorWidth;
+		const auto* vectorLast = pfirst + vectorCount * vectorWidth;
+		for (; pfirst != vectorLast; pfirst += vectorWidth, pout += vectorWidth) {
+			xsimd::store_unaligned(pout, unaryOp(xsimd::load_unaligned(pfirst)));
+		}
+	}
+	for (; pfirst != plast; ++pfirst, ++pout) {
+		*pout = unaryOp(*pfirst);
+	}
+	return out + count;
+}
+
+template <class InputIter1, class InputIter2, class OutputIter, class BinaryOp>
+inline auto Transform(InputIter1 first1, InputIter1 last1, InputIter2 first2, OutputIter out, BinaryOp binaryOp)
+	-> std::enable_if_t<is_random_access_iterator_v<InputIter1> && is_random_access_iterator_v<InputIter2> && is_random_access_iterator_v<OutputIter>, OutputIter> {
+	using T1 = typename std::iterator_traits<InputIter1>::value_type;
+	using T2 = typename std::iterator_traits<InputIter2>::value_type;
+	using U = typename std::iterator_traits<OutputIter>::value_type;
+	const auto count = std::distance(first1, last1);
+	const T1* pfirst1 = std::addressof(*first1);
+	const T1* plast1 = pfirst1 + count;
+	const T2* pfirst2 = std::addressof(*first2);
+	U* pout = std::addressof(*out);
+
+	if constexpr (is_transform_vectorized_2<T1, T2, U, BinaryOp>::value) {
+		constexpr size_t vectorWidth = xsimd::simd_traits<T1>::size;
+
+		const size_t vectorCount = count / vectorWidth;
+		const auto* vectorLast = pfirst1 + vectorCount * vectorWidth;
+		for (; pfirst1 != vectorLast; pfirst1 += vectorWidth, pfirst2 += vectorWidth, pout += vectorWidth) {
+			xsimd::store_unaligned(pout, binaryOp(xsimd::load_unaligned(pfirst1), xsimd::load_unaligned(pfirst2)));
+		}
+	}
+	for (; pfirst1 != plast1; ++pfirst1, ++pfirst2, ++pout) {
+		*pout = binaryOp(*pfirst1, *pfirst2);
+	}
+	return out + count;
+}
+
 
 //------------------------------------------------------------------------------
 // Reduce.
