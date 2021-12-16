@@ -3,6 +3,7 @@
 #include "TypeTraits.hpp"
 
 #include <complex>
+#include <iterator>
 #include <type_traits>
 
 namespace dspbb {
@@ -83,6 +84,13 @@ struct sum_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T
 
 template <class T, class U>
 using sum_type_t = typename sum_type<T, U>::type;
+
+
+template <class Iter>
+struct is_random_access_iterator : std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<Iter>::iterator_category> {};
+
+template <class Iter>
+constexpr bool is_random_access_iterator_v = is_random_access_iterator<Iter>::value;
 
 
 } // namespace dspbb

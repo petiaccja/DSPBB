@@ -228,12 +228,12 @@ auto Covariance(const SignalT& a, const SignalU& b, U amean, U bmean) {
 	const auto size = a.Size();
 	using R = decltype(std::declval<typename SignalT::value_type>() * std::declval<typename SignalU::value_type>());
 	return kernels::InnerProduct(
-			   a.Data(),
-			   b.Data(),
-			   size,
+			   a.begin(),
+			   a.end(),
+			   b.begin(),
 			   R(0),
-			   [amean, bmean](const auto& a, const auto& b) { return (a - amean) * (b - bmean); },
-			   [](const auto& acc, const auto& x) { return acc + x; })
+			   [](const auto& acc, const auto& x) { return acc + x; },
+			   [amean, bmean](const auto& a, const auto& b) { return (a - amean) * (b - bmean); })
 		   / R(size);
 }
 

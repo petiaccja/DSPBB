@@ -11,8 +11,8 @@ TEST_CASE("Reduce float", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1.0f);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
-		const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
+		const auto reference = std::reduce(a.begin(), it, 5.0f, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), it, 5.0f, std::plus<>{});
 		REQUIRE(reference == value);
 	}
 }
@@ -22,8 +22,8 @@ TEST_CASE("Reduce double", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1.0);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::reduce(a.begin(), a.end(), 5.0, std::plus<>{});
-		const auto value = kernels::Reduce(a.begin(), a.end(), 5.0, std::plus<>{});
+		const auto reference = std::reduce(a.begin(), it, 5.0, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), it, 5.0, std::plus<>{});
 		REQUIRE(reference == value);
 	}
 }
@@ -33,8 +33,8 @@ TEST_CASE("Reduce complex", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1.0f);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::reduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{});
-		const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{});
+		const auto reference = std::reduce(a.begin(), it, 5.0f + 5.0if, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), it, 5.0f + 5.0if, std::plus<>{});
 		REQUIRE(reference == value);
 	}
 }
@@ -44,8 +44,8 @@ TEST_CASE("Reduce int", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::reduce(a.begin(), a.end(), 5, std::plus<>{});
-		const auto value = kernels::Reduce(a.begin(), a.end(), 5, std::plus<>{});
+		const auto reference = std::reduce(a.begin(), it, 5, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), it, 5, std::plus<>{});
 		REQUIRE(reference == value);
 	}
 }
@@ -76,8 +76,8 @@ TEST_CASE("Transform reduce float", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1.0f);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::transform_reduce(a.begin(), a.end(), 5.0f, std::plus<>{}, [](const auto& arg) { return arg * arg; });
-		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5.0f, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto reference = std::transform_reduce(a.begin(), it, 5.0f, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), it, 5.0f, std::plus<>{}, [](const auto& arg) { return arg * arg; });
 		REQUIRE(reference == value);
 	}
 }
@@ -87,8 +87,8 @@ TEST_CASE("Transform reduce double", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1.0);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::transform_reduce(a.begin(), a.end(), 5.0, std::plus<>{}, [](const auto& arg) { return arg * arg; });
-		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5.0, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto reference = std::transform_reduce(a.begin(), it, 5.0, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), it, 5.0, std::plus<>{}, [](const auto& arg) { return arg * arg; });
 		REQUIRE(reference == value);
 	}
 }
@@ -98,8 +98,8 @@ TEST_CASE("Transform reduce complex", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1.0f);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::transform_reduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{}, [](const auto& arg) { return arg * arg; });
-		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto reference = std::transform_reduce(a.begin(), it, 5.0f + 5.0if, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), it, 5.0f + 5.0if, std::plus<>{}, [](const auto& arg) { return arg * arg; });
 		REQUIRE(reference == value);
 	}
 }
@@ -109,28 +109,63 @@ TEST_CASE("Transform reduce int", "[Kernels]") {
 	std::iota(a.begin(), a.end(), 1);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		const auto reference = std::transform_reduce(a.begin(), a.end(), 5, std::plus<>{}, [](const auto& arg) { return arg * arg; });
-		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto reference = std::transform_reduce(a.begin(), it, 5, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), it, 5, std::plus<>{}, [](const auto& arg) { return arg * arg; });
 		REQUIRE(reference == value);
 	}
 }
 
-TEST_CASE("InnerProduct", "[Kernels]") {
-	const auto reduceOp = [](const auto& a, const auto& b) { return a + b; };
-	const auto productOp = [](const auto& a, const auto& b) { return 1.0 / (a * b); };
 
-	std::array<double, 50000> a;
-	std::iota(a.begin(), a.end(), 1);
-	const auto sum = kernels::InnerProduct(a.data(), a.data(), a.size(), 10.0, productOp, reduceOp);
-	REQUIRE(std::sqrt((sum - 10.0) * 6) == Approx(pi_v<double>).margin(0.001));
+TEST_CASE("InnerProduct float", "[Kernels]") {
+	std::array<float, 100> a;
+	std::array<float, 100> b;
+	std::iota(a.begin(), a.end(), 1.0f);
+	std::iota(b.begin(), b.end(), 1.0f);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		INFO(it - a.begin());
+		const auto reference = std::inner_product(a.begin(), it, b.begin(), 5.0f, std::plus<>{}, std::multiplies<>{});
+		const auto value = kernels::InnerProduct(a.begin(), it, b.begin(), 5.0f, std::plus<>{}, std::multiplies<>{});
+		REQUIRE(reference == value);
+	}
 }
 
-TEST_CASE("InnerProductVectorized", "[Kernels]") {
-	const auto reduceOp = [](const auto& a, const auto& b) { return a + b; };
-	const auto productOp = [](const auto& a, const auto& b) { return 1.0 / (a * b); };
+TEST_CASE("InnerProduct double", "[Kernels]") {
+	std::array<double, 100> a;
+	std::array<double, 100> b;
+	std::iota(a.begin(), a.end(), 1.0);
+	std::iota(b.begin(), b.end(), 1.0);
 
-	std::array<double, 50000> a;
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		INFO(it - a.begin());
+		const auto reference = std::inner_product(a.begin(), it, b.begin(), 5.0, std::plus<>{}, std::multiplies<>{});
+		const auto value = kernels::InnerProduct(a.begin(), it, b.begin(), 5.0, std::plus<>{}, std::multiplies<>{});
+		REQUIRE(reference == value);
+	}
+}
+
+TEST_CASE("InnerProduct complex", "[Kernels]") {
+	std::array<std::complex<float>, 100> a;
+	std::array<std::complex<float>, 100> b;
+	std::iota(a.begin(), a.end(), 1.0f);
+	std::iota(b.begin(), b.end(), 1.0f);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::inner_product(a.begin(), it, b.begin(), std::complex<float>(5.0f), std::plus<>{}, std::multiplies<>{});
+		const auto value = kernels::InnerProduct(a.begin(), it, b.begin(), std::complex<float>(5.0f), std::plus<>{}, std::multiplies<>{});
+		REQUIRE(reference == value);
+	}
+}
+
+TEST_CASE("InnerProduct int", "[Kernels]") {
+	std::array<int, 100> a;
+	std::array<int, 100> b;
 	std::iota(a.begin(), a.end(), 1);
-	const auto sum = kernels::InnerProductVectorized(a.data(), a.data(), a.size(), 10.0, productOp, reduceOp);
-	REQUIRE(std::sqrt((sum - 10.0) * 6) == Approx(pi_v<double>).margin(0.001));
+	std::iota(b.begin(), b.end(), 1);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::inner_product(a.begin(), it, b.begin(), 5, std::plus<>{}, std::multiplies<>{});
+		const auto value = kernels::InnerProduct(a.begin(), it, b.begin(), 5, std::plus<>{}, std::multiplies<>{});
+		REQUIRE(reference == value);
+	}
 }

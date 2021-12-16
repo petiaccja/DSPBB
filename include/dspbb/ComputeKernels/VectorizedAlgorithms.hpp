@@ -318,7 +318,7 @@ inline Init ReduceBatch(const xsimd::batch<T, N>& batch, Init init, std::plus<U>
 	return init + xsimd::hadd(batch);
 }
 
-template <class Init, class T, class ReduceOp>
+template <class T, class Init, class ReduceOp>
 inline auto ReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp) -> Init {
 	const size_t count = std::distance(first, last);
 	const bool singlet = (count & 1) != 0;
@@ -369,7 +369,7 @@ inline auto ReduceExplicit(const T* first, const T* last, const Init& init, Redu
 
 template <class Iter, class Init, class ReduceOp>
 auto Reduce(Iter first, Iter last, Init init, ReduceOp reduceOp)
-	-> std::enable_if_t<std::is_same_v<std::random_access_iterator_tag, typename std::iterator_traits<Iter>::iterator_category>, Init> {
+	-> std::enable_if_t<is_random_access_iterator_v<Iter>, Init> {
 	using T = typename std::iterator_traits<Iter>::value_type;
 	const auto count = std::distance(first, last);
 	const T* pfirst = std::addressof(*first);
@@ -380,8 +380,8 @@ auto Reduce(Iter first, Iter last, Init init, ReduceOp reduceOp)
 
 		const size_t vectorCount = count / vectorWidth;
 		if (vectorCount != 0) {
-			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(pfirst);
-			const auto vectorResult = ReduceExplicit(vectorData + 1, vectorData + vectorCount, xsimd::load_unaligned(pfirst), reduceOp);
+			const auto vectorFirst = reinterpret_cast<const xsimd::simd_type<T>*>(pfirst);
+			const auto vectorResult = ReduceExplicit(vectorFirst + 1, vectorFirst + vectorCount, Load(vectorFirst), reduceOp);
 			pfirst += vectorCount * vectorWidth;
 			init = ReduceBatch(vectorResult, std::move(init), reduceOp);
 		}
@@ -395,7 +395,7 @@ auto Reduce(Iter first, Iter last, Init init, ReduceOp reduceOp)
 //------------------------------------------------------------------------------
 
 
-template <class Init, class T, class ReduceOp, class TransformOp>
+template <class T, class Init, class ReduceOp, class TransformOp>
 inline auto TransformReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp, TransformOp transformOp) -> Init {
 	const size_t count = std::distance(first, last);
 	const bool singlet = (count & 1) != 0;
@@ -446,7 +446,7 @@ inline auto TransformReduceExplicit(const T* first, const T* last, const Init& i
 
 template <class Iter, class Init, class ReduceOp, class TransformOp>
 auto TransformReduce(Iter first, Iter last, Init init, ReduceOp reduceOp, TransformOp transformOp)
-	-> std::enable_if_t<std::is_same_v<std::random_access_iterator_tag, typename std::iterator_traits<Iter>::iterator_category>, Init> {
+	-> std::enable_if_t<is_random_access_iterator_v<Iter>, Init> {
 	using T = typename std::iterator_traits<Iter>::value_type;
 	const auto count = std::distance(first, last);
 	const T* pfirst = std::addressof(*first);
@@ -457,8 +457,8 @@ auto TransformReduce(Iter first, Iter last, Init init, ReduceOp reduceOp, Transf
 
 		const size_t vectorCount = count / vectorWidth;
 		if (vectorCount != 0) {
-			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(pfirst);
-			const auto vectorResult = TransformReduceExplicit(vectorData + 1, vectorData + vectorCount, transformOp(xsimd::load_unaligned(pfirst)), reduceOp, transformOp);
+			const auto vectorFirst = reinterpret_cast<const xsimd::simd_type<T>*>(pfirst);
+			const auto vectorResult = TransformReduceExplicit(vectorFirst + 1, vectorFirst + vectorCount, transformOp(Load(vectorFirst)), reduceOp, transformOp);
 			pfirst += vectorCount * vectorWidth;
 			init = ReduceBatch(vectorResult, std::move(init), reduceOp);
 		}
@@ -471,50 +471,86 @@ auto TransformReduce(Iter first, Iter last, Init init, ReduceOp reduceOp, Transf
 // Inner product
 //------------------------------------------------------------------------------
 
-template <class R, class T, class U, class ProductOp, class ReduceOp>
-R InnerProduct(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
-	R acc = std::move(init);
-	for (size_t i = 0; i < length; ++i, ++a, ++b) {
-		acc = reduceOp(acc, productOp(*a, *b));
+
+template <class T1, class T2, class Init, class ReduceOp, class ProductOp>
+inline auto InnerProductExplicit(const T1* first1, const T1* last1, T2* first2, const Init& init, ReduceOp reduceOp, ProductOp productOp) -> Init {
+	const size_t count = std::distance(first1, last1);
+	const bool singlet = (count & 1) != 0;
+	const bool doublet = (count & 2) != 0;
+	const bool quadruplet = (count & 4) != 0;
+
+	Init acc = init;
+	if (singlet) {
+		const auto val0 = productOp(Load(first1), Load(first2));
+		acc = reduceOp(acc, val0);
+		first1 += 1;
+		first2 += 1;
+	}
+	if (doublet) {
+		const auto val0 = productOp(Load(first1), Load(first2));
+		const auto val1 = productOp(Load(first1 + 1), Load(first2 + 1));
+		acc = reduceOp(acc, reduceOp(val0, val1));
+		first1 += 2;
+		first2 += 2;
+	}
+	if (quadruplet) {
+		const auto val0 = productOp(Load(first1), Load(first2));
+		const auto val1 = productOp(Load(first1 + 1), Load(first2 + 1));
+		const auto val2 = productOp(Load(first1 + 2), Load(first2 + 2));
+		const auto val3 = productOp(Load(first1 + 3), Load(first2 + 3));
+		acc = reduceOp(acc, reduceOp(reduceOp(val0, val1), reduceOp(val2, val3)));
+		first1 += 4;
+		first2 += 4;
+	}
+
+	[[maybe_unused]] auto carry = make_compensation_carry<Init, std::invoke_result_t<ProductOp, T1, T2>>(reduceOp, init);
+	for (; first1 != last1; first1 += 8, first2 += 8) {
+		const auto val0 = productOp(Load(first1), Load(first2));
+		const auto val1 = productOp(Load(first1 + 1), Load(first2 + 1));
+		const auto val2 = productOp(Load(first1 + 2), Load(first2 + 2));
+		const auto val3 = productOp(Load(first1 + 3), Load(first2 + 3));
+		const auto val4 = productOp(Load(first1 + 4), Load(first2 + 4));
+		const auto val5 = productOp(Load(first1 + 5), Load(first2 + 5));
+		const auto val6 = productOp(Load(first1 + 6), Load(first2 + 6));
+		const auto val7 = productOp(Load(first1 + 7), Load(first2 + 7));
+		const auto partial = reduceOp(reduceOp(reduceOp(val0, val1), reduceOp(val2, val3)), reduceOp(reduceOp(val4, val5), reduceOp(val6, val7)));
+		if constexpr (!is_operator_compensated_v<ReduceOp>) {
+			acc = reduceOp(acc, partial);
+		}
+		else {
+			acc = reduceOp(carry, acc, partial);
+		}
 	}
 	return acc;
 }
 
-template <class R, class T, class U, class ProductOp, class ReduceOp, std::enable_if_t<!is_inner_product_vectorized<R, T, U, ProductOp, ReduceOp>::value, int> = 0>
-R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
-	return InnerProduct(a, b, length, init, productOp, reduceOp);
-}
+template <class Iter1, class Iter2, class Init, class ReduceOp, class ProductOp>
+auto InnerProduct(Iter1 first1, Iter1 last1, Iter2 first2, Init init, ReduceOp reduceOp, ProductOp productOp)
+	-> std::enable_if_t<is_random_access_iterator_v<Iter1> && is_random_access_iterator_v<Iter2>, Init> {
+	using T1 = typename std::iterator_traits<Iter1>::value_type;
+	using T2 = typename std::iterator_traits<Iter2>::value_type;
 
-template <class R, class T, class U, class ProductOp, class ReduceOp, std::enable_if_t<is_inner_product_vectorized<R, T, U, ProductOp, ReduceOp>::value, int> = 0>
-R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductOp productOp, ReduceOp reduceOp) {
-	using TV = xsimd::simd_type<T>;
-	using UV = xsimd::simd_type<U>;
-	using RV = xsimd::simd_type<R>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
+	const auto count = std::distance(first1, last1);
+	const T1* pfirst1 = std::addressof(*first1);
+	const T1* plast1 = pfirst1 + count;
+	const T2* pfirst2 = std::addressof(*first2);
 
-	const size_t vlength = (length / vsize) * vsize;
-	const T* alast = a + vlength;
-	if (vlength > 0) {
-		TV av;
-		UV bv;
-		av.load_unaligned(a);
-		bv.load_unaligned(b);
-		RV acc = productOp(av, bv);
-		a += vsize;
-		b += vsize;
-		for (; a < alast; a += vsize, b += vsize) {
-			av.load_unaligned(a);
-			bv.load_unaligned(b);
-			acc = reduceOp(acc, productOp(av, bv));
+	if constexpr (is_inner_product_vectorized<Init, T1, T2, ProductOp, ReduceOp>::value) {
+		constexpr size_t vectorWidth = xsimd::simd_traits<T1>::size;
+
+		const size_t vectorCount = count / vectorWidth;
+		if (vectorCount != 0) {
+			const auto vectorFirst1 = reinterpret_cast<const xsimd::simd_type<T1>*>(pfirst1);
+			const auto vectorFirst2 = reinterpret_cast<const xsimd::simd_type<T2>*>(pfirst2);
+			const auto vectorInit = productOp(Load(vectorFirst1), Load(vectorFirst2));
+			const auto vectorResult = InnerProductExplicit(vectorFirst1 + 1, vectorFirst1 + vectorCount, vectorFirst2 + 1, vectorInit, reduceOp, productOp);
+			pfirst1 += vectorCount * vectorWidth;
+			pfirst2 += vectorCount * vectorWidth;
+			init = ReduceBatch(vectorResult, std::move(init), reduceOp);
 		}
-		alignas(alignof(RV)) std::array<R, vsize> arr;
-		acc.store_aligned(arr.data());
-		init = Reduce(arr.begin(), arr.end(), init, reduceOp);
+		return std::inner_product(pfirst1, plast1, pfirst2, init, reduceOp, productOp);
 	}
-
-	return InnerProduct(a, b, length - vlength, init, productOp, reduceOp);
+	return InnerProductExplicit(pfirst1, plast1, pfirst2, init, reduceOp, productOp);
 }
-
-
 
 } // namespace dspbb::kernels

@@ -18,22 +18,22 @@ auto DotProduct(const SignalT& a, const SignalU& b) {
 	using U = typename SignalU::value_type;
 	using R = product_type_t<T, U>;
 	if constexpr (!is_complex_v<U>) {
-		return kernels::InnerProductVectorized(
-			a.Data(),
-			b.Data(),
-			a.Size(),
+		return kernels::InnerProduct(
+			a.begin(),
+			a.end(),
+			b.begin(),
 			R(remove_complex_t<R>(0)),
-			[](const auto& a, const auto& b) -> product_type_t<decltype(a), decltype(b)> { return a * b; },
-			[](const auto& acc, const auto& x) -> sum_type_t<decltype(acc), decltype(x)> { return acc + x; });
+			[](const auto& acc, const auto& x) -> sum_type_t<decltype(acc), decltype(x)> { return acc + x; },
+			[](const auto& a, const auto& b) -> product_type_t<decltype(a), decltype(b)> { return a * b; });
 	}
 	else {
-		return kernels::InnerProductVectorized(
-			a.Data(),
-			b.Data(),
-			a.Size(),
+		return kernels::InnerProduct(
+			a.begin(),
+			a.end(),
+			b.begin(),
 			R(remove_complex_t<R>(0)),
-			[](const auto& a, const auto& b) -> product_type_t<decltype(a), decltype(b)> { return a * kernels::math_functions::conj(b); },
-			[](const auto& acc, const auto& x) -> sum_type_t<decltype(acc), decltype(x)> { return acc + x; });
+			[](const auto& acc, const auto& x) -> sum_type_t<decltype(acc), decltype(x)> { return acc + x; },
+			[](const auto& a, const auto& b) -> product_type_t<decltype(a), decltype(b)> { return a * kernels::math_functions::conj(b); });
 	}
 }
 
