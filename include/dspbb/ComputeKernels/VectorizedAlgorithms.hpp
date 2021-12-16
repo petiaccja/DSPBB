@@ -11,6 +11,7 @@
 
 #include "dspbb/Utility/TypeTraits.hpp"
 
+#include <cassert>
 #include <numeric>
 
 
@@ -220,7 +221,7 @@ void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
 }
 
 //------------------------------------------------------------------------------
-// Reduction.
+// Common operators.
 //------------------------------------------------------------------------------
 
 struct compensated_operator_tag {};
@@ -283,77 +284,82 @@ inline auto make_compensation_carry(const Operator&, const CarryT&) -> std::enab
 }
 
 
-constexpr size_t reduceVectorizeThreshold = 2;
-constexpr size_t reduceExplicitThreshold = 64;
+//------------------------------------------------------------------------------
+// Reduction.
+//------------------------------------------------------------------------------
 
-template <class R, class T, class ReduceOp>
-__declspec(noinline) auto ReduceExplicit(const T* data, size_t count, const R& init, ReduceOp reduceOp) -> R {
-	R acc = init;
-	[[maybe_unused]] auto carry = make_compensation_carry<R, T>(reduceOp, init);
+template <class T, size_t N, class Init, class ReduceOp>
+inline Init ReduceBatch(const xsimd::batch<T, N>& batch, Init init, ReduceOp reduceOp) {
+	alignas(alignof(xsimd::batch<T, N>)) std::array<T, N> elements;
+	batch.store_unaligned(elements.data());
+	return std::reduce(elements.begin(), elements.end(), std::move(init), std::move(reduceOp));
+}
 
-	size_t count8 = count / 8;
-	const bool do4 = (count & 4) != 0;
-	const bool do2 = (count & 2) != 0;
-	const bool do1 = (count & 1) != 0;
+template <class T, class U, size_t N, class Init>
+inline Init ReduceBatch(const xsimd::batch<T, N>& batch, Init init, plus_compensated<U>) {
+	return init + xsimd::hadd(batch);
+}
 
-	if (do1) {
-		acc = reduceOp(acc, data[0]);
-		data += 1;
+template <class T, class U, size_t N, class Init>
+inline Init ReduceBatch(const xsimd::batch<T, N>& batch, Init init, std::plus<U>) {
+	return init + xsimd::hadd(batch);
+}
+
+template <class Init, class T, class ReduceOp>
+inline auto ReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp) -> Init {
+	const size_t count = std::distance(first, last);
+	const bool singlet = (count & 1) != 0;
+	const bool doublet = (count & 2) != 0;
+	const bool quadruplet = (count & 4) != 0;
+
+	Init acc = init;
+	if (singlet) {
+		acc = reduceOp(acc, first[0]);
+		first += 1;
 	}
-	if (do2) {
-		acc = reduceOp(acc, reduceOp(data[0], data[1]));
-		data += 2;
+	if (doublet) {
+		acc = reduceOp(acc, reduceOp(first[0], first[1]));
+		first += 2;
 	}
-	if (do4) {
-		acc = reduceOp(acc, reduceOp(reduceOp(data[0], data[1]), reduceOp(data[2], data[3])));
-		data += 4;
+	if (quadruplet) {
+		acc = reduceOp(acc, reduceOp(reduceOp(first[0], first[1]), reduceOp(first[2], first[3])));
+		first += 4;
 	}
-	while (count8-- != 0) {
+
+	[[maybe_unused]] auto carry = make_compensation_carry<Init, T>(reduceOp, init);
+	for (; first != last; first += 8) {
 		if constexpr (!is_operator_compensated_v<ReduceOp>) {
 			acc = reduceOp(acc,
-						   reduceOp(reduceOp(reduceOp(data[0], data[1]), reduceOp(data[2], data[3])),
-									reduceOp(reduceOp(data[4], data[5]), reduceOp(data[6], data[7]))));
+						   reduceOp(reduceOp(reduceOp(first[0], first[1]), reduceOp(first[2], first[3])),
+									reduceOp(reduceOp(first[4], first[5]), reduceOp(first[6], first[7]))));
 		}
 		else {
 			acc = reduceOp(carry, acc,
-						   reduceOp(reduceOp(reduceOp(data[0], data[1]), reduceOp(data[2], data[3])),
-									reduceOp(reduceOp(data[4], data[5]), reduceOp(data[6], data[7]))));
+						   reduceOp(reduceOp(reduceOp(first[0], first[1]), reduceOp(first[2], first[3])),
+									reduceOp(reduceOp(first[4], first[5]), reduceOp(first[6], first[7]))));
 		}
-		data += 8;
 	}
 	return acc;
 }
 
-template <class R, class T, class ReduceOp>
-inline auto ReduceDecompose(const T* data, size_t count, const R& init, ReduceOp reduceOp) -> R {
-	if (count < reduceExplicitThreshold) {
-		return ReduceExplicit(data, count, init, reduceOp);
-	}
-	const auto split = count / 2;
-	const auto accumulator = ReduceDecompose(data, split, init, reduceOp);
-	return ReduceDecompose(data + split, count - split, accumulator, reduceOp);
-}
-
-template <class R, class T, class ReduceOp>
-auto Reduce(const T* data, size_t count, R init, ReduceOp reduceOp) -> R {
-	if constexpr (is_reduce_vectorized<R, T, ReduceOp>::value) {
+template <class Init, class T, class ReduceOp>
+auto Reduce(const T* data, size_t count, Init init, ReduceOp reduceOp) -> Init {
+	if constexpr (is_reduce_vectorized<Init, T, ReduceOp>::value) {
 		constexpr size_t vectorWidth = xsimd::simd_traits<T>::size;
-		constexpr size_t vectorAlignment = alignof(xsimd::simd_type<T>);
-		alignas(vectorAlignment) std::array<R, vectorWidth> vectorResultMem;
 
 		const size_t vectorCount = count / vectorWidth;
-		if (vectorCount >= reduceVectorizeThreshold) {
+		if (vectorCount != 0) {
 			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(data);
-			auto& vectorResult = reinterpret_cast<xsimd::simd_type<T>&>(*vectorResultMem.data());
-			vectorResult = ReduceExplicit(vectorData + 1, vectorCount - 1, vectorData[0], reduceOp);
-			data = data + vectorCount * vectorWidth;
-			count = count - vectorCount * vectorWidth;
-			init = ReduceExplicit(vectorResultMem.data(), vectorResultMem.size(), init, reduceOp);
+			const auto vectorResult = ReduceExplicit(vectorData + 1, vectorData + vectorCount, vectorData[0], reduceOp);
+			data += vectorCount * vectorWidth;
+			count -= vectorCount * vectorWidth;
+			init = ReduceBatch(vectorResult, std::move(init), reduceOp);
 		}
-		return ReduceExplicit(data, count, init, reduceOp);
+		return ReduceExplicit(data, data + count, init, reduceOp);
 	}
-	return ReduceExplicit(data, count, init, reduceOp);
+	return ReduceExplicit(data, data + count, init, reduceOp);
 }
+
 
 
 template <class R, class T, class ReduceOp, class MapOp>
