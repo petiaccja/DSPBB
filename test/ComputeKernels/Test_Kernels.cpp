@@ -4,34 +4,66 @@
 #include <catch2/catch.hpp>
 
 using namespace dspbb;
+using namespace std::complex_literals;
 
-TEST_CASE("Reduce large", "[Kernels]") {
-	std::array<double, 100> a;
-	std::iota(a.begin(), a.end(), 1);
-	const auto sum = kernels::Reduce(a.data(), a.size(), 1000.0, [](const auto& a, const auto& b) { return a + b; });
-	REQUIRE(sum == Approx(6050.0));
+TEST_CASE("Reduce float", "[Kernels]") {
+	std::array<float, 100> a;
+	std::iota(a.begin(), a.end(), 1.0f);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
+		REQUIRE(reference == value);
+	}
 }
 
-TEST_CASE("Reduce small", "[Kernels]") {
-	std::array<double, 7> a;
+TEST_CASE("Reduce double", "[Kernels]") {
+	std::array<double, 100> a;
+	std::iota(a.begin(), a.end(), 1.0);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::reduce(a.begin(), a.end(), 5.0, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), a.end(), 5.0, std::plus<>{});
+		REQUIRE(reference == value);
+	}
+}
+
+TEST_CASE("Reduce complex", "[Kernels]") {
+	std::array<std::complex<float>, 100> a;
+	std::iota(a.begin(), a.end(), 1.0f);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::reduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{});
+		REQUIRE(reference == value);
+	}
+}
+
+TEST_CASE("Reduce int", "[Kernels]") {
+	std::array<int, 100> a;
 	std::iota(a.begin(), a.end(), 1);
-	const auto prod = kernels::Reduce(a.data(), a.size(), 8.0, [](const auto& a, const auto& b) { return a * b; });
-	REQUIRE(prod == Approx(40320.0));
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::reduce(a.begin(), a.end(), 5, std::plus<>{});
+		const auto value = kernels::Reduce(a.begin(), a.end(), 5, std::plus<>{});
+		REQUIRE(reference == value);
+	}
 }
 
 TEST_CASE("Reduce compensated", "[Kernels]") {
-	std::array<double, 100> a;
-	std::iota(a.begin(), a.end(), 1);
-	const auto sum = kernels::Reduce(a.data(), a.size(), 1000.0, dspbb::kernels::plus_compensated<>{});
-	REQUIRE(sum == Approx(6050.0));
+	std::array<float, 100> a;
+	std::iota(a.begin(), a.end(), 1.0f);
+	const auto reference = std::reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
+	const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f, kernels::plus_compensated<>{});
+	REQUIRE(reference == value);
 }
 
 TEST_CASE("Reduce compensation effects", "[Kernels]") {
 	constexpr size_t count = 1 << 18;
 	constexpr float item = 1 + 3.814697265625e-6f;
 	std::vector<float> a(count, item);
-	const float sumRegular = kernels::Reduce(a.data(), a.size(), 0.0f, std::plus<>{});
-	const float sumCompensated = kernels::Reduce(a.data(), a.size(), 0.0f, dspbb::kernels::plus_compensated<>{});
+	const float sumRegular = kernels::Reduce(a.begin(), a.end(), 0.0f, std::plus<>{});
+	const float sumCompensated = kernels::Reduce(a.begin(), a.end(), 0.0f, dspbb::kernels::plus_compensated<>{});
 	const float expected = item * float(count);
 	REQUIRE(sumCompensated == expected);
 	REQUIRE(sumRegular < expected);

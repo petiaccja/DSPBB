@@ -283,9 +283,22 @@ inline auto make_compensation_carry(const Operator&, const CarryT&) -> std::enab
 	return compensated_operator_tag{}; // Return a useless tag just for the sake of compiling in generic contexts.
 }
 
+//------------------------------------------------------------------------------
+// Utility
+//------------------------------------------------------------------------------
+
+template <class T, size_t N>
+inline xsimd::batch<T, N> Load(const xsimd::batch<T, N>* p) {
+	return xsimd::load_unaligned(reinterpret_cast<const T*>(p));
+}
+
+template <class T>
+inline T Load(const T* p) {
+	return *p;
+}
 
 //------------------------------------------------------------------------------
-// Reduction.
+// Reduce.
 //------------------------------------------------------------------------------
 
 template <class T, size_t N, class Init, class ReduceOp>
@@ -314,50 +327,67 @@ inline auto ReduceExplicit(const T* first, const T* last, const Init& init, Redu
 
 	Init acc = init;
 	if (singlet) {
-		acc = reduceOp(acc, first[0]);
+		const auto val0 = Load(first);
+		acc = reduceOp(acc, val0);
 		first += 1;
 	}
 	if (doublet) {
-		acc = reduceOp(acc, reduceOp(first[0], first[1]));
+		const auto val0 = Load(first);
+		const auto val1 = Load(first + 1);
+		acc = reduceOp(acc, reduceOp(val0, val1));
 		first += 2;
 	}
 	if (quadruplet) {
-		acc = reduceOp(acc, reduceOp(reduceOp(first[0], first[1]), reduceOp(first[2], first[3])));
+		const auto val0 = Load(first);
+		const auto val1 = Load(first + 1);
+		const auto val2 = Load(first + 2);
+		const auto val3 = Load(first + 3);
+		acc = reduceOp(acc, reduceOp(reduceOp(val0, val1), reduceOp(val2, val3)));
 		first += 4;
 	}
 
 	[[maybe_unused]] auto carry = make_compensation_carry<Init, T>(reduceOp, init);
 	for (; first != last; first += 8) {
+		const auto val0 = Load(first);
+		const auto val1 = Load(first + 1);
+		const auto val2 = Load(first + 2);
+		const auto val3 = Load(first + 3);
+		const auto val4 = Load(first + 4);
+		const auto val5 = Load(first + 5);
+		const auto val6 = Load(first + 6);
+		const auto val7 = Load(first + 7);
+		const auto partial = reduceOp(reduceOp(reduceOp(val0, val1), reduceOp(val2, val3)), reduceOp(reduceOp(val4, val5), reduceOp(val6, val7)));
 		if constexpr (!is_operator_compensated_v<ReduceOp>) {
-			acc = reduceOp(acc,
-						   reduceOp(reduceOp(reduceOp(first[0], first[1]), reduceOp(first[2], first[3])),
-									reduceOp(reduceOp(first[4], first[5]), reduceOp(first[6], first[7]))));
+			acc = reduceOp(acc, partial);
 		}
 		else {
-			acc = reduceOp(carry, acc,
-						   reduceOp(reduceOp(reduceOp(first[0], first[1]), reduceOp(first[2], first[3])),
-									reduceOp(reduceOp(first[4], first[5]), reduceOp(first[6], first[7]))));
+			acc = reduceOp(carry, acc, partial);
 		}
 	}
 	return acc;
 }
 
-template <class Init, class T, class ReduceOp>
-auto Reduce(const T* data, size_t count, Init init, ReduceOp reduceOp) -> Init {
+template <class Iter, class Init, class ReduceOp>
+auto Reduce(Iter first, Iter last, Init init, ReduceOp reduceOp)
+	-> std::enable_if_t<std::is_same_v<std::random_access_iterator_tag, typename std::iterator_traits<Iter>::iterator_category>, Init> {
+	using T = typename std::iterator_traits<Iter>::value_type;
+	const auto count = std::distance(first, last);
+	const T* pfirst = std::addressof(*first);
+	const T* plast = pfirst + count;
+
 	if constexpr (is_reduce_vectorized<Init, T, ReduceOp>::value) {
 		constexpr size_t vectorWidth = xsimd::simd_traits<T>::size;
 
 		const size_t vectorCount = count / vectorWidth;
 		if (vectorCount != 0) {
-			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(data);
-			const auto vectorResult = ReduceExplicit(vectorData + 1, vectorData + vectorCount, vectorData[0], reduceOp);
-			data += vectorCount * vectorWidth;
-			count -= vectorCount * vectorWidth;
+			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(pfirst);
+			const auto vectorResult = ReduceExplicit(vectorData + 1, vectorData + vectorCount, xsimd::load_unaligned(pfirst), reduceOp);
+			pfirst += vectorCount * vectorWidth;
 			init = ReduceBatch(vectorResult, std::move(init), reduceOp);
 		}
-		return ReduceExplicit(data, data + count, init, reduceOp);
+		return std::reduce(pfirst, plast, init, reduceOp);
 	}
-	return ReduceExplicit(data, data + count, init, reduceOp);
+	return ReduceExplicit(pfirst, plast, init, reduceOp);
 }
 
 
@@ -398,7 +428,7 @@ R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, Map
 		}
 		alignas(alignof(RV)) std::array<R, vsize> arr;
 		acc.store_aligned(arr.data());
-		init = Reduce(arr.data(), arr.size(), init, reduceOp);
+		init = Reduce(arr.begin(), arr.end(), init, reduceOp);
 	}
 
 	return MapReduce(in, length - vlength, init, reduceOp, mapOp);
@@ -447,7 +477,7 @@ R InnerProductVectorized(const T* a, const U* b, size_t length, R init, ProductO
 		}
 		alignas(alignof(RV)) std::array<R, vsize> arr;
 		acc.store_aligned(arr.data());
-		init = Reduce(arr.data(), arr.size(), init, reduceOp);
+		init = Reduce(arr.begin(), arr.end(), init, reduceOp);
 	}
 
 	return InnerProduct(a, b, length - vlength, init, productOp, reduceOp);
