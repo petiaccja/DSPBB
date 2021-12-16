@@ -390,50 +390,82 @@ auto Reduce(Iter first, Iter last, Init init, ReduceOp reduceOp)
 	return ReduceExplicit(pfirst, plast, init, reduceOp);
 }
 
+//------------------------------------------------------------------------------
+// Transform reduce.
+//------------------------------------------------------------------------------
 
 
-template <class R, class T, class ReduceOp, class MapOp>
-R MapReduce(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
-	// TODO: use C++17 std::transform_reduce
-	R acc = std::move(init);
-	const T* end = in + length;
-	for (; in < end; ++in) {
-		acc = reduceOp(acc, mapOp(*in));
+template <class Init, class T, class ReduceOp, class TransformOp>
+inline auto TransformReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp, TransformOp transformOp) -> Init {
+	const size_t count = std::distance(first, last);
+	const bool singlet = (count & 1) != 0;
+	const bool doublet = (count & 2) != 0;
+	const bool quadruplet = (count & 4) != 0;
+
+	Init acc = init;
+	if (singlet) {
+		const auto val0 = transformOp(Load(first));
+		acc = reduceOp(acc, val0);
+		first += 1;
+	}
+	if (doublet) {
+		const auto val0 = transformOp(Load(first));
+		const auto val1 = transformOp(Load(first + 1));
+		acc = reduceOp(acc, reduceOp(val0, val1));
+		first += 2;
+	}
+	if (quadruplet) {
+		const auto val0 = transformOp(Load(first));
+		const auto val1 = transformOp(Load(first + 1));
+		const auto val2 = transformOp(Load(first + 2));
+		const auto val3 = transformOp(Load(first + 3));
+		acc = reduceOp(acc, reduceOp(reduceOp(val0, val1), reduceOp(val2, val3)));
+		first += 4;
+	}
+
+	[[maybe_unused]] auto carry = make_compensation_carry<Init, T>(reduceOp, init);
+	for (; first != last; first += 8) {
+		const auto val0 = transformOp(Load(first));
+		const auto val1 = transformOp(Load(first + 1));
+		const auto val2 = transformOp(Load(first + 2));
+		const auto val3 = transformOp(Load(first + 3));
+		const auto val4 = transformOp(Load(first + 4));
+		const auto val5 = transformOp(Load(first + 5));
+		const auto val6 = transformOp(Load(first + 6));
+		const auto val7 = transformOp(Load(first + 7));
+		const auto partial = reduceOp(reduceOp(reduceOp(val0, val1), reduceOp(val2, val3)), reduceOp(reduceOp(val4, val5), reduceOp(val6, val7)));
+		if constexpr (!is_operator_compensated_v<ReduceOp>) {
+			acc = reduceOp(acc, partial);
+		}
+		else {
+			acc = reduceOp(carry, acc, partial);
+		}
 	}
 	return acc;
 }
 
-template <class R, class T, class ReduceOp, class MapOp, std::enable_if_t<!is_map_reduce_vectorized<R, T, ReduceOp, MapOp>::value, int> = 0>
-R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
-	return MapReduce(in, length, init, reduceOp, mapOp);
-}
+template <class Iter, class Init, class ReduceOp, class TransformOp>
+auto TransformReduce(Iter first, Iter last, Init init, ReduceOp reduceOp, TransformOp transformOp)
+	-> std::enable_if_t<std::is_same_v<std::random_access_iterator_tag, typename std::iterator_traits<Iter>::iterator_category>, Init> {
+	using T = typename std::iterator_traits<Iter>::value_type;
+	const auto count = std::distance(first, last);
+	const T* pfirst = std::addressof(*first);
+	const T* plast = pfirst + count;
 
-template <class R, class T, class ReduceOp, class MapOp, std::enable_if_t<is_map_reduce_vectorized<R, T, ReduceOp, MapOp>::value, int> = 0>
-R MapReduceVectorized(const T* in, size_t length, R init, ReduceOp reduceOp, MapOp mapOp) {
-	using TV = xsimd::simd_type<T>;
-	using RV = xsimd::simd_type<R>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
+	if constexpr (is_map_reduce_vectorized<Init, T, ReduceOp, TransformOp>::value) {
+		constexpr size_t vectorWidth = xsimd::simd_traits<T>::size;
 
-	const size_t vlength = (length / vsize) * vsize;
-	const T* vlast = in + vlength;
-	if (vlength > 0) {
-		TV unmapped;
-		unmapped.load_unaligned(in);
-		RV acc = mapOp(unmapped);
-		in += vsize;
-		for (; in < vlast; in += vsize) {
-			TV vin;
-			vin.load_unaligned(in);
-			acc = reduceOp(acc, mapOp(vin));
+		const size_t vectorCount = count / vectorWidth;
+		if (vectorCount != 0) {
+			const auto vectorData = reinterpret_cast<const xsimd::simd_type<T>*>(pfirst);
+			const auto vectorResult = TransformReduceExplicit(vectorData + 1, vectorData + vectorCount, transformOp(xsimd::load_unaligned(pfirst)), reduceOp, transformOp);
+			pfirst += vectorCount * vectorWidth;
+			init = ReduceBatch(vectorResult, std::move(init), reduceOp);
 		}
-		alignas(alignof(RV)) std::array<R, vsize> arr;
-		acc.store_aligned(arr.data());
-		init = Reduce(arr.begin(), arr.end(), init, reduceOp);
+		return std::transform_reduce(pfirst, plast, init, reduceOp, transformOp);
 	}
-
-	return MapReduce(in, length - vlength, init, reduceOp, mapOp);
+	return TransformReduceExplicit(pfirst, plast, init, reduceOp, transformOp);
 }
-
 
 //------------------------------------------------------------------------------
 // Inner product

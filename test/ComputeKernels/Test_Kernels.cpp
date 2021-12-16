@@ -70,24 +70,49 @@ TEST_CASE("Reduce compensation effects", "[Kernels]") {
 }
 
 
-TEST_CASE("MapReduce", "[Kernels]") {
-	const auto reduceOp = [](const auto& a, const auto& b) { return a + b; };
-	const auto mapOp = [](const auto& a) { return 1.0 / (a * a); };
 
-	std::vector<double> a(50000);
-	std::iota(a.begin(), a.end(), 1);
-	const auto sum = kernels::MapReduce(a.data(), a.size(), 10.0, reduceOp, mapOp);
-	REQUIRE(std::sqrt((sum - 10.0) * 6) == Approx(pi_v<double>).margin(0.001));
+TEST_CASE("Transform reduce float", "[Kernels]") {
+	std::array<float, 100> a;
+	std::iota(a.begin(), a.end(), 1.0f);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::transform_reduce(a.begin(), a.end(), 5.0f, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5.0f, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		REQUIRE(reference == value);
+	}
 }
 
-TEST_CASE("MapReduceVectorized", "[Kernels]") {
-	const auto reduceOp = [](const auto& a, const auto& b) { return a + b; };
-	const auto mapOp = [](const auto& a) { return 1.0 / (a * a); };
+TEST_CASE("Transform reduce double", "[Kernels]") {
+	std::array<double, 100> a;
+	std::iota(a.begin(), a.end(), 1.0);
 
-	std::vector<double> a(50000);
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::transform_reduce(a.begin(), a.end(), 5.0, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5.0, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		REQUIRE(reference == value);
+	}
+}
+
+TEST_CASE("Transform reduce complex", "[Kernels]") {
+	std::array<std::complex<float>, 100> a;
+	std::iota(a.begin(), a.end(), 1.0f);
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::transform_reduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5.0f + 5.0if, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		REQUIRE(reference == value);
+	}
+}
+
+TEST_CASE("Transform reduce int", "[Kernels]") {
+	std::array<int, 100> a;
 	std::iota(a.begin(), a.end(), 1);
-	const auto sum = kernels::MapReduceVectorized(a.data(), a.size(), 10.0, reduceOp, mapOp);
-	REQUIRE(std::sqrt((sum - 10.0) * 6) == Approx(pi_v<double>).margin(0.001));
+
+	for (auto it = a.begin(); it != a.end(); ++it) {
+		const auto reference = std::transform_reduce(a.begin(), a.end(), 5, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		const auto value = kernels::TransformReduce(a.begin(), a.end(), 5, std::plus<>{}, [](const auto& arg) { return arg * arg; });
+		REQUIRE(reference == value);
+	}
 }
 
 TEST_CASE("InnerProduct", "[Kernels]") {

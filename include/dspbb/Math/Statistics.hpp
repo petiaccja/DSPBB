@@ -30,9 +30,9 @@ auto Mean(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto SumSquare(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return kernels::MapReduceVectorized(
-		signal.Data(),
-		signal.Size(),
+	return kernels::TransformReduce(
+		signal.begin(),
+		signal.end(),
 		T(0),
 		[](const auto& a, const auto& b) { return a + b; },
 		[](const auto& a) { return a * a; });
@@ -93,10 +93,10 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 	switch (k) {
 		case 0: return T(0);
 		case 1: return T(0);
-		case 2: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m2](const auto& a) { return m2(a, mean); }) / den;
-		case 3: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m3](const auto& a) { return m3(a, mean); }) / den;
-		case 4: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m4](const auto& a) { return m4(a, mean); }) / den;
-		default: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, mg, k](const auto& a) { return mg(a, mean, k); }) / den;
+		case 2: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, m2](const auto& a) { return m2(a, mean); }) / den;
+		case 3: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, m3](const auto& a) { return m3(a, mean); }) / den;
+		case 4: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, m4](const auto& a) { return m4(a, mean); }) / den;
+		default: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, mg, k](const auto& a) { return mg(a, mean, k); }) / den;
 	}
 }
 

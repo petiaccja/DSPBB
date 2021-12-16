@@ -71,6 +71,7 @@ public:
 	std::vector<T> array;
 };
 
+/*
 BASELINE_F(Reduce_Float, std_accumulate, RandomArrayFixture<float>, 25, 500) {
 	const auto result = std::accumulate(array.begin(), array.end(), 0.0f, std::plus<>{});
 	celero::DoNotOptimizeAway(result);
@@ -109,5 +110,16 @@ BENCHMARK_F(Reduce_ComplexFloat, dspbb_reduce, RandomArrayFixture<std::complex<f
 
 BENCHMARK_F(Reduce_ComplexFloat, dspbb_reduce_comp, RandomArrayFixture<std::complex<float>>, 25, 500) {
 	const auto result = kernels::Reduce(array.begin(), array.end(), std::complex<float>(0.0f), kernels::plus_compensated<>{});
+	celero::DoNotOptimizeAway(result);
+}
+*/
+
+BASELINE_F(TransformReduce, std_transform_reduce, RandomArrayFixture<float>, 25, 500) {
+	const auto result = std::transform_reduce(array.begin(), array.end(), 0.0f, std::plus<>{}, [](const auto& v) { return v * v; });
+	celero::DoNotOptimizeAway(result);
+}
+
+BENCHMARK_F(TransformReduce, dspbb_transform_reduce, RandomArrayFixture<float>, 25, 500) {
+	const auto result = kernels::TransformReduce(array.begin(), array.end(), 0.0f, std::plus<>{}, [](const auto& v) { return v * v; });
 	celero::DoNotOptimizeAway(result);
 }
