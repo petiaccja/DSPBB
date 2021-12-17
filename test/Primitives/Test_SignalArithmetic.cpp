@@ -4,6 +4,7 @@
 #include <dspbb/Primitives/SignalArithmetic.hpp>
 #include <dspbb/Primitives/SignalView.hpp>
 
+#include <array>
 #include <catch2/catch.hpp>
 
 using namespace dspbb;

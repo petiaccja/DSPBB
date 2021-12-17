@@ -195,7 +195,7 @@ template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<Signal
 auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length, size_t chunkSize = 0) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
-	using R = product_type_t<T, U>;
+	using R = multiplies_result_t<T, U>;
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 
 	BasicSignal<R, Domain> out(length, R(remove_complex_t<R>(0)));

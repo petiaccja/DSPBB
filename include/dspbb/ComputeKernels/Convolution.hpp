@@ -22,7 +22,8 @@ void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_
 		const intptr_t uoffset = std::max(intptr_t(0), intptr_t(first) - intptr_t(i));
 		const intptr_t ooffset = std::max(intptr_t(0), intptr_t(i) - intptr_t(first));
 		const intptr_t ccount = std::max(intptr_t(0), std::min(intptr_t(count) - ooffset, intptr_t(lenU) - uoffset));
-		BinaryOperationVectorized(out + ooffset, out + ooffset, u + uoffset, ccount, [scale](const auto& a, const auto& b) { return a + b * scale; });
+		Transform(out + ooffset, out + ooffset + ccount, u + uoffset, out + ooffset,
+				  [scale](const auto& a, const auto& b) -> plus_result_t<decltype(a), multiplies_result_t<decltype(b), decltype(scale)>> { return a + b * scale; });
 	}
 }
 

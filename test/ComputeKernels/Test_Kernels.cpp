@@ -59,7 +59,7 @@ TEST_CASE("Reduce compensated", "[Kernels]") {
 	std::array<float, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 	const auto reference = std::reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
-	const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f, kernels::plus_compensated<>{});
+	const auto value = kernels::Reduce(a.begin(), a.end(), 5.0f, dspbb::plus_compensated<>{});
 	REQUIRE(reference == value);
 }
 
@@ -68,7 +68,7 @@ TEST_CASE("Reduce compensation effects", "[Kernels]") {
 	constexpr float item = 1 + 3.814697265625e-6f;
 	std::vector<float> a(count, item);
 	const float sumRegular = kernels::Reduce(a.begin(), a.end(), 0.0f, std::plus<>{});
-	const float sumCompensated = kernels::Reduce(a.begin(), a.end(), 0.0f, dspbb::kernels::plus_compensated<>{});
+	const float sumCompensated = kernels::Reduce(a.begin(), a.end(), 0.0f, dspbb::plus_compensated<>{});
 	const float expected = item * float(count);
 	REQUIRE(sumCompensated == expected);
 	REQUIRE(sumRegular < expected);

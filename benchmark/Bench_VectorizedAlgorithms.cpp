@@ -63,7 +63,7 @@ public:
 		return experimentValues;
 	}
 
-	virtual void setUp(const ExperimentValue& experimentValue) {
+	void setUp(const ExperimentValue& experimentValue) override {
 		size_t arraySize = experimentValue.Value;
 		array = std::vector<T>(arraySize);
 		std::array<T, 16> pattern;
@@ -91,7 +91,7 @@ public:
 		return experimentValues;
 	}
 
-	virtual void setUp(const ExperimentValue& experimentValue) {
+	void setUp(const ExperimentValue& experimentValue) override {
 		size_t arraySize = experimentValue.Value;
 		array1 = std::vector<T>(arraySize);
 		array2 = std::vector<T>(arraySize);
@@ -125,7 +125,7 @@ public:
 		return experimentValues;
 	}
 
-	virtual void setUp(const ExperimentValue& experimentValue) {
+	void setUp(const ExperimentValue& experimentValue) override {
 		size_t arraySize = experimentValue.Value;
 		array1 = std::vector<T>(arraySize);
 		array2 = std::vector<T>(arraySize);
@@ -171,7 +171,7 @@ BENCHMARK_F(Reduce_Float, dspbb_reduce, RandomArrayFixture<float>, 25, 500) {
 }
 
 BENCHMARK_F(Reduce_Float, dspbb_reduce_comp, RandomArrayFixture<float>, 25, 500) {
-	const auto result = kernels::Reduce(array.begin(), array.end(), 0.0f, kernels::plus_compensated<>{});
+	const auto result = kernels::Reduce(array.begin(), array.end(), 0.0f, dspbb::plus_compensated<>{});
 	celero::DoNotOptimizeAway(result);
 }
 
@@ -196,7 +196,7 @@ BENCHMARK_F(Reduce_ComplexFloat, dspbb_reduce, RandomArrayFixture<std::complex<f
 }
 
 BENCHMARK_F(Reduce_ComplexFloat, dspbb_reduce_comp, RandomArrayFixture<std::complex<float>>, 25, 500) {
-	const auto result = kernels::Reduce(array.begin(), array.end(), std::complex<float>(0.0f), kernels::plus_compensated<>{});
+	const auto result = kernels::Reduce(array.begin(), array.end(), std::complex<float>(0.0f), dspbb::plus_compensated<>{});
 	celero::DoNotOptimizeAway(result);
 }
 

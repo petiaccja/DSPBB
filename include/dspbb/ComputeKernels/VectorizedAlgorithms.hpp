@@ -9,6 +9,8 @@
 	#pragma warning(pop)
 #endif
 
+#include "Functors.hpp"
+
 #include "dspbb/Utility/TypeTraits.hpp"
 
 #include <numeric>
@@ -16,28 +18,9 @@
 
 namespace dspbb::kernels {
 
-
-// deprecated
-template <class T>
-struct is_vectorized {
-	static constexpr bool value = xsimd::simd_traits<T>::size > 1;
-};
-
-template <class R, class T, class Op>
-struct is_unary_vectorized {
-	constexpr static bool get(...) { return false; }
-	template <class R_ = R,
-			  class T_ = T,
-			  class Op_ = Op,
-			  std::enable_if_t<(xsimd::simd_traits<T_>::size > 1)
-								   && xsimd::simd_traits<R_>::size == xsimd::simd_traits<T_>::size
-								   && std::is_convertible_v<std::invoke_result_t<Op, xsimd::simd_type<T_>>, xsimd::simd_type<R_>>,
-							   int> = 0>
-	constexpr static bool get(int) { return true; }
-	static constexpr bool value = get(0);
-};
-
-
+//------------------------------------------------------------------------------
+// Vectorization possibility
+//------------------------------------------------------------------------------
 
 template <class T, class U, class UnaryOp>
 struct is_transform_vectorized_1 {
@@ -110,190 +93,19 @@ struct is_inner_product_vectorized {
 	static constexpr bool value = get(0);
 };
 
-
 //------------------------------------------------------------------------------
-// Binary operations -- DEPRECATED BY TRANSFORM
-//------------------------------------------------------------------------------
-
-template <class R, class T, class U, class Op>
-void BinaryOperation(R* out, const T* a, const U* b, size_t length, Op op) {
-	const R* last = out + length;
-	for (; out != last; ++out, ++a, ++b) {
-		*out = R(op(*a, *b));
-	}
-}
-
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-void BinaryOperation(R* out, const T& a, const U* b, size_t length, Op op) {
-	const R* last = out + length;
-	for (; out != last; ++out, ++b) {
-		*out = R(op(a, *b));
-	}
-}
-
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-void BinaryOperation(R* out, const T* a, const U& b, size_t length, Op op) {
-	const R* last = out + length;
-	for (; out != last; ++out, ++a) {
-		*out = R(op(*a, b));
-	}
-}
-
-template <class T, class Op, std::enable_if_t<is_vectorized<T>::value, int> = 0>
-void BinaryOperationVectorized(T* out, const T* a, const T* b, size_t length, Op op) {
-	using V = xsimd::simd_type<T>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
-
-	const size_t vlength = (length / vsize) * vsize;
-
-	const T* vlast = out + vlength;
-	for (; out < vlast; out += vsize, a += vsize, b += vsize) {
-		V va, vb;
-		va.load_unaligned(a);
-		vb.load_unaligned(b);
-		auto vr = op(va, vb);
-		vr.store_unaligned(out);
-	}
-
-	BinaryOperation(out, a, b, length - vlength, op);
-}
-
-template <class T, class Op, std::enable_if_t<!std::is_pointer_v<T> && is_vectorized<T>::value, int> = 0>
-void BinaryOperationVectorized(T* out, const T& a, const T* b, size_t length, Op op) {
-	using V = xsimd::simd_type<T>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
-
-	const size_t vlength = (length / vsize) * vsize;
-
-	const T* vlast = out + vlength;
-	V va{ a };
-	for (; out < vlast; out += vsize, b += vsize) {
-		V vb;
-		vb.load_unaligned(b);
-		auto vr = op(va, vb);
-		vr.store_unaligned(out);
-	}
-
-	BinaryOperation(out, a, b, length - vlength, op);
-}
-
-template <class T, class Op, std::enable_if_t<!std::is_pointer_v<T> && is_vectorized<T>::value, int> = 0>
-void BinaryOperationVectorized(T* out, const T* a, const T& b, size_t length, Op op) {
-	using V = xsimd::simd_type<T>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
-
-	const size_t vlength = (length / vsize) * vsize;
-
-	const T* vlast = out + vlength;
-	V vb{ b };
-	for (; out < vlast; out += vsize, a += vsize) {
-		V va;
-		va.load_unaligned(a);
-		auto vr = op(va, vb);
-		vr.store_unaligned(out);
-	}
-
-	BinaryOperation(out, a, b, length - vlength, op);
-}
-
-
-template <class R, class T, class U, class Op>
-void BinaryOperationVectorized(R* out, const T* a, const U* b, size_t length, Op op) {
-	BinaryOperation(out, a, b, length, op);
-}
-
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-void BinaryOperationVectorized(R* out, const T& a, const U* b, size_t length, Op op) {
-	BinaryOperation(out, a, b, length, op);
-}
-
-template <class R, class T, class U, class Op, std::enable_if_t<!std::is_pointer_v<T>, int> = 0>
-void BinaryOperationVectorized(R* out, const T* a, const U& b, size_t length, Op op) {
-	BinaryOperation(out, a, b, length, op);
-}
-
-//------------------------------------------------------------------------------
-// Unary operations.
+// Utility
 //------------------------------------------------------------------------------
 
-template <class R, class T, class Op>
-void UnaryOperation(R* out, const T* in, size_t length, Op op) {
-	const R* last = out + length;
-	for (; out != last; ++out, ++in) {
-		*out = R(op(*in));
-	}
+template <class T, size_t N>
+inline xsimd::batch<T, N> Load(const xsimd::batch<T, N>* p) {
+	return xsimd::load_unaligned(reinterpret_cast<const T*>(p));
 }
 
-template <class R, class T, class Op, std::enable_if_t<!is_unary_vectorized<R, T, Op>::value, int> = 0>
-void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
-	return UnaryOperation(out, in, length, op);
+template <class T>
+inline T Load(const T* p) {
+	return *p;
 }
-
-template <class R, class T, class Op, std::enable_if_t<is_unary_vectorized<R, T, Op>::value, int> = 0>
-void UnaryOperationVectorized(R* out, const T* in, size_t length, Op op) {
-	using TV = xsimd::simd_type<T>;
-	constexpr size_t vsize = xsimd::simd_traits<T>::size;
-
-	const size_t vlength = (length / vsize) * vsize;
-
-	const R* vlast = out + vlength;
-	for (; out < vlast; out += vsize, in += vsize) {
-		TV vin;
-		vin.load_unaligned(in);
-		const auto vr = op(vin);
-		vr.store_unaligned(out);
-	}
-
-	UnaryOperation(out, in, length - vlength, op);
-}
-
-//------------------------------------------------------------------------------
-// Common operators.
-//------------------------------------------------------------------------------
-
-struct compensated_operator_tag {};
-
-template <class T = void>
-struct plus_compensated : compensated_operator_tag {
-	inline constexpr T operator()(const T& lhs, const T& rhs) const {
-		return lhs + rhs;
-	}
-	inline constexpr T make_carry(const T& init) const {
-		return init - init; // Type may not be constructable from literal zero.
-	}
-	inline constexpr T operator()(T& carry, const T& sum, const T& item) const {
-		const T y = item - carry;
-		const T t = sum + y;
-		carry = (t - sum) - y;
-		sum = t;
-		return sum;
-	}
-};
-
-template <>
-struct plus_compensated<void> : compensated_operator_tag {
-	template <class T, class U>
-	inline constexpr auto operator()(T&& lhs, U&& rhs) const -> sum_type_t<T, U> {
-		return lhs + rhs;
-	}
-	template <class T, class U>
-	inline constexpr auto make_carry(const sum_type_t<T, U>& init) const -> sum_type_t<T, U> {
-		return init - init; // Type may not be constructable from literal zero.
-	}
-	template <class T, class U>
-	inline constexpr auto operator()(sum_type_t<T, U>& carry, T&& sum, U&& item) const -> sum_type_t<T, U> {
-		const auto y = item - carry;
-		const auto t = sum + y;
-		carry = (t - sum) - y;
-		return t;
-	}
-};
-
-template <class Operator>
-struct is_operator_compensated : std::is_base_of<compensated_operator_tag, Operator> {};
-
-template <class Operator>
-constexpr bool is_operator_compensated_v = is_operator_compensated<Operator>::value;
 
 template <class Arg1, class Arg2, class CarryT, class Operator>
 inline auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::template make_carry<Arg1, Arg2>), Operator*, CarryT> {
@@ -308,20 +120,6 @@ inline auto make_compensation_carry(const Operator& op, const CarryT& init) -> s
 template <class Arg1, class Arg2, class CarryT, class Operator>
 inline auto make_compensation_carry(const Operator&, const CarryT&) -> std::enable_if_t<!is_operator_compensated_v<Operator>, compensated_operator_tag> {
 	return compensated_operator_tag{}; // Return a useless tag just for the sake of compiling in generic contexts.
-}
-
-//------------------------------------------------------------------------------
-// Utility
-//------------------------------------------------------------------------------
-
-template <class T, size_t N>
-inline xsimd::batch<T, N> Load(const xsimd::batch<T, N>* p) {
-	return xsimd::load_unaligned(reinterpret_cast<const T*>(p));
-}
-
-template <class T>
-inline T Load(const T* p) {
-	return *p;
 }
 
 //------------------------------------------------------------------------------

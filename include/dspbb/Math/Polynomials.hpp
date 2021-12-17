@@ -6,6 +6,7 @@
 
 #include <complex>
 #include <initializer_list>
+#include <numeric>
 #include <stdexcept>
 
 namespace dspbb {
