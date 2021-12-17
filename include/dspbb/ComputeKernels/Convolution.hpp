@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VectorizedAlgorithms.hpp"
+#include "Numeric.hpp"
 
 #include <utility>
 

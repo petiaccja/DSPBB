@@ -1,4 +1,4 @@
-#include <dspbb/ComputeKernels/VectorizedAlgorithms.hpp>
+#include <dspbb/ComputeKernels/Numeric.hpp>
 #include <dspbb/Utility/Numbers.hpp>
 
 #include <catch2/catch.hpp>

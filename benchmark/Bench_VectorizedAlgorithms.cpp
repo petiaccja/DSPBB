@@ -1,6 +1,6 @@
 #include "dspbb/Utility/TypeTraits.hpp"
-#include <dspbb/ComputeKernels/VectorizedAlgorithms.hpp>
-#include <dspbb/ComputeKernels/VectorizedMathFunctions.hpp>
+#include <dspbb/ComputeKernels/Numeric.hpp>
+#include <dspbb/ComputeKernels/Math.hpp>
 
 #include <array>
 #include <celero/Celero.h>

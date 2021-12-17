@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../ComputeKernels/Functors.hpp"
-#include "../ComputeKernels/VectorizedAlgorithms.hpp"
+#include "../ComputeKernels/Numeric.hpp"
 #include "SignalTraits.hpp"
 
 #include <functional>
