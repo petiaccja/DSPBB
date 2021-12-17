@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../ComputeKernels/Numeric.hpp"
-#include "../ComputeKernels/Math.hpp"
+#include "../Kernels/Numeric.hpp"
+#include "../Kernels/Math.hpp"
 #include "../Primitives/SignalTraits.hpp"
 
 #include <cassert>
