@@ -11,7 +11,7 @@ using namespace std::complex_literals;
 // Reduce
 //------------------------------------------------------------------------------
 
-TEST_CASE("Reduce float", "[Kernels]") {
+TEST_CASE("Reduce float", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 
@@ -22,7 +22,7 @@ TEST_CASE("Reduce float", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Reduce double", "[Kernels]") {
+TEST_CASE("Reduce double", "[Kernels - Numeric]") {
 	std::array<double, 100> a;
 	std::iota(a.begin(), a.end(), 1.0);
 
@@ -33,7 +33,7 @@ TEST_CASE("Reduce double", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Reduce complex", "[Kernels]") {
+TEST_CASE("Reduce complex", "[Kernels - Numeric]") {
 	std::array<std::complex<float>, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 
@@ -44,7 +44,7 @@ TEST_CASE("Reduce complex", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Reduce int", "[Kernels]") {
+TEST_CASE("Reduce int", "[Kernels - Numeric]") {
 	std::array<int, 100> a;
 	std::iota(a.begin(), a.end(), 1);
 
@@ -55,7 +55,7 @@ TEST_CASE("Reduce int", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Reduce compensated", "[Kernels]") {
+TEST_CASE("Reduce compensated", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 	const auto reference = std::reduce(a.begin(), a.end(), 5.0f, std::plus<>{});
@@ -63,7 +63,7 @@ TEST_CASE("Reduce compensated", "[Kernels]") {
 	REQUIRE(reference == value);
 }
 
-TEST_CASE("Reduce compensation effects", "[Kernels]") {
+TEST_CASE("Reduce compensation effects", "[Kernels - Numeric]") {
 	constexpr size_t count = 1 << 18;
 	constexpr float item = 1 + 3.814697265625e-6f;
 	std::vector<float> a(count, item);
@@ -80,7 +80,7 @@ TEST_CASE("Reduce compensation effects", "[Kernels]") {
 // Transform reduce
 //------------------------------------------------------------------------------
 
-TEST_CASE("Transform reduce float", "[Kernels]") {
+TEST_CASE("Transform reduce float", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 
@@ -91,7 +91,7 @@ TEST_CASE("Transform reduce float", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Transform reduce double", "[Kernels]") {
+TEST_CASE("Transform reduce double", "[Kernels - Numeric]") {
 	std::array<double, 100> a;
 	std::iota(a.begin(), a.end(), 1.0);
 
@@ -102,7 +102,7 @@ TEST_CASE("Transform reduce double", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Transform reduce complex", "[Kernels]") {
+TEST_CASE("Transform reduce complex", "[Kernels - Numeric]") {
 	std::array<std::complex<float>, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 
@@ -113,7 +113,7 @@ TEST_CASE("Transform reduce complex", "[Kernels]") {
 	}
 }
 
-TEST_CASE("Transform reduce int", "[Kernels]") {
+TEST_CASE("Transform reduce int", "[Kernels - Numeric]") {
 	std::array<int, 100> a;
 	std::iota(a.begin(), a.end(), 1);
 
@@ -129,7 +129,7 @@ TEST_CASE("Transform reduce int", "[Kernels]") {
 // Inner product
 //------------------------------------------------------------------------------
 
-TEST_CASE("InnerProduct float", "[Kernels]") {
+TEST_CASE("InnerProduct float", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::array<float, 100> b;
 	std::iota(a.begin(), a.end(), 1.0f);
@@ -143,7 +143,7 @@ TEST_CASE("InnerProduct float", "[Kernels]") {
 	}
 }
 
-TEST_CASE("InnerProduct double", "[Kernels]") {
+TEST_CASE("InnerProduct double", "[Kernels - Numeric]") {
 	std::array<double, 100> a;
 	std::array<double, 100> b;
 	std::iota(a.begin(), a.end(), 1.0);
@@ -157,7 +157,7 @@ TEST_CASE("InnerProduct double", "[Kernels]") {
 	}
 }
 
-TEST_CASE("InnerProduct complex", "[Kernels]") {
+TEST_CASE("InnerProduct complex", "[Kernels - Numeric]") {
 	std::array<std::complex<float>, 100> a;
 	std::array<std::complex<float>, 100> b;
 	std::iota(a.begin(), a.end(), 1.0f);
@@ -170,7 +170,7 @@ TEST_CASE("InnerProduct complex", "[Kernels]") {
 	}
 }
 
-TEST_CASE("InnerProduct int", "[Kernels]") {
+TEST_CASE("InnerProduct int", "[Kernels - Numeric]") {
 	std::array<int, 100> a;
 	std::array<int, 100> b;
 	std::iota(a.begin(), a.end(), 1);
@@ -187,7 +187,7 @@ TEST_CASE("InnerProduct int", "[Kernels]") {
 // Transform
 //------------------------------------------------------------------------------
 
-TEST_CASE("Transform unary float", "[Kernels]") {
+TEST_CASE("Transform unary float", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 
@@ -200,7 +200,7 @@ TEST_CASE("Transform unary float", "[Kernels]") {
 	REQUIRE(reference == value);
 }
 
-TEST_CASE("Transform unary int", "[Kernels]") {
+TEST_CASE("Transform unary int", "[Kernels - Numeric]") {
 	std::array<int, 100> a;
 	std::iota(a.begin(), a.end(), 1);
 
@@ -214,7 +214,7 @@ TEST_CASE("Transform unary int", "[Kernels]") {
 }
 
 
-TEST_CASE("Transform binary float", "[Kernels]") {
+TEST_CASE("Transform binary float", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::array<float, 100> b;
 	std::iota(a.begin(), a.end(), 1.0f);
@@ -229,7 +229,7 @@ TEST_CASE("Transform binary float", "[Kernels]") {
 	REQUIRE(reference == value);
 }
 
-TEST_CASE("Transform binary int", "[Kernels]") {
+TEST_CASE("Transform binary int", "[Kernels - Numeric]") {
 	std::array<int, 100> a;
 	std::array<int, 100> b;
 	std::iota(a.begin(), a.end(), 1);
@@ -244,7 +244,7 @@ TEST_CASE("Transform binary int", "[Kernels]") {
 	REQUIRE(reference == value);
 }
 
-TEST_CASE("Transform unary self-assign", "[Kernels]") {
+TEST_CASE("Transform unary self-assign", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::iota(a.begin(), a.end(), 1.0f);
 
@@ -256,7 +256,7 @@ TEST_CASE("Transform unary self-assign", "[Kernels]") {
 	REQUIRE(reference == a);
 }
 
-TEST_CASE("Transform binary self-assign", "[Kernels]") {
+TEST_CASE("Transform binary self-assign", "[Kernels - Numeric]") {
 	std::array<float, 100> a;
 	std::array<float, 100> b;
 	std::iota(a.begin(), a.end(), 1.0f);
