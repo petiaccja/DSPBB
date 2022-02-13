@@ -92,7 +92,7 @@ namespace math_functions {
 	// FMA
 	namespace impl {
 		template <class V, std::enable_if_t<is_simd_type_v<V> && std::is_scalar_v<typename xsimd::simd_batch_traits<V>::value_type>, int> = 0>
-		inline auto fma(const V& a, const V& b, const V& c, nullptr_t)
+		inline auto fma(const V& a, const V& b, const V& c, std::nullptr_t)
 			-> decltype(xsimd::fma(std::declval<V>(), std::declval<V>(), std::declval<V>())) {
 			return xsimd::fma(a, b, c);
 		}
