@@ -10,6 +10,18 @@
 namespace dspbb::kernels {
 
 
+template <class T1, class T2, class OutT>
+struct is_convolution_reduce_vectorized {
+	constexpr static bool get(...) { return false; }
+	template <class T1_ = T1, class T2_ = T2, class OutT_ = OutT,
+			  std::enable_if_t<(xsimd::simd_traits<OutT_>::size > 1)
+								   && std::is_invocable_v<std::plus<>, xsimd::simd_type<OutT_>, std::invoke_result_t<std::multiplies<>, xsimd::simd_type<T1_>, xsimd::simd_type<T2_>>>,
+							   int> = 0>
+	constexpr static bool get(int) { return true; }
+	static constexpr bool value = get(0);
+};
+
+
 template <class R, class U, class V>
 void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_t first, size_t count, bool clearOut = true) {
 	if (lenU < lenV) {
@@ -83,7 +95,7 @@ void ConvolutionSlide(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Iter
 }
 
 template <class Iter1, class Iter2, class IterOut>
-void ConvolutionAccumulate(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
+void ConvolutionReduce(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
 	const ptrdiff_t len1 = std::distance(first1, last1);
 	const ptrdiff_t len2 = std::distance(first2, last2);
 
@@ -115,49 +127,76 @@ void ConvolutionAccumulate(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2,
 	}
 }
 
-template <class Iter1, class Iter2, class IterOut>
-void ConvolutionAccumulate_Vec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
-	const ptrdiff_t len1 = std::distance(first1, last1);
-	const ptrdiff_t len2 = std::distance(first2, last2);
+template <bool Vectorize, class Iter1, class Iter2, class OutV>
+inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count) {
+	using T1 = typename std::iterator_traits<Iter1>::value_type;
+	using T2 = typename std::iterator_traits<Iter2>::value_type;
+	using V1 = std::conditional_t<Vectorize, xsimd::simd_type<T1>, T1>;
+	using V2 = std::conditional_t<Vectorize, xsimd::simd_type<T2>, T2>;
 
-	constexpr ptrdiff_t vectorWidth = 8;
+	for (ptrdiff_t idx = 0; idx != count; ++idx, ++first1, --first2) {
+		init += V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+	}
+
+	return init;
+}
+
+template <class Iter1, class Iter2, class IterOut>
+void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
+	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using OutT = typename std::iterator_traits<IterOut>::value_type;
 
+	constexpr bool isVectorized = is_convolution_reduce_vectorized<T1, T2, OutT>::value;
+	constexpr ptrdiff_t vectorWidth = isVectorized ? xsimd::simd_traits<OutT>::size : 1;
+	using V1 = std::conditional_t<isVectorized, xsimd::simd_type<T1>, T1>;
+	using V2 = std::conditional_t<isVectorized, xsimd::simd_type<T2>, T2>;
+	using OutV = std::conditional_t<isVectorized, xsimd::simd_type<OutT>, OutT>;
+
+	const ptrdiff_t len1 = std::distance(first1, last1);
+	const ptrdiff_t len2 = std::distance(first2, last2);
 	std::array<T2, vectorWidth * 4 - 2> padding;
 	std::fill(padding.begin(), padding.end(), T2(0));
 	std::copy(first2, first2 + std::min(vectorWidth, len2), padding.begin() + vectorWidth - 1);
 	std::copy(std::reverse_iterator{ last2 }, std::reverse_iterator{ last2 } + std::min(vectorWidth, len2), padding.rbegin() + vectorWidth - 1);
 
-	for (; firstOut < lastOut; n += vectorWidth) {
-		std::array<OutT, vectorWidth> accumulator;
+	for (; firstOut != lastOut; n += vectorWidth) {
+		OutV accumulator{ OutT(0) };
 
 		std::fill(accumulator.begin(), accumulator.end(), OutT(0));
 
-		ptrdiff_t mFirst = std::max(ptrdiff_t(0), n - len2 + 1);
-		ptrdiff_t mLast = std::min(len1, n + vectorWidth);
+		const ptrdiff_t mFirst = std::max(ptrdiff_t(0), n - len2 + 1);
+		const ptrdiff_t mLast = std::min(len1, n + vectorWidth);
 
-		for (; n - mFirst + vectorWidth > len2; ++mFirst) {
-			const auto access = intptr_t(padding.size()) - vectorWidth + 1 + n - mFirst - len2;
-			for (ptrdiff_t i = 0; i < vectorWidth; ++i) {
-				accumulator[i] += first1[mFirst] * padding[access + i];
-			}
+		ptrdiff_t m = mFirst;
+		const ptrdiff_t mLastPre = std::min(mLast, n + vectorWidth - len2);
+		const ptrdiff_t mLastMid = std::min(n, mLast);
+		const ptrdiff_t mLastPost = mLast;
+		
+		for (; m < mLastPre; ++m) {
+			const auto access = intptr_t(padding.size()) - vectorWidth + 1 + n - m - len2;
+			accumulator = accumulator + V1{ first1[m] } * Load(reinterpret_cast<const V2*>(padding.data() + access));
 		}
-		for (; mFirst < n && mFirst < mLast; ++mFirst) {
-			const auto access = n - mFirst;
-			for (ptrdiff_t i = 0; i < vectorWidth; ++i) {
-				accumulator[i] += first1[mFirst] * first2[access + i];
-			}
+		for (; m < mLastMid; ++m) {
+			const auto access = n - m;
+			accumulator = accumulator + V1{ first1[m] } * Load(reinterpret_cast<const V2*>(std::addressof(*(first2 + access))));
 		}
-		for (; mFirst < mLast; ++mFirst) {
-			const auto access = n - mFirst + vectorWidth - 1;
-			for (ptrdiff_t i = 0; i < vectorWidth; ++i) {
-				accumulator[i] += first1[mFirst] * padding[access + i];
-			}
+		for (; m < mLastPost; ++m) {
+			const auto access = n - m + vectorWidth - 1;
+			accumulator = accumulator + V1{ first1[m] } * Load(reinterpret_cast<const V2*>(padding.data() + access));
 		}
 
-		for (size_t i = 0; i < vectorWidth && firstOut < lastOut; ++i, ++firstOut) {
-			*firstOut = accumulator[i];
+		if (std::distance(firstOut, lastOut) >= vectorWidth) {
+			xsimd::store_unaligned(std::addressof(*firstOut), accumulator);
+			std::advance(firstOut, vectorWidth);
+		}
+		else {
+			alignas(alignof(OutV)) std::array<OutT, vectorWidth> staging;
+			xsimd::store_aligned(staging.data(), accumulator);
+			auto stagingIt = staging.begin();
+			while (firstOut != lastOut) {
+				*firstOut++ = *stagingIt++;
+			}
 		}
 	}
 }

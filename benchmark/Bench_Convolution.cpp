@@ -36,7 +36,7 @@ static constexpr std::array filterSizes = {
 	2048,
 };
 
-constexpr int complexityLimit = 32 * 1024 * 1024;
+constexpr int complexityLimit = 128 * 1024 * 1024;
 
 
 //------------------------------------------------------------------------------
@@ -103,6 +103,11 @@ BENCHMARK_F(ConvolutionCache, slide, FixtureCache, 25, 500) {
 	celero::DoNotOptimizeAway(out.front());
 }
 
+BENCHMARK_F(ConvolutionCache, reduce, FixtureCache, 25, 500) {
+	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0);
+	celero::DoNotOptimizeAway(out.front());
+}
+
 using FixtureLarge = ConvolutionFixture<float, signalSizes[1]>;
 
 BASELINE_F(ConvolutionLarge, naive, FixtureLarge, 25, 500) {
@@ -112,5 +117,10 @@ BASELINE_F(ConvolutionLarge, naive, FixtureLarge, 25, 500) {
 
 BENCHMARK_F(ConvolutionLarge, slide, FixtureLarge, 25, 500) {
 	kernels::ConvolutionSlide(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0);
+	celero::DoNotOptimizeAway(out.front());
+}
+
+BENCHMARK_F(ConvolutionLarge, reduce, FixtureLarge, 25, 500) {
+	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0);
 	celero::DoNotOptimizeAway(out.front());
 }

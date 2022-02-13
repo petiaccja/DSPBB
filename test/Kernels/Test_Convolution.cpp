@@ -41,13 +41,13 @@ TEST_CASE("Convolution slide full", "[Kernels - Convolution]") {
 
 TEST_CASE("Convolution accumulate central", "[Kernels - Convolution]") {
 	std::array<float, 9> out;
-	kernels::ConvolutionAccumulate(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 11);
+	kernels::ConvolutionReduce(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 11);
 	REQUIRE(out == urvr_central);
 }
 
 TEST_CASE("Convolution accumulate full", "[Kernels - Convolution]") {
 	std::array<float, 31> out;
-	kernels::ConvolutionAccumulate(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 0);
+	kernels::ConvolutionReduce(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 0);
 	REQUIRE(out == urvr_full);
 }
 
@@ -57,20 +57,20 @@ TEST_CASE("Convolution accumulate small filter", "[Kernels - Convolution]") {
 	std::array<float, 15> ref;
 	std::array<float, 15> out;
 	kernels::ConvolutionNaive(u.begin(), u.end(), v.begin(), v.end(), ref.begin(), ref.end(), 0);
-	kernels::ConvolutionAccumulate(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), 0);
+	kernels::ConvolutionReduce(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), 0);
 	REQUIRE(out == ref);
 }
 
 
 TEST_CASE("Convolution acc_vec central", "[Kernels - Convolution]") {
 	std::array<float, 9> out;
-	kernels::ConvolutionAccumulate_Vec(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 11);
+	kernels::ConvolutionReduceVec(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 11);
 	REQUIRE(out == urvr_central);
 }
 
 TEST_CASE("Convolution acc_vec full", "[Kernels - Convolution]") {
 	std::array<float, 31> out;
-	kernels::ConvolutionAccumulate_Vec(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 0);
+	kernels::ConvolutionReduceVec(ur.begin(), ur.end(), vr.begin(), vr.end(), out.begin(), out.end(), 0);
 	REQUIRE(out == urvr_full);
 }
 
@@ -80,6 +80,6 @@ TEST_CASE("Convolution acc_vec small filter", "[Kernels - Convolution]") {
 	std::array<float, 15> ref;
 	std::array<float, 15> out;
 	kernels::ConvolutionNaive(u.begin(), u.end(), v.begin(), v.end(), ref.begin(), ref.end(), 0);
-	kernels::ConvolutionAccumulate_Vec(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), 0);
+	kernels::ConvolutionReduceVec(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), 0);
 	REQUIRE(out == ref);
 }
