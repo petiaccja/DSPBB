@@ -54,8 +54,7 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offse
 		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	}
 
-	const size_t length = out.Size();
-	kernels::Convolution(out.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, length, clearOut);
+	kernels::ConvolutionSlide(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), offset, !clearOut);
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>

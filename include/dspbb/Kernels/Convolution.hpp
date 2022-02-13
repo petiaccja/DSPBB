@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../Utility/Interval.hpp"
+#include "Math.hpp"
 #include "Numeric.hpp"
+#include "Utility.hpp"
 
 #include <iterator>
 #include <utility>
@@ -21,25 +23,25 @@ struct is_convolution_reduce_vectorized {
 	static constexpr bool value = get(0);
 };
 
+template <class T>
+struct convolution_fma {
+	convolution_fma(T multiplier) : multiplier(std::move(multiplier)) {}
 
-template <class R, class U, class V>
-void Convolution(R* out, const U* u, const V* v, size_t lenU, size_t lenV, size_t first, size_t count, bool clearOut = true) {
-	if (lenU < lenV) {
-		return Convolution(out, v, u, lenV, lenU, first, count, clearOut);
+	template <class U1, class U2, std::enable_if_t<!is_simd_type_v<U1> || !is_simd_type_v<U2>, int> = 0>
+	constexpr auto operator()(U1&& accumulator, U2&& increase) const
+		-> decltype(math_functions::fma(std::declval<U2>(), std::declval<T>(), std::declval<U1>())) {
+		return math_functions::fma(increase, multiplier, accumulator);
 	}
 
-	if (clearOut) {
-		memset(out, 0, sizeof(R) * count);
+	template <class U1, class U2, std::enable_if_t<is_simd_type_v<U1> && is_simd_type_v<U2>, int> = 0>
+	constexpr auto operator()(const U1& accumulator, const U2& increase) const
+		-> decltype(math_functions::fma(std::declval<U2>(), std::declval<xsimd::simd_type<T>>(), std::declval<U1>())) {
+		return math_functions::fma(increase, xsimd::simd_type<T>(multiplier), accumulator);
 	}
-	for (size_t i = 0; i < lenV; ++i) {
-		const auto scale = v[i];
-		const intptr_t uoffset = std::max(intptr_t(0), intptr_t(first) - intptr_t(i));
-		const intptr_t ooffset = std::max(intptr_t(0), intptr_t(i) - intptr_t(first));
-		const intptr_t ccount = std::max(intptr_t(0), std::min(intptr_t(count) - ooffset, intptr_t(lenU) - uoffset));
-		Transform(out + ooffset, out + ooffset + ccount, u + uoffset, out + ooffset,
-				  [scale](const auto& a, const auto& b) -> plus_result_t<decltype(a), multiplies_result_t<decltype(b), decltype(scale)>> { return a + b * scale; });
-	}
-}
+
+	T multiplier;
+};
+
 
 template <class Iter1, class Iter2, class IterOut>
 void ConvolutionNaive(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
@@ -90,7 +92,7 @@ void ConvolutionSlide(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Iter
 		Transform(firstOut + writeRangeOut.first, firstOut + writeRangeOut.last,
 				  first2 + writeFirst2,
 				  firstOut + writeRangeOut.first,
-				  [multiplier](const auto& out, const auto& val2) { return out + val2 * multiplier; });
+				  convolution_fma{ multiplier });
 	}
 }
 
@@ -172,7 +174,7 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 		const ptrdiff_t mLastPre = std::min(mLast, n + vectorWidth - len2);
 		const ptrdiff_t mLastMid = std::min(n, mLast);
 		const ptrdiff_t mLastPost = mLast;
-		
+
 		for (; m < mLastPre; ++m) {
 			const auto access = intptr_t(padding.size()) - vectorWidth + 1 + n - m - len2;
 			accumulator = accumulator + V1{ first1[m] } * Load(reinterpret_cast<const V2*>(padding.data() + access));
