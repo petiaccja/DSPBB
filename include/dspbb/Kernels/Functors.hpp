@@ -16,13 +16,23 @@ struct is_operator_compensated : std::is_base_of<compensated_operator_tag, Opera
 template <class Operator>
 constexpr bool is_operator_compensated_v = is_operator_compensated<Operator>::value;
 
+template <class T, std::enable_if_t<std::is_convertible_v<int, T>, int> = 0>
+T make_zero() {
+	return static_cast<T>(0);
+}
+
+template <class T, class U = typename T::value_type, std::enable_if_t<!std::is_convertible_v<int, T>, int> = 0>
+T make_zero() {
+	return T{ static_cast<U>(0) };
+}
+
 template <class T = void>
 struct plus_compensated : compensated_operator_tag {
 	inline constexpr T operator()(const T& lhs, const T& rhs) const {
 		return lhs + rhs;
 	}
-	inline constexpr T make_carry(const T& init) const {
-		return init - init; // Type may not be constructable from literal zero.
+	inline constexpr T make_carry(const T&) const {
+		return make_zero<T>();
 	}
 	inline constexpr T operator()(T& carry, const T& sum, const T& item) const {
 		const T y = item - carry;
@@ -40,8 +50,8 @@ struct plus_compensated<void> : compensated_operator_tag {
 		return std::forward<T>(lhs) + std::forward<U>(rhs);
 	}
 	template <class T, class U>
-	inline constexpr auto make_carry(const plus_result_t<T, U>& init) const -> plus_result_t<T, U> {
-		return init - init; // Type may not be constructable from literal zero.
+	inline constexpr auto make_carry(const plus_result_t<T, U>&) const -> plus_result_t<T, U> {
+		return make_zero<T>();
 	}
 	template <class T, class U>
 	inline constexpr auto operator()(plus_result_t<T, U>& carry, const T& sum, const U& item) const -> plus_result_t<T, U> {
