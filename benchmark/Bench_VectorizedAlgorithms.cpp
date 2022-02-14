@@ -1,6 +1,6 @@
 #include "dspbb/Utility/TypeTraits.hpp"
-#include <dspbb/Kernels/Numeric.hpp>
 #include <dspbb/Kernels/Math.hpp>
+#include <dspbb/Kernels/Numeric.hpp>
 
 #include <array>
 #include <celero/Celero.h>

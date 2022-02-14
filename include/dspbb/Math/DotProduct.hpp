@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Kernels/Numeric.hpp"
 #include "../Kernels/Math.hpp"
+#include "../Kernels/Numeric.hpp"
 #include "../Primitives/SignalTraits.hpp"
 #include "../Utility/TypeTraits.hpp"
 

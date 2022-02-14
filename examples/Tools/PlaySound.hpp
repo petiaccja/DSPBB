@@ -1,7 +1,8 @@
 #pragma once
 
-#include <functional>
 #include <dspbb/Primitives/SignalView.hpp>
+
+#include <functional>
 
 using PlayStereoCallback = std::function<size_t(dspbb::SignalView<float>, dspbb::SignalView<float>)>;
 using PlayMonoCallback = std::function<size_t(dspbb::SignalView<float>)>;
