@@ -136,7 +136,7 @@ TEST_CASE("InnerProduct float", "[Kernels - Numeric]") {
 	std::iota(b.begin(), b.end(), 3.0f);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		INFO(it - a.begin());
+		INFO(it - a.begin())
 		const auto reference = std::inner_product(a.begin(), it, b.begin(), 5.0f, std::plus<>{}, std::multiplies<>{});
 		const auto value = kernels::InnerProduct(a.begin(), it, b.begin(), 5.0f, std::plus<>{}, std::multiplies<>{});
 		REQUIRE(reference == value);
@@ -150,7 +150,7 @@ TEST_CASE("InnerProduct double", "[Kernels - Numeric]") {
 	std::iota(b.begin(), b.end(), 3.0);
 
 	for (auto it = a.begin(); it != a.end(); ++it) {
-		INFO(it - a.begin());
+		INFO(it - a.begin())
 		const auto reference = std::inner_product(a.begin(), it, b.begin(), 5.0, std::plus<>{}, std::multiplies<>{});
 		const auto value = kernels::InnerProduct(a.begin(), it, b.begin(), 5.0, std::plus<>{}, std::multiplies<>{});
 		REQUIRE(reference == value);

@@ -37,14 +37,14 @@ template <>
 struct plus_compensated<void> : compensated_operator_tag {
 	template <class T, class U>
 	inline constexpr auto operator()(T&& lhs, U&& rhs) const -> plus_result_t<T, U> {
-		return lhs + rhs;
+		return std::forward<T>(lhs) + std::forward<U>(rhs);
 	}
 	template <class T, class U>
 	inline constexpr auto make_carry(const plus_result_t<T, U>& init) const -> plus_result_t<T, U> {
 		return init - init; // Type may not be constructable from literal zero.
 	}
 	template <class T, class U>
-	inline constexpr auto operator()(plus_result_t<T, U>& carry, T&& sum, U&& item) const -> plus_result_t<T, U> {
+	inline constexpr auto operator()(plus_result_t<T, U>& carry, const T& sum, const U& item) const -> plus_result_t<T, U> {
 		const auto y = item - carry;
 		const auto t = sum + y;
 		carry = (t - sum) - y;
@@ -58,80 +58,80 @@ struct plus_compensated<void> : compensated_operator_tag {
 
 template <class T>
 struct multiplies_scalar_left {
-	multiplies_scalar_left(T scalar) : scalar(std::move(scalar)) {}
+	explicit multiplies_scalar_left(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<T, U> {
-		return scalar * arg;
+		return scalar * std::forward<U>(arg);
 	}
 	T scalar;
 };
 
 template <class T>
 struct multiplies_scalar_right {
-	multiplies_scalar_right(T scalar) : scalar(std::move(scalar)) {}
+	explicit multiplies_scalar_right(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<U, T> {
-		return arg * scalar;
+		return std::forward<U>(arg) * scalar;
 	}
 	T scalar;
 };
 
 template <class T>
 struct divides_scalar_left {
-	divides_scalar_left(T scalar) : scalar(std::move(scalar)) {}
+	explicit divides_scalar_left(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<T, U> {
-		return scalar / arg;
+		return scalar / std::forward<U>(arg);
 	}
 	T scalar;
 };
 
 template <class T>
 struct divides_scalar_right {
-	divides_scalar_right(T scalar) : scalar(std::move(scalar)) {}
+	explicit divides_scalar_right(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<T, U> {
-		return arg / scalar;
+		return std::forward<U>(arg) / scalar;
 	}
 	T scalar;
 };
 
 template <class T>
 struct plus_scalar_left {
-	plus_scalar_left(T scalar) : scalar(std::move(scalar)) {}
+	explicit plus_scalar_left(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<T, U> {
-		return scalar + arg;
+		return scalar + std::forward<U>(arg);
 	}
 	T scalar;
 };
 
 template <class T>
 struct plus_scalar_right {
-	plus_scalar_right(T scalar) : scalar(std::move(scalar)) {}
+	explicit plus_scalar_right(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<U, T> {
-		return arg + scalar;
+		return std::forward<U>(arg) + scalar;
 	}
 	T scalar;
 };
 
 template <class T>
 struct minus_scalar_left {
-	minus_scalar_left(T scalar) : scalar(std::move(scalar)) {}
+	explicit minus_scalar_left(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<T, U> {
-		return scalar - arg;
+		return scalar - std::forward<U>(arg);
 	}
 	T scalar;
 };
 
 template <class T>
 struct minus_scalar_right {
-	minus_scalar_right(T scalar) : scalar(std::move(scalar)) {}
+	explicit minus_scalar_right(T scalar) : scalar(std::move(scalar)) {}
 	template <class U>
 	constexpr auto operator()(U&& arg) -> multiplies_result_t<T, U> {
-		return arg - scalar;
+		return std::forward<U>(arg) - scalar;
 	}
 	T scalar;
 };

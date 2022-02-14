@@ -79,8 +79,8 @@ namespace impl {
 	struct multiplies_result_helper {};
 
 	template <class T, class U>
-	struct multiplies_result_helper<std::void_t<decltype(std::declval<const T&>() * std::declval<const U&>())>, T, U> {
-		using type = decltype(std::declval<const T&>() * std::declval<const U&>());
+	struct multiplies_result_helper<std::void_t<decltype(std::declval<T>() * std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() * std::declval<U>());
 	};
 } // namespace impl
 
@@ -97,8 +97,8 @@ namespace impl {
 	struct plus_result_helper {};
 
 	template <class T, class U>
-	struct plus_result_helper<std::void_t<decltype(std::declval<const T&>() + std::declval<const U&>())>, T, U> {
-		using type = decltype(std::declval<const T&>() * std::declval<const U&>());
+	struct plus_result_helper<std::void_t<decltype(std::declval<T>() + std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() + std::declval<U>());
 	};
 } // namespace impl
 
@@ -114,8 +114,8 @@ namespace impl {
 	struct divides_result_helper {};
 
 	template <class T, class U>
-	struct divides_result_helper<std::void_t<decltype(std::declval<const T&>() / std::declval<const U&>())>, T, U> {
-		using type = decltype(std::declval<const T&>() * std::declval<const U&>());
+	struct divides_result_helper<std::void_t<decltype(std::declval<T>() / std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() / std::declval<U>());
 	};
 } // namespace impl
 
@@ -131,8 +131,8 @@ namespace impl {
 	struct minus_result_helper {};
 
 	template <class T, class U>
-	struct minus_result_helper<std::void_t<decltype(std::declval<const T&>() - std::declval<const U&>())>, T, U> {
-		using type = decltype(std::declval<const T&>() * std::declval<const U&>());
+	struct minus_result_helper<std::void_t<decltype(std::declval<T>() - std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() - std::declval<U>());
 	};
 } // namespace impl
 

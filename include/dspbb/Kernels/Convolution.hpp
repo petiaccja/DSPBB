@@ -5,6 +5,7 @@
 #include "Numeric.hpp"
 #include "Utility.hpp"
 
+#include <cassert>
 #include <iterator>
 #include <utility>
 
@@ -25,7 +26,7 @@ struct is_convolution_reduce_vectorized {
 
 template <class T>
 struct convolution_fma {
-	convolution_fma(T multiplier) : multiplier(std::move(multiplier)) {}
+	explicit convolution_fma(T multiplier) : multiplier(std::move(multiplier)) {}
 
 	template <class U1, class U2, std::enable_if_t<!is_simd_type_v<U1> || !is_simd_type_v<U2>, int> = 0>
 	constexpr auto operator()(U1&& accumulator, U2&& increase) const
@@ -98,6 +99,8 @@ void ConvolutionSlide(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Iter
 
 template <class Iter1, class Iter2, class IterOut>
 void ConvolutionReduce(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
+	assert(accumulate == false); // Accumulate is not implemented in this function yet, so better make sure it's not misused.
+
 	const ptrdiff_t len1 = std::distance(first1, last1);
 	const ptrdiff_t len2 = std::distance(first2, last2);
 
@@ -145,6 +148,8 @@ inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff
 
 template <class Iter1, class Iter2, class IterOut>
 void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
+	assert(accumulate == false); // Accumulate is not implemented in this function yet, so better make sure it's not misused.
+
 	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using OutT = typename std::iterator_traits<IterOut>::value_type;
