@@ -202,7 +202,7 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 
 	while (firstOut < lastOut) {
 		const ptrdiff_t iterationWidth = std::min(ptrdiff_t(lastOut - firstOut), vectorWidth);
-		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : OutV{ OutT(0) };
+		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : xsimd::broadcast(OutT(0));
 
 		const ptrdiff_t mFirst = std::max(ptrdiff_t(0), n - len2 + 1);
 		const ptrdiff_t mLast = std::min(len1, n + vectorWidth);
