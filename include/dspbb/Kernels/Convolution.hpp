@@ -28,13 +28,13 @@ template <class T>
 struct convolution_fma {
 	explicit convolution_fma(T multiplier) : multiplier(std::move(multiplier)) {}
 
-	template <class U1, class U2, std::enable_if_t<!is_simd_type_v<U1> || !is_simd_type_v<U2>, int> = 0>
+	template <class U1, class U2, std::enable_if_t<!xsimd::is_batch<std::decay_t<U1>>::value || !xsimd::is_batch<std::decay_t<U2>>::value, int> = 0>
 	constexpr auto operator()(U1&& accumulator, U2&& increase) const
 		-> decltype(math_functions::fma(std::declval<U2>(), std::declval<T>(), std::declval<U1>())) {
 		return math_functions::fma(increase, multiplier, accumulator);
 	}
 
-	template <class U1, class U2, std::enable_if_t<is_simd_type_v<U1> && is_simd_type_v<U2>, int> = 0>
+	template <class U1, class U2, std::enable_if_t<xsimd::is_batch<std::decay_t<U1>>::value && xsimd::is_batch<std::decay_t<U2>>::value, int> = 0>
 	constexpr auto operator()(const U1& accumulator, const U2& increase) const
 		-> decltype(math_functions::fma(std::declval<U2>(), std::declval<xsimd::simd_type<T>>(), std::declval<U1>())) {
 		return math_functions::fma(increase, xsimd::simd_type<T>(multiplier), accumulator);
@@ -145,7 +145,7 @@ inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff
 
 	ptrdiff_t idx = 0;
 	if (count & 1) {
-		const auto v1 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -153,10 +153,10 @@ inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff
 		idx += 1;
 	}
 	if (count & 2) {
-		const auto v1 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v2 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v2 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -164,16 +164,16 @@ inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff
 		idx += 2;
 	}
 	for (; idx < count; idx += 4) {
-		const auto v1 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v2 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v2 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v3 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v3 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v4 = V1{ *first1 } * Load(reinterpret_cast<const V2*>(std::addressof(*first2)));
+		const auto v4 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -181,39 +181,6 @@ inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff
 	}
 
 	return init;
-}
-
-template <class VecT, class T>
-VecT load_partial_front(const T* data, size_t count) {
-	if constexpr (!is_simd_type_v<VecT>) {
-		return *data;
-	}
-	else {
-		constexpr auto vectorWidth = xsimd::simd_batch_traits<VecT>::size;
-		if (count == vectorWidth) {
-			return xsimd::load_unaligned(data);
-		}
-		std::array<T, vectorWidth> extended;
-		std::copy(data, data + count, extended.begin());
-		return xsimd::load_unaligned(extended.data());
-	}
-}
-
-template <class VecT, class T>
-void store_partial_front(T* data, const VecT& v, size_t count) {
-	if constexpr (!is_simd_type_v<VecT>) {
-		*data = v;
-	}
-	else {
-		constexpr auto vectorWidth = xsimd::simd_batch_traits<VecT>::size;
-		if (count == vectorWidth) {
-			xsimd::store_unaligned(data, v);
-			return;
-		}
-		alignas(alignof(VecT)) std::array<T, vectorWidth> extended;
-		xsimd::store_unaligned(extended.data(), v);
-		std::copy(extended.begin(), extended.begin() + count, data);
-	}
 }
 
 template <class Iter1, class Iter2, class IterOut>
@@ -235,7 +202,7 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 
 	while (firstOut < lastOut) {
 		const ptrdiff_t iterationWidth = std::min(ptrdiff_t(lastOut - firstOut), vectorWidth);
-		OutV accumulator = accumulate ? load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : OutV{ OutT(0) };
+		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : OutV{ OutT(0) };
 
 		const ptrdiff_t mFirst = std::max(ptrdiff_t(0), n - len2 + 1);
 		const ptrdiff_t mLast = std::min(len1, n + vectorWidth);
@@ -251,7 +218,7 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastPre, first2 + midOffset, accumulator, mLastMid - mLastPre);
 		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastMid, padding.data() + paddingPostOffset, accumulator, mLastPost - mLastMid);
 
-		store_partial_front(std::addressof(*firstOut), accumulator, iterationWidth);
+		uniform_store_partial_front(std::addressof(*firstOut), accumulator, iterationWidth);
 		n += iterationWidth;
 		firstOut += iterationWidth;
 	}

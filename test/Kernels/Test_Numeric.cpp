@@ -1,6 +1,7 @@
 #include <dspbb/Kernels/Numeric.hpp>
 #include <dspbb/Utility/Numbers.hpp>
 
+#include <array>
 #include <catch2/catch.hpp>
 
 using namespace dspbb;
