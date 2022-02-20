@@ -9,11 +9,10 @@ endif()
 
 target_sources(UnitTest 
 	PRIVATE
-		"ComputeKernels/Test_Kernels.cpp" 
 		"Filtering/FIR/Test_Descs.cpp"
 		"Filtering/IIR/Test_BandTransforms.cpp"
 		"Filtering/IIR/Test_Descs.cpp"
-		"Filtering/IIR/Test_Kernels.cpp"
+		"Kernels/Test_Numeric.cpp"
 		"Filtering/IIR/Test_Realizations.cpp"
 		"Filtering/Test_FilterParameters.cpp"
 		"Filtering/Test_FIR.cpp"
@@ -22,6 +21,8 @@ target_sources(UnitTest
 		"Filtering/Test_Polyphase.cpp"
 		"Filtering/Test_Windowing.cpp"
 		"Generators/Test_Generators.cpp"
+		"Kernels/Test_Convolution.cpp" 
+		"Kernels/Test_Numeric.cpp" 
 		"LTISystems/Test_DiscretizationTransforms.cpp"
 		"LTISystems/Test_Systems.cpp"
 		"Math/Test_Convolution.cpp"

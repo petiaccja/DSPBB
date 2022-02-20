@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../ComputeKernels/VectorizedAlgorithms.hpp"
-#include "../ComputeKernels/VectorizedMathFunctions.hpp"
+#include "../Kernels/Math.hpp"
+#include "../Kernels/Numeric.hpp"
 #include "../Primitives/SignalTraits.hpp"
 #include "../Utility/TypeTraits.hpp"
 
@@ -16,24 +16,24 @@ auto DotProduct(const SignalT& a, const SignalU& b) {
 	assert(a.Size() == b.Size());
 	using T = typename SignalT::value_type;
 	using U = typename SignalU::value_type;
-	using R = product_type_t<T, U>;
+	using R = multiplies_result_t<T, U>;
 	if constexpr (!is_complex_v<U>) {
-		return kernels::InnerProductVectorized(
-			a.Data(),
-			b.Data(),
-			a.Size(),
+		return kernels::InnerProduct(
+			a.begin(),
+			a.end(),
+			b.begin(),
 			R(remove_complex_t<R>(0)),
-			[](const auto& a, const auto& b) -> product_type_t<decltype(a), decltype(b)> { return a * b; },
-			[](const auto& acc, const auto& x) -> sum_type_t<decltype(acc), decltype(x)> { return acc + x; });
+			[](const auto& acc, const auto& x) -> plus_result_t<decltype(acc), decltype(x)> { return acc + x; },
+			[](const auto& a, const auto& b) -> multiplies_result_t<decltype(a), decltype(b)> { return a * b; });
 	}
 	else {
-		return kernels::InnerProductVectorized(
-			a.Data(),
-			b.Data(),
-			a.Size(),
+		return kernels::InnerProduct(
+			a.begin(),
+			a.end(),
+			b.begin(),
 			R(remove_complex_t<R>(0)),
-			[](const auto& a, const auto& b) -> product_type_t<decltype(a), decltype(b)> { return a * kernels::math_functions::conj(b); },
-			[](const auto& acc, const auto& x) -> sum_type_t<decltype(acc), decltype(x)> { return acc + x; });
+			[](const auto& acc, const auto& x) -> plus_result_t<decltype(acc), decltype(x)> { return acc + x; },
+			[](const auto& a, const auto& b) -> multiplies_result_t<decltype(a), decltype(b)> { return a * kernels::math_functions::conj(b); });
 	}
 }
 

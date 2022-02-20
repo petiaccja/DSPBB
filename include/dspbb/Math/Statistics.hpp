@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../ComputeKernels/VectorizedAlgorithms.hpp"
-#include "../ComputeKernels/VectorizedMathFunctions.hpp"
+#include "../Kernels/Math.hpp"
+#include "../Kernels/Numeric.hpp"
 #include "../Primitives/SignalTraits.hpp"
 
 #include <cassert>
@@ -16,7 +16,7 @@ namespace dspbb {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Sum(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return kernels::ReduceVectorized(signal.Data(), signal.Size(), T(0), [](const auto& a, const auto& b) { return a + b; });
+	return kernels::Reduce(signal.begin(), signal.end(), T(0), [](const auto& a, const auto& b) { return a + b; });
 }
 
 
@@ -30,9 +30,9 @@ auto Mean(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto SumSquare(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return kernels::MapReduceVectorized(
-		signal.Data(),
-		signal.Size(),
+	return kernels::TransformReduce(
+		signal.begin(),
+		signal.end(),
 		T(0),
 		[](const auto& a, const auto& b) { return a + b; },
 		[](const auto& a) { return a * a; });
@@ -60,14 +60,14 @@ auto Norm(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Max(const SignalT& signal) {
 	assert(!signal.Empty());
-	return kernels::ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::max(a, b); });
+	return kernels::Reduce(signal.begin(), signal.end(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::max(a, b); });
 }
 
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Min(const SignalT& signal) {
 	assert(!signal.Empty());
-	return kernels::ReduceVectorized(signal.Data(), signal.Size(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::min(a, b); });
+	return kernels::Reduce(signal.begin(), signal.end(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::min(a, b); });
 }
 
 
@@ -93,10 +93,10 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 	switch (k) {
 		case 0: return T(0);
 		case 1: return T(0);
-		case 2: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m2](const auto& a) { return m2(a, mean); }) / den;
-		case 3: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m3](const auto& a) { return m3(a, mean); }) / den;
-		case 4: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, m4](const auto& a) { return m4(a, mean); }) / den;
-		default: return kernels::MapReduceVectorized(signal.Data(), signal.Size(), T(0), add, [mean, mg, k](const auto& a) { return mg(a, mean, k); }) / den;
+		case 2: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, m2](const auto& a) { return m2(a, mean); }) / den;
+		case 3: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, m3](const auto& a) { return m3(a, mean); }) / den;
+		case 4: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, m4](const auto& a) { return m4(a, mean); }) / den;
+		default: return kernels::TransformReduce(signal.begin(), signal.end(), T(0), add, [mean, mg, k](const auto& a) { return mg(a, mean, k); }) / den;
 	}
 }
 
@@ -228,12 +228,12 @@ auto Covariance(const SignalT& a, const SignalU& b, U amean, U bmean) {
 	const auto size = a.Size();
 	using R = decltype(std::declval<typename SignalT::value_type>() * std::declval<typename SignalU::value_type>());
 	return kernels::InnerProduct(
-			   a.Data(),
-			   b.Data(),
-			   size,
+			   a.begin(),
+			   a.end(),
+			   b.begin(),
 			   R(0),
-			   [amean, bmean](const auto& a, const auto& b) { return (a - amean) * (b - bmean); },
-			   [](const auto& acc, const auto& x) { return acc + x; })
+			   [](const auto& acc, const auto& x) { return acc + x; },
+			   [amean, bmean](const auto& a, const auto& b) { return (a - amean) * (b - bmean); })
 		   / R(size);
 }
 

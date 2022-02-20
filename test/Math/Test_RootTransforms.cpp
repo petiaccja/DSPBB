@@ -2,6 +2,7 @@
 
 #include <dspbb/Math/RootTransforms.hpp>
 
+#include <array>
 #include <catch2/catch.hpp>
 #include <complex>
 

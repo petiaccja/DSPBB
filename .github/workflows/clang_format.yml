@@ -22,4 +22,6 @@ jobs:
       - name: Verify formatting
         run: |
           python ./support/run-clang-format.py -r --exclude "*pocketfft*" include
-          python ./support/run-clang-format.py -r --exclude "*pocketfft*" test
+          python ./support/run-clang-format.py -r test
+          python ./support/run-clang-format.py -r --exclude "*RtAudio*" examples
+          python ./support/run-clang-format.py -r benchmark

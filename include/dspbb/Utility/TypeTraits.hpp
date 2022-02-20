@@ -3,6 +3,7 @@
 #include "TypeTraits.hpp"
 
 #include <complex>
+#include <iterator>
 #include <type_traits>
 
 namespace dspbb {
@@ -72,17 +73,81 @@ struct remove_complex : impl::remove_complex_h<std::remove_cv_t<T>> {
 template <class T>
 using remove_complex_t = typename remove_complex<T>::type;
 
-template <class T, class U>
-struct product_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T&>() * std::declval<const U&>())>> {};
+
+namespace impl {
+	template <class VoidT, class T, class U>
+	struct multiplies_result_helper {};
+
+	template <class T, class U>
+	struct multiplies_result_helper<std::void_t<decltype(std::declval<T>() * std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() * std::declval<U>());
+	};
+} // namespace impl
+
 
 template <class T, class U>
-using product_type_t = typename product_type<T, U>::type;
+struct multiplies_result : impl::multiplies_result_helper<void, T, U> {};
 
 template <class T, class U>
-struct sum_type : type_identity_cpp17<std::decay_t<decltype(std::declval<const T&>() + std::declval<const U&>())>> {};
+using multiplies_result_t = typename multiplies_result<T, U>::type;
+
+
+namespace impl {
+	template <class VoidT, class T, class U>
+	struct plus_result_helper {};
+
+	template <class T, class U>
+	struct plus_result_helper<std::void_t<decltype(std::declval<T>() + std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() + std::declval<U>());
+	};
+} // namespace impl
 
 template <class T, class U>
-using sum_type_t = typename sum_type<T, U>::type;
+struct plus_result : impl::plus_result_helper<void, T, U> {};
+
+template <class T, class U>
+using plus_result_t = typename plus_result<T, U>::type;
+
+
+namespace impl {
+	template <class VoidT, class T, class U>
+	struct divides_result_helper {};
+
+	template <class T, class U>
+	struct divides_result_helper<std::void_t<decltype(std::declval<T>() / std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() / std::declval<U>());
+	};
+} // namespace impl
+
+template <class T, class U>
+struct divides_result : impl::divides_result_helper<void, T, U> {};
+
+template <class T, class U>
+using divides_result_t = typename divides_result<T, U>::type;
+
+
+namespace impl {
+	template <class VoidT, class T, class U>
+	struct minus_result_helper {};
+
+	template <class T, class U>
+	struct minus_result_helper<std::void_t<decltype(std::declval<T>() - std::declval<U>())>, T, U> {
+		using type = decltype(std::declval<T>() - std::declval<U>());
+	};
+} // namespace impl
+
+template <class T, class U>
+struct minus_result : impl::minus_result_helper<void, T, U> {};
+
+template <class T, class U>
+using minus_result_t = typename minus_result<T, U>::type;
+
+
+template <class Iter>
+struct is_random_access_iterator : std::is_same<std::random_access_iterator_tag, typename std::iterator_traits<Iter>::iterator_category> {};
+
+template <class Iter>
+constexpr bool is_random_access_iterator_v = is_random_access_iterator<Iter>::value;
 
 
 } // namespace dspbb

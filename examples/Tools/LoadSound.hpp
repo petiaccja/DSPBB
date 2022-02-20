@@ -1,7 +1,8 @@
 #pragma once
 
-#include <filesystem>
 #include <dspbb/Primitives/Signal.hpp>
+
+#include <filesystem>
 
 struct StereoSound {
 	dspbb::Signal<float> leftChannel;

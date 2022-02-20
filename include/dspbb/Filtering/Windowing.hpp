@@ -188,8 +188,8 @@ void DolphChebyshevWindow(SignalR&& out, V attenuation) {
 
 	Ifft(out, spectrum);
 	FftShift(out, out);
-	const T normalization = kernels::MapReduceVectorized(
-		out.Data(), out.Size(), T(0),
+	const T normalization = kernels::TransformReduce(
+		out.begin(), out.end(), T(0),
 		[](const auto& acc, const auto& v) { return kernels::math_functions::max(acc, v); },
 		[](const auto& v) { return kernels::math_functions::abs(v); });
 	out *= T(1) / normalization;

@@ -3,6 +3,8 @@
 #include "../Math/RootTransforms.hpp"
 #include "Systems.hpp"
 
+#include <array>
+#include <complex>
 #include <optional>
 #include <stdexcept>
 

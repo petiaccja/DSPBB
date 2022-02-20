@@ -2,6 +2,7 @@
 
 #include <dspbb/LTISystems/Systems.hpp>
 
+#include <array>
 #include <catch2/catch.hpp>
 
 

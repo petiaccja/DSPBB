@@ -4,6 +4,7 @@
 #include "../Utility/Numbers.hpp"
 #include "../Utility/TypeTraits.hpp"
 
+#include <array>
 #include <cmath>
 #include <complex>
 #include <limits>

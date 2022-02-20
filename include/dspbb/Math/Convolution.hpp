@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ComputeKernels/Convolution.hpp"
+#include "../Kernels/Convolution.hpp"
 #include "../Math/Convolution.hpp"
 #include "../Math/DotProduct.hpp"
 #include "../Primitives/Signal.hpp"
@@ -54,8 +54,7 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offse
 		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	}
 
-	const size_t length = out.Size();
-	kernels::Convolution(out.Data(), u.Data(), v.Data(), u.Size(), v.Size(), offset, length, clearOut);
+	kernels::ConvolutionSlide(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), offset, !clearOut);
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
@@ -83,7 +82,7 @@ auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t lengt
 	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using U = typename signal_traits<std::decay_t<SignalU>>::type;
-	using R = product_type_t<T, U>;
+	using R = multiplies_result_t<T, U>;
 
 	BasicSignal<R, Domain> out(length, R(0));
 	Convolution(out, u, v, offset, false);
