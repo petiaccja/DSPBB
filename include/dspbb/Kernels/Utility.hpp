@@ -12,7 +12,7 @@
 namespace dspbb::kernels {
 
 template <class T, class U>
-inline T uniform_load_unaligned(const U* mem) {
+T uniform_load_unaligned(const U* mem) {
 	if constexpr (xsimd::is_batch<std::decay_t<T>>::value) {
 		return T::load_unaligned(mem);
 	}
@@ -22,7 +22,7 @@ inline T uniform_load_unaligned(const U* mem) {
 }
 
 template <class T, class U>
-inline void uniform_store_unaligned(U* mem, const T& value) {
+void uniform_store_unaligned(U* mem, const T& value) {
 	if constexpr (xsimd::is_batch<std::decay_t<T>>::value) {
 		value.store_unaligned(mem);
 	}
@@ -32,7 +32,7 @@ inline void uniform_store_unaligned(U* mem, const T& value) {
 }
 
 template <class VecT, class T>
-inline VecT uniform_load_partial_front(const T* data, size_t count) {
+VecT uniform_load_partial_front(const T* data, size_t count) {
 	if constexpr (!xsimd::is_batch<std::decay_t<VecT>>::value) {
 		return *data;
 	}
@@ -48,7 +48,7 @@ inline VecT uniform_load_partial_front(const T* data, size_t count) {
 }
 
 template <class VecT, class T>
-inline void uniform_store_partial_front(T* data, const VecT& v, size_t count) {
+void uniform_store_partial_front(T* data, const VecT& v, size_t count) {
 	if constexpr (!xsimd::is_batch<std::decay_t<VecT>>::value) {
 		*data = v;
 	}

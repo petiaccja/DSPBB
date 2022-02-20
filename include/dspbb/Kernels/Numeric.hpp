@@ -99,17 +99,17 @@ struct is_inner_product_vectorized {
 //------------------------------------------------------------------------------
 
 template <class Arg1, class Arg2, class CarryT, class Operator>
-inline auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::template make_carry<Arg1, Arg2>), Operator*, CarryT> {
+auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::template make_carry<Arg1, Arg2>), Operator*, CarryT> {
 	return op.template make_carry<Arg1, Arg2>(init);
 }
 
 template <class Arg1, class Arg2, class CarryT, class Operator>
-inline auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::make_carry), Operator*, CarryT> {
+auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::make_carry), Operator*, CarryT> {
 	return op.make_carry(init);
 }
 
 template <class Arg1, class Arg2, class CarryT, class Operator>
-inline auto make_compensation_carry(const Operator&, const CarryT&) -> std::enable_if_t<!is_operator_compensated_v<Operator>, compensated_operator_tag> {
+auto make_compensation_carry(const Operator&, const CarryT&) -> std::enable_if_t<!is_operator_compensated_v<Operator>, compensated_operator_tag> {
 	return compensated_operator_tag{}; // Return a useless tag just for the sake of compiling in generic contexts.
 }
 
@@ -118,7 +118,7 @@ inline auto make_compensation_carry(const Operator&, const CarryT&) -> std::enab
 //------------------------------------------------------------------------------
 
 template <class InputIter, class OutputIter, class UnaryOp>
-inline auto Transform(InputIter first, InputIter last, OutputIter out, UnaryOp unaryOp)
+auto Transform(InputIter first, InputIter last, OutputIter out, UnaryOp unaryOp)
 	-> std::enable_if_t<is_random_access_iterator_v<InputIter> && is_random_access_iterator_v<OutputIter>, OutputIter> {
 	using T = typename std::iterator_traits<InputIter>::value_type;
 	using U = typename std::iterator_traits<OutputIter>::value_type;
@@ -146,7 +146,7 @@ inline auto Transform(InputIter first, InputIter last, OutputIter out, UnaryOp u
 }
 
 template <class InputIter1, class InputIter2, class OutputIter, class BinaryOp>
-inline auto Transform(InputIter1 first1, InputIter1 last1, InputIter2 first2, OutputIter out, BinaryOp binaryOp)
+auto Transform(InputIter1 first1, InputIter1 last1, InputIter2 first2, OutputIter out, BinaryOp binaryOp)
 	-> std::enable_if_t<is_random_access_iterator_v<InputIter1> && is_random_access_iterator_v<InputIter2> && is_random_access_iterator_v<OutputIter>, OutputIter> {
 	using T1 = typename std::iterator_traits<InputIter1>::value_type;
 	using T2 = typename std::iterator_traits<InputIter2>::value_type;
@@ -182,7 +182,7 @@ inline auto Transform(InputIter1 first1, InputIter1 last1, InputIter2 first2, Ou
 //------------------------------------------------------------------------------
 
 template <class T, class Arch, class Init, class ReduceOp>
-inline Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, ReduceOp reduceOp) {
+Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, ReduceOp reduceOp) {
 	constexpr size_t batchSize = xsimd::revert_simd_traits<xsimd::batch<T, Arch>>::size;
 	alignas(alignof(xsimd::batch<T, Arch>)) std::array<T, batchSize> elements;
 	batch.store_unaligned(elements.data());
@@ -190,17 +190,17 @@ inline Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, ReduceOp 
 }
 
 template <class T, class U, class Arch, class Init>
-inline Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, plus_compensated<U>) {
+Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, plus_compensated<U>) {
 	return init + xsimd::hadd(batch);
 }
 
 template <class T, class U, class Arch, class Init>
-inline Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, std::plus<U>) {
+Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, std::plus<U>) {
 	return init + xsimd::hadd(batch);
 }
 
 template <class T, class Init, class ReduceOp>
-inline auto ReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp) -> Init {
+auto ReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp) -> Init {
 	using V = std::conditional_t<xsimd::is_batch<Init>::value, xsimd::simd_type<T>, T>;
 	constexpr size_t stride = xsimd::is_batch<Init>::value ? xsimd::revert_simd_traits<Init>::size : 1;
 	const size_t count = std::distance(first, last) / stride;
@@ -280,7 +280,7 @@ auto Reduce(Iter first, Iter last, Init init, ReduceOp reduceOp)
 
 
 template <class T, class Init, class ReduceOp, class TransformOp>
-inline auto TransformReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp, TransformOp transformOp) -> Init {
+auto TransformReduceExplicit(const T* first, const T* last, const Init& init, ReduceOp reduceOp, TransformOp transformOp) -> Init {
 	using V = std::conditional_t<xsimd::is_batch<Init>::value, xsimd::simd_type<T>, T>;
 	constexpr size_t stride = xsimd::is_batch<Init>::value ? xsimd::revert_simd_traits<Init>::size : 1;
 	const size_t count = std::distance(first, last) / stride;
@@ -359,7 +359,7 @@ auto TransformReduce(Iter first, Iter last, Init init, ReduceOp reduceOp, Transf
 
 
 template <class T1, class T2, class Init, class ReduceOp, class ProductOp>
-inline auto InnerProductExplicit(const T1* first1, const T1* last1, const T2* first2, const Init& init, ReduceOp reduceOp, ProductOp productOp) -> Init {
+auto InnerProductExplicit(const T1* first1, const T1* last1, const T2* first2, const Init& init, ReduceOp reduceOp, ProductOp productOp) -> Init {
 	using V1 = std::conditional_t<xsimd::is_batch<Init>::value, xsimd::simd_type<T1>, T1>;
 	using V2 = std::conditional_t<xsimd::is_batch<Init>::value, xsimd::simd_type<T2>, T2>;
 	constexpr size_t stride = xsimd::is_batch<Init>::value ? xsimd::revert_simd_traits<Init>::size : 1;

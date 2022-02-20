@@ -134,7 +134,7 @@ void ConvolutionReduce(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Ite
 
 
 template <bool Vectorize, class Iter1, class Iter2, class OutV>
-inline OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count) {
+OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count) {
 	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using V1 = std::conditional_t<Vectorize, xsimd::simd_type<T1>, T1>;

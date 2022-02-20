@@ -28,13 +28,13 @@ T make_zero() {
 
 template <class T = void>
 struct plus_compensated : compensated_operator_tag {
-	inline constexpr T operator()(const T& lhs, const T& rhs) const {
+	constexpr T operator()(const T& lhs, const T& rhs) const {
 		return lhs + rhs;
 	}
-	inline constexpr T make_carry(const T&) const {
+	constexpr T make_carry(const T&) const {
 		return make_zero<T>();
 	}
-	inline constexpr T operator()(T& carry, const T& sum, const T& item) const {
+	constexpr T operator()(T& carry, const T& sum, const T& item) const {
 		const T y = item - carry;
 		const T t = sum + y;
 		carry = (t - sum) - y;
@@ -46,15 +46,15 @@ struct plus_compensated : compensated_operator_tag {
 template <>
 struct plus_compensated<void> : compensated_operator_tag {
 	template <class T, class U>
-	inline constexpr auto operator()(T&& lhs, U&& rhs) const -> plus_result_t<T, U> {
+	constexpr auto operator()(T&& lhs, U&& rhs) const -> plus_result_t<T, U> {
 		return std::forward<T>(lhs) + std::forward<U>(rhs);
 	}
 	template <class T, class U>
-	inline constexpr auto make_carry(const plus_result_t<T, U>&) const -> plus_result_t<T, U> {
+	constexpr auto make_carry(const plus_result_t<T, U>&) const -> plus_result_t<T, U> {
 		return make_zero<T>();
 	}
 	template <class T, class U>
-	inline constexpr auto operator()(plus_result_t<T, U>& carry, const T& sum, const U& item) const -> plus_result_t<T, U> {
+	constexpr auto operator()(plus_result_t<T, U>& carry, const T& sum, const U& item) const -> plus_result_t<T, U> {
 		const auto y = item - carry;
 		const auto t = sum + y;
 		carry = (t - sum) - y;
