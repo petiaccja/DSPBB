@@ -18,18 +18,35 @@ option(BUILD_BENCHMARKS "Include or exclude benchmarks in the project." ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (ENABLE_LLVM_COV)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping -mllvm -enable-name-compression=false")
+		add_compile_options("-fprofile-instr-generate" "-fcoverage-mapping" "-mllvm" "-enable-name-compression=false")
+		add_link_options("-fprofile-instr-generate" "-fcoverage-mapping")
 	endif()
 	if (ENABLE_LLVM_ADDRESS_SANITIZER)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+		add_compile_options("-fsanitize=address")
+		add_link_options("-fsanitize=address")
 	endif()
 	if (ENABLE_LLVM_MEMORY_SANITIZER)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory")
+		add_compile_options("-fsanitize=memory")
+		add_link_options("-fsanitize=memory")
+	endif()
+	if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
+		set(RELWITHDEBINFO_OPTIONS "/Ob2")
+		set(RELWITHDEBINFO_REMOVE "/Ob1")
+		foreach(option ${RELWITHDEBINFO_REMOVE})
+			string(REPLACE ${option} "" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+		endforeach()
+		add_compile_options("$<$<CONFIG:RELWITHDEBINFO>:${RELEASE_OPTIONS}>")
 	endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+	add_compile_options("/MP")
+	set(RELWITHDEBINFO_OPTIONS "/Ob2")
+	set(RELWITHDEBINFO_REMOVE "/Ob1")
+	foreach(option ${RELWITHDEBINFO_REMOVE})
+		string(REPLACE ${option} "" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+	endforeach()
+	add_compile_options("$<$<CONFIG:RELWITHDEBINFO>:${RELEASE_OPTIONS}>")
 endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -40,7 +57,7 @@ link_libraries(Threads::Threads)
 include(conan.cmake)
 conan_cmake_configure(
 	REQUIRES
-		xsimd/7.4.9
+		xsimd/8.0.3
 		eigen/3.4.0
 		catch2/2.13.4
 	GENERATORS cmake_find_package

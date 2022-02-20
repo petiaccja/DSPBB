@@ -10,8 +10,6 @@
 	#pragma warning(pop)
 #endif
 
-#include "Utility.hpp"
-
 namespace dspbb::kernels::math_functions {
 
 // Exponential
@@ -91,30 +89,30 @@ using xsimd::tgamma;
 
 // FMA
 namespace impl {
-	template <class V, std::enable_if_t<is_simd_type_v<V> && std::is_scalar_v<typename xsimd::simd_batch_traits<V>::value_type>, int> = 0>
-	inline auto fma(const V& a, const V& b, const V& c, std::nullptr_t)
+	template <class V, std::enable_if_t<xsimd::is_batch<V>::value && std::is_scalar_v<typename xsimd::revert_simd_traits<V>::value_type>, int> = 0>
+	auto fma(const V& a, const V& b, const V& c, std::nullptr_t)
 		-> decltype(xsimd::fma(std::declval<V>(), std::declval<V>(), std::declval<V>())) {
 		return xsimd::fma(a, b, c);
 	}
 
 	template <class T1, class T2, class T3, class CT = decltype(std::declval<T1>() * std::declval<T2>() + std::declval<T3>())>
-	inline auto fma(const T1& a, const T2& b, const T3& c, const void*) -> CT {
+	auto fma(const T1& a, const T2& b, const T3& c, const void*) -> CT {
 		return a * b + c;
 	}
 } // namespace impl
 
 template <class T1, class T2, class T3>
-inline auto fma(const T1& a, const T2& b, const T3& c) -> decltype(impl::fma(std::declval<T1>(), std::declval<T2>(), std::declval<T3>(), nullptr)) {
+auto fma(const T1& a, const T2& b, const T3& c) -> decltype(impl::fma(std::declval<T1>(), std::declval<T2>(), std::declval<T3>(), nullptr)) {
 	return impl::fma(a, b, c, nullptr);
 }
 
 // Misc
 namespace impl {
-	template <class T, std::enable_if_t<(xsimd::simd_batch_traits<T>::size > 1), int> = 0>
+	template <class T, std::enable_if_t<(xsimd::revert_simd_traits<T>::size > 1), int> = 0>
 	decltype(auto) min(const T& a, const T& b, int) {
 		return xsimd::min(a, b);
 	}
-	template <class T, std::enable_if_t<(xsimd::simd_batch_traits<T>::size > 1), int> = 0>
+	template <class T, std::enable_if_t<(xsimd::revert_simd_traits<T>::size > 1), int> = 0>
 	decltype(auto) max(const T& a, const T& b, int) {
 		return xsimd::max(a, b);
 	}

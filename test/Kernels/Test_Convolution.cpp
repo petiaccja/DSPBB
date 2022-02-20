@@ -1,5 +1,6 @@
 #include <dspbb/Kernels/Convolution.hpp>
 
+#include <array>
 #include <catch2/catch.hpp>
 
 using namespace dspbb;
