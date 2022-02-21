@@ -66,7 +66,8 @@ void ConvolutionSlide(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Iter
 	const ptrdiff_t len2 = std::distance(first2, last2);
 	const ptrdiff_t lenOut = std::distance(firstOut, lastOut);
 
-	if (std::min(len1, len2) > 1024) {
+	// We want input #2 to be at least say 512 for vectorization, but not more to keep it in L1 cache.
+	if (std::min(len1, len2) > 512) {
 		if (len1 < len2) {
 			return ConvolutionSlide(first2, last2, first1, last1, firstOut, lastOut, n, accumulate);
 		}
@@ -133,19 +134,19 @@ void ConvolutionReduce(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Ite
 }
 
 
-template <bool Vectorize, class Iter1, class Iter2, class OutV>
-OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count) {
+template <bool Vectorize, class Iter1, class Iter2, class OutV, class ReduceOp>
+OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count, ReduceOp reduceOp) {
 	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using V1 = std::conditional_t<Vectorize, xsimd::simd_type<T1>, T1>;
 	using V2 = std::conditional_t<Vectorize, xsimd::simd_type<T2>, T2>;
 
-	plus_compensated op;
-	auto carry = op.make_carry<V1, V2>(init);
+
+	[[maybe_unused]] auto carry = make_compensation_carry<OutV, multiplies_result_t<V1, V2>>(reduceOp, init);
 
 	ptrdiff_t idx = 0;
 	if (count & 1) {
-		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v1 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -153,10 +154,10 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 		idx += 1;
 	}
 	if (count & 2) {
-		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v1 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v2 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v2 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -164,27 +165,32 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 		idx += 2;
 	}
 	for (; idx < count; idx += 4) {
-		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v1 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v2 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v2 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v3 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v3 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v4 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v4 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
-		init = op(carry, init, (v1 + v2) + (v3 + v4));
+		if constexpr (is_operator_compensated_v<ReduceOp>) {
+			init = reduceOp(carry, init, (v1 + v2) + (v3 + v4));
+		}
+		else {
+			init = reduceOp(init, (v1 + v2) + (v3 + v4));
+		}
 	}
 
 	return init;
 }
 
-template <class Iter1, class Iter2, class IterOut>
-void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
+template <class Iter1, class Iter2, class IterOut, class ReduceOp = plus_compensated<>>
+void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false, ReduceOp reduceOp = plus_compensated<>{}) {
 	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using OutT = typename std::iterator_traits<IterOut>::value_type;
@@ -195,6 +201,12 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 
 	const ptrdiff_t len1 = std::distance(first1, last1);
 	const ptrdiff_t len2 = std::distance(first2, last2);
+
+	// It's better to have input #2 to be longer because then there will be less padding overall.
+	if (len2 < len1) {
+		return ConvolutionReduceVec(first2, last2, first1, last1, firstOut, lastOut, n, accumulate, reduceOp);
+	}
+
 	std::array<T2, vectorWidth * 4 - 2> padding;
 	std::fill(padding.begin(), padding.end(), T2(0));
 	std::copy(first2, first2 + std::min(vectorWidth, len2), padding.begin() + vectorWidth - 1);
@@ -202,7 +214,7 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 
 	while (firstOut < lastOut) {
 		const ptrdiff_t iterationWidth = std::min(ptrdiff_t(lastOut - firstOut), vectorWidth);
-		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : xsimd::broadcast(OutT(0));
+		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : OutV(OutT(0));
 
 		const ptrdiff_t mFirst = std::max(ptrdiff_t(0), n - len2 + 1);
 		const ptrdiff_t mLast = std::min(len1, n + vectorWidth);
@@ -214,9 +226,9 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 		const ptrdiff_t paddingPreOffset = ptrdiff_t(padding.size()) - vectorWidth + 1 + n - mFirst - len2;
 		const ptrdiff_t midOffset = std::max(ptrdiff_t(0), n - mLastPre);
 		const ptrdiff_t paddingPostOffset = n - mLastMid + vectorWidth - 1;
-		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mFirst, padding.data() + paddingPreOffset, accumulator, mLastPre - mFirst);
-		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastPre, first2 + midOffset, accumulator, mLastMid - mLastPre);
-		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastMid, padding.data() + paddingPostOffset, accumulator, mLastPost - mLastMid);
+		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mFirst, padding.data() + paddingPreOffset, accumulator, mLastPre - mFirst, reduceOp);
+		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastPre, first2 + midOffset, accumulator, mLastMid - mLastPre, reduceOp);
+		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastMid, padding.data() + paddingPostOffset, accumulator, mLastPost - mLastMid, reduceOp);
 
 		uniform_store_partial_front(std::addressof(*firstOut), accumulator, iterationWidth);
 		n += iterationWidth;

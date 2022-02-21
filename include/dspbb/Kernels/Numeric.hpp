@@ -95,25 +95,6 @@ struct is_inner_product_vectorized {
 };
 
 //------------------------------------------------------------------------------
-// Utility
-//------------------------------------------------------------------------------
-
-template <class Arg1, class Arg2, class CarryT, class Operator>
-auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::template make_carry<Arg1, Arg2>), Operator*, CarryT> {
-	return op.template make_carry<Arg1, Arg2>(init);
-}
-
-template <class Arg1, class Arg2, class CarryT, class Operator>
-auto make_compensation_carry(const Operator& op, const CarryT& init) -> std::invoke_result_t<decltype(&Operator::make_carry), Operator*, CarryT> {
-	return op.make_carry(init);
-}
-
-template <class Arg1, class Arg2, class CarryT, class Operator>
-auto make_compensation_carry(const Operator&, const CarryT&) -> std::enable_if_t<!is_operator_compensated_v<Operator>, compensated_operator_tag> {
-	return compensated_operator_tag{}; // Return a useless tag just for the sake of compiling in generic contexts.
-}
-
-//------------------------------------------------------------------------------
 // Transform.
 //------------------------------------------------------------------------------
 

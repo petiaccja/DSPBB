@@ -54,7 +54,14 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offse
 		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	}
 
-	kernels::ConvolutionSlide(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), offset, !clearOut);
+	// Slided is faster, but it's accuracy degrades for large input and a compensated reduction is better.
+	const size_t shorterSize = std::min(u.Length(), v.Length());
+	if (shorterSize <= 32) {
+		kernels::ConvolutionSlide(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), offset, !clearOut);
+	}
+	else {
+		kernels::ConvolutionReduceVec(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), offset, !clearOut, plus_compensated<>{});
+	}
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
