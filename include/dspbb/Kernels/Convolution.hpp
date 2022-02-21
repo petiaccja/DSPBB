@@ -146,7 +146,7 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 
 	ptrdiff_t idx = 0;
 	if (count & 1) {
-		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v1 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -154,10 +154,10 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 		idx += 1;
 	}
 	if (count & 2) {
-		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v1 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v2 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v2 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -165,16 +165,16 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 		idx += 2;
 	}
 	for (; idx < count; idx += 4) {
-		const auto v1 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v1 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v2 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v2 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v3 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v3 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
-		const auto v4 = xsimd::broadcast(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
+		const auto v4 = V1(*first1) * uniform_load_unaligned<V2>(std::addressof(*first2));
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
@@ -214,7 +214,7 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 
 	while (firstOut < lastOut) {
 		const ptrdiff_t iterationWidth = std::min(ptrdiff_t(lastOut - firstOut), vectorWidth);
-		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : xsimd::broadcast(OutT(0));
+		OutV accumulator = accumulate ? uniform_load_partial_front<OutV>(std::addressof(*firstOut), iterationWidth) : OutV(OutT(0));
 
 		const ptrdiff_t mFirst = std::max(ptrdiff_t(0), n - len2 + 1);
 		const ptrdiff_t mLast = std::min(len1, n + vectorWidth);
