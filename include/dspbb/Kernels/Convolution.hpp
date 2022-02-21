@@ -141,7 +141,7 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 	using V1 = std::conditional_t<Vectorize, xsimd::simd_type<T1>, T1>;
 	using V2 = std::conditional_t<Vectorize, xsimd::simd_type<T2>, T2>;
 
-	
+
 	[[maybe_unused]] auto carry = make_compensation_carry<OutV, multiplies_result_t<V1, V2>>(reduceOp, init);
 
 	ptrdiff_t idx = 0;
