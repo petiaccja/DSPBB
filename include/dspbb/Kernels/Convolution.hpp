@@ -66,7 +66,8 @@ void ConvolutionSlide(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Iter
 	const ptrdiff_t len2 = std::distance(first2, last2);
 	const ptrdiff_t lenOut = std::distance(firstOut, lastOut);
 
-	if (std::min(len1, len2) > 1024) {
+	// We want input #2 to be at least say 512 for vectorization, but not more to keep it in L1 cache.
+	if (std::min(len1, len2) > 512) {
 		if (len1 < len2) {
 			return ConvolutionSlide(first2, last2, first1, last1, firstOut, lastOut, n, accumulate);
 		}
@@ -200,6 +201,12 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 
 	const ptrdiff_t len1 = std::distance(first1, last1);
 	const ptrdiff_t len2 = std::distance(first2, last2);
+
+	// It's better to have input #2 to be longer because then there will be less padding overall.
+	if (len2 < len1) {
+		return ConvolutionReduceVec(first2, last2, first1, last1, firstOut, lastOut, n, accumulate, reduceOp);
+	}
+
 	std::array<T2, vectorWidth * 4 - 2> padding;
 	std::fill(padding.begin(), padding.end(), T2(0));
 	std::copy(first2, first2 + std::min(vectorWidth, len2), padding.begin() + vectorWidth - 1);
