@@ -103,8 +103,13 @@ BENCHMARK_F(ConvolutionCache, slide, FixtureCache, 25, 500) {
 	celero::DoNotOptimizeAway(out.front());
 }
 
-BENCHMARK_F(ConvolutionCache, reduce, FixtureCache, 25, 500) {
-	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0);
+BENCHMARK_F(ConvolutionCache, reduce_comp, FixtureCache, 25, 500) {
+	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0, false, plus_compensated<>{});
+	celero::DoNotOptimizeAway(out.front());
+}
+
+BENCHMARK_F(ConvolutionCache, reduce_fast, FixtureCache, 25, 500) {
+	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0, false, std::plus<>{});
 	celero::DoNotOptimizeAway(out.front());
 }
 
@@ -120,7 +125,12 @@ BENCHMARK_F(ConvolutionLarge, slide, FixtureLarge, 25, 500) {
 	celero::DoNotOptimizeAway(out.front());
 }
 
-BENCHMARK_F(ConvolutionLarge, reduce, FixtureLarge, 25, 500) {
-	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0);
+BENCHMARK_F(ConvolutionLarge, reduce_comp, FixtureLarge, 25, 500) {
+	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0, false, plus_compensated<>{});
+	celero::DoNotOptimizeAway(out.front());
+}
+
+BENCHMARK_F(ConvolutionLarge, reduce_fast, FixtureLarge, 25, 500) {
+	kernels::ConvolutionReduceVec(signal.begin(), signal.end(), filter.begin(), filter.end(), out.begin(), out.end(), 0, false, std::plus<>{});
 	celero::DoNotOptimizeAway(out.front());
 }

@@ -133,15 +133,15 @@ void ConvolutionReduce(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, Ite
 }
 
 
-template <bool Vectorize, class Iter1, class Iter2, class OutV>
-OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count) {
+template <bool Vectorize, class Iter1, class Iter2, class OutV, class ReduceOp>
+OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t count, ReduceOp reduceOp) {
 	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using V1 = std::conditional_t<Vectorize, xsimd::simd_type<T1>, T1>;
 	using V2 = std::conditional_t<Vectorize, xsimd::simd_type<T2>, T2>;
 
-	plus_compensated op;
-	auto carry = op.make_carry<V1, V2>(init);
+	
+	[[maybe_unused]] auto carry = make_compensation_carry<OutV, multiplies_result_t<V1, V2>>(reduceOp, init);
 
 	ptrdiff_t idx = 0;
 	if (count & 1) {
@@ -177,14 +177,19 @@ OutV ConvolutionReduceLoop(Iter1 first1, Iter2 first2, OutV init, ptrdiff_t coun
 		std::advance(first1, 1);
 		std::advance(first2, -1);
 
-		init = op(carry, init, (v1 + v2) + (v3 + v4));
+		if constexpr (is_operator_compensated_v<ReduceOp>) {
+			init = reduceOp(carry, init, (v1 + v2) + (v3 + v4));
+		}
+		else {
+			init = reduceOp(init, (v1 + v2) + (v3 + v4));
+		}
 	}
 
 	return init;
 }
 
-template <class Iter1, class Iter2, class IterOut>
-void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false) {
+template <class Iter1, class Iter2, class IterOut, class ReduceOp = plus_compensated<>>
+void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, IterOut firstOut, IterOut lastOut, ptrdiff_t n, bool accumulate = false, ReduceOp reduceOp = plus_compensated<>{}) {
 	using T1 = typename std::iterator_traits<Iter1>::value_type;
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 	using OutT = typename std::iterator_traits<IterOut>::value_type;
@@ -214,9 +219,9 @@ void ConvolutionReduceVec(Iter1 first1, Iter1 last1, Iter2 first2, Iter2 last2, 
 		const ptrdiff_t paddingPreOffset = ptrdiff_t(padding.size()) - vectorWidth + 1 + n - mFirst - len2;
 		const ptrdiff_t midOffset = std::max(ptrdiff_t(0), n - mLastPre);
 		const ptrdiff_t paddingPostOffset = n - mLastMid + vectorWidth - 1;
-		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mFirst, padding.data() + paddingPreOffset, accumulator, mLastPre - mFirst);
-		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastPre, first2 + midOffset, accumulator, mLastMid - mLastPre);
-		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastMid, padding.data() + paddingPostOffset, accumulator, mLastPost - mLastMid);
+		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mFirst, padding.data() + paddingPreOffset, accumulator, mLastPre - mFirst, reduceOp);
+		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastPre, first2 + midOffset, accumulator, mLastMid - mLastPre, reduceOp);
+		accumulator = ConvolutionReduceLoop<isVectorized>(first1 + mLastMid, padding.data() + paddingPostOffset, accumulator, mLastPost - mLastMid, reduceOp);
 
 		uniform_store_partial_front(std::addressof(*firstOut), accumulator, iterationWidth);
 		n += iterationWidth;

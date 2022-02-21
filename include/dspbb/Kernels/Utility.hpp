@@ -9,6 +9,8 @@
 	#pragma warning(pop)
 #endif
 
+#include <type_traits>
+
 namespace dspbb::kernels {
 
 template <class T, class U>
@@ -63,6 +65,5 @@ void uniform_store_partial_front(T* data, const VecT& v, size_t count) {
 		std::copy(extended.begin(), extended.begin() + count, data);
 	}
 }
-
 
 } // namespace dspbb::kernels
