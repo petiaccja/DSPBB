@@ -241,12 +241,12 @@ T CascadedForm<T>::Feed(const InputT& input, const CascadedBiquad<SystemT>& sys)
 			const auto& nextSection = m_sections[i + 1];
 			const auto& sysSectionNum = sys.sections[i].numerator;
 			const auto& sysSectionDen = sys.sections[i].denominator;
-			
+
 			const auto fwSum = currentSection[0] * sysSectionNum[0]
-								+ currentSection[1] * sysSectionNum[1]
-								+ currentSection[2] * sysSectionNum[2];
+							   + currentSection[1] * sysSectionNum[1]
+							   + currentSection[2] * sysSectionNum[2];
 			const auto recSum = nextSection[1] * sysSectionDen[0]
-								 + nextSection[2] * sysSectionDen[1];
+								+ nextSection[2] * sysSectionDen[1];
 			output = static_cast<T>(fwSum - recSum);
 		}
 	}
