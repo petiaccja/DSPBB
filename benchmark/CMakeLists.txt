@@ -5,6 +5,7 @@ target_sources(Benchmark
     PRIVATE
 		"Bench_Convolution.cpp"
         "Bench_VectorizedAlgorithms.cpp"
+        "Bench_ApplyFilter.cpp"
 )
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/benchmark)
