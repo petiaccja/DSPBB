@@ -1,0 +1,136 @@
+# Features
+
+This is a detailed list of all current and planned features of the library. You can search through the list to see if it suits your needs.
+
+✔️ Supported<br>
+❔️ Partially suppported / unknown<br>
+❌️ Not supported but planned
+
+## Design
+
+- No dependencies
+  - ❌️ XSimd is optional (needed for vectorization)
+  - ❌️ Eigen is optional (needed for least-squares FIR design)
+  - ✔️ PocketFFT included
+- Vectorization
+  - ✔️ Most code is vectorized
+- Embedded-friendly
+  - ❔️ Avoid memory allocation (partial)
+  - ❌️ Allocator awareness
+  - ✔️ No recursion (3rd parties not verified)
+
+## Functionality
+
+- Primitives:
+  - ✔️ Signal
+  - ✔️ SignalView
+  - ✔️ Arithmetic operators
+- Generators
+  - Waveform
+    - ✔️ Sine
+    - ✔️ Square
+    - ✔️ Sawtooth (fw, bw, tri, any)
+    - ✔️ PWM
+    - ✔️ Chirp/Sweep (for all the above types)
+  - Space
+    - ✔️ Linspace
+    - ✔️ Logspace
+- Mathematical functions
+  - ✔️ Complex (Abs, Arg, Real, Imag, Conj)
+  - ✔️ Trigonometric (Sin, Cos, Tan x inverse)
+  - ✔️ Hyperbolic (Sinh, Cosh, Tanh x inverse)
+  - ✔️ Exponential (Exp, Log, Log2, Log10)
+  - ✔️ Polynomial (Pow, Sqrt, Cbrt)
+  - ✔️ Erf and gamma
+- Vector math basics
+  - ✔️ Dot product
+  - ✔️ Norm (sqrt(SumSquare))
+- Statistics
+  - ✔️ Sum
+  - ✔️ Mean
+  - ✔️ SumSquare
+  - ✔️ MeanSquare
+  - ✔️ RootMeanSquare
+  - ✔️ Min/Max
+  - ✔️ Central moments
+  - ✔️ Standardized moments
+  - ✔️ Standard deviation (popultion & corrected)
+  - ✔️ Variance (popultion & corrected)
+  - ✔️ Skewness (popultion & corrected)
+  - ✔️ Kurtosis (popultion & corrected)
+  - ✔️ Covariance (popultion & corrected)
+  - ✔️ Correlation
+- Filtering
+  - Convolution
+    - ✔️ Regular
+    - ✔️ Overlap-add
+  - FFT
+    - ✔️ R->C, C->C, C->C, C->R
+    - ✔️ FFT shift
+    - ✔️ Bin <-> Frequency conversions
+  - FIR filtering
+    - Methods:
+      - ✔️ Window method
+      - ✔️ Least-squares method
+      - ❌️ Parks-McClellan method
+    - Types:
+      - ✔️ Low-pass
+      - ✔️ High-pass
+      - ✔️ Band-pass
+      - ✔️ Band-stop
+      - ✔️ Arbitrary response
+      - ✔️ Hilbert
+    - Realizations:
+      - ✔️ Convolution
+      - ✔️ Overlap-add
+  - IIR filtering
+    - Methods:
+      - ✔️ Butterworth
+      - ✔️ Chebyshev I
+      - ✔️ Chebyshev II
+      - ✔️ Elliptic
+    - Types:
+      - ✔️ Low-pass
+      - ✔️ High-pass
+      - ✔️ Band-pass
+      - ✔️ Band-stop
+      - ❌️ Notch
+    - Realizations:
+      - ✔️ Direct form I.
+      - ✔️ Direct form II.
+      - ✔️ Cascaded biquad
+  - Filter response analysis
+    - ✔️ Compute amplitude & phase response
+    - ✔️ Classify amplitude response: LP/HP/BP/BS
+    - Measure amplitude parameters for LP/HP/BP/BS
+      - ✔️ Transition edges
+      - ✔️ Stopband attenuation
+      - ✔️ Passband ripple
+  - Polyphase FIR decomposition
+  - Resampling
+    - ✔️ Decimation (every n-th)
+    - ✔️ Expansion (zero-fill)
+    - ✔️ Interpolation (polyphase)
+    - ✔️ Arbitrary resampling (polyphase)
+  - Windowing
+    - Derived properties
+      - ✔️ Gain
+      - ✔️ Energy
+    - Functions
+      - ✔️ Rectangular
+      - ✔️ Triangular
+      - ✔️ Hamming
+      - ✔️ Blackman
+      - ✔️ Blackman-Harris
+      - ✔️ Flat top
+      - ✔️ Kaiser
+      - ✔️ Gaussian
+      - ✔️ Dolph-Chebyshev
+      - ✔️ Lanczos
+  - Wavelets
+    - ❌️ DWT
+    - ❌️ CWT
+    - ❌️ Wavelet design
+- Literals
+  - ❌️ Hz, kHz, MHz, GHz, THz
+  - ❌️ dB, dB10
