@@ -26,6 +26,9 @@ public:
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	T Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
+	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
+	void Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
+
 private:
 	BasicSignal<T, eSignalDomain::DOMAINLESS> recursiveState;
 	BasicSignal<T, eSignalDomain::DOMAINLESS> forwardState;
@@ -58,25 +61,41 @@ template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<In
 T DirectFormI<T>::Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
 	assert(!forwardState.Empty() && Order() >= sys.Order());
 
+	T output;
+	Feed(&input, &input + 1, &output, sys);
+	return output;
+}
+
+template <class T>
+template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int>>
+void DirectFormI<T>::Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!forwardState.Empty() && Order() >= sys.Order());
+
 	const auto fwFull = AsConstView(sys.numerator.Coefficients());
 	const auto recFull = AsConstView(sys.denominator.Coefficients());
 	const auto recSec = recFull.SubSignal(0, recFull.Size() - 1);
 
-	const auto normalization = *recFull.rbegin();
+	const auto fwStateView = AsView(forwardState).SubSignal(forwardState.Size() - fwFull.Size());
+	const auto recStateView = AsView(recursiveState).SubSignal(recursiveState.Size() - recSec.Size());
 
-	forwardState[0] = static_cast<T>(input);
-	std::rotate(forwardState.begin(), ++forwardState.begin(), forwardState.end());
+	const auto normalization = T(1) / static_cast<T>(*recFull.rbegin());
 
-	const auto fwSum = DotProduct(AsView(forwardState).SubSignal(forwardState.Size() - fwFull.Size()), fwFull);
-	const auto recSum = DotProduct(AsView(recursiveState).SubSignal(recursiveState.Size() - recSec.Size()), recSec);
-	const auto out = (fwSum - recSum) / normalization;
+	while (first != last) {
+		const auto input = *first++;
 
-	if (recursiveState.Size() > 0) {
-		recursiveState[0] = static_cast<T>(out);
-		std::rotate(recursiveState.begin(), ++recursiveState.begin(), recursiveState.end());
+		std::move(++forwardState.begin(), forwardState.end(), forwardState.begin());
+		*forwardState.rbegin() = static_cast<T>(input);
+
+		const auto fwSum = std::inner_product(fwStateView.begin(), fwStateView.end(), fwFull.begin(), T(0));
+		const auto recSum = std::inner_product(recStateView.begin(), recStateView.end(), recSec.begin(), T(0));
+		const auto out = (fwSum - recSum) * normalization;
+
+		if (recursiveState.Size() > 0) {
+			std::move(++recursiveState.begin(), recursiveState.end(), recursiveState.begin());
+			*recursiveState.rbegin() = static_cast<T>(out);
+		}
+		*outFirst++ = static_cast<T>(out);
 	}
-
-	return static_cast<T>(out);
 }
 
 //------------------------------------------------------------------------------
@@ -95,6 +114,9 @@ public:
 
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	T Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
+
+	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
+	void Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
 
 private:
 	BasicSignal<T, eSignalDomain::DOMAINLESS> m_state;
@@ -125,19 +147,32 @@ template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<In
 T DirectFormII<T>::Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
 	assert(!m_state.Empty() && Order() >= sys.Order());
 
+	T output;
+	Feed(&input, &input + 1, &output, sys);
+	return output;
+}
+
+template <class T>
+template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int>>
+void DirectFormII<T>::Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!m_state.Empty() && Order() >= sys.Order());
+
 	const auto fwFull = AsConstView(sys.numerator.Coefficients());
 	const auto recFull = AsConstView(sys.denominator.Coefficients());
 	const auto recSec = recFull.SubSignal(0, recFull.Size() - 1);
 
 	const auto stateFwView = AsView(m_state).SubSignal(m_state.Size() - fwFull.Size());
 	const auto stateRecView = AsView(m_state).SubSignal(m_state.Size() - recSec.Size());
-	const auto normalization = *recFull.rbegin();
+	const auto normalization = T(1) / static_cast<T>(*recFull.rbegin());
 
-	const auto stateNext = input / normalization - DotProduct(recSec, stateRecView);
-	m_state[0] = static_cast<T>(stateNext);
-	std::rotate(m_state.begin(), ++m_state.begin(), m_state.end());
-
-	return static_cast<T>(DotProduct(fwFull, stateFwView));
+	while (first != last) {
+		const auto input = *first++;
+		const auto stateNext = input * normalization - std::inner_product(recSec.begin(), recSec.end(), stateRecView.begin(), T(0));
+		std::move(++m_state.begin(), m_state.end(), m_state.begin());
+		*m_state.rbegin() = static_cast<T>(stateNext);
+		const auto output = static_cast<T>(std::inner_product(fwFull.begin(), fwFull.end(), stateFwView.begin(), T(0)));
+		*outFirst++ = output;
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -156,6 +191,9 @@ public:
 
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	T Feed(const InputT& input, const CascadedBiquad<SystemT>& sys);
+
+	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
+	void Feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys);
 
 private:
 	using Section = std::array<T, 3>;
@@ -191,23 +229,36 @@ template <class T>
 template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
 T CascadedForm<T>::Feed(const InputT& input, const CascadedBiquad<SystemT>& sys) {
 	assert(sys.sections.size() + 1 <= m_sections.size());
+
 	auto output = static_cast<T>(input);
 	for (size_t i = 0; i < m_sections.size(); ++i) {
-		const BasicSignalView<T, DOMAINLESS> stateFwView{ m_sections[i].begin(), m_sections[i].end() };
-		stateFwView[0] = output;
-		std::rotate(stateFwView.begin(), stateFwView.begin() + 1, stateFwView.end());
+		auto& currentSection = m_sections[i];
+		currentSection[0] = currentSection[1];
+		currentSection[1] = currentSection[2];
+		currentSection[2] = output;
 
 		if (i < sys.sections.size()) {
-			const BasicSignalView<T, DOMAINLESS> stateRecView{ m_sections[i + 1].begin() + 1, m_sections[i + 1].end() };
-			BasicSignalView<const SystemT, DOMAINLESS> fwView{ sys.sections[i].numerator.begin(), sys.sections[i].numerator.end() };
-			BasicSignalView<const SystemT, DOMAINLESS> recView{ sys.sections[i].denominator.begin(), sys.sections[i].denominator.end() };
+			const auto& nextSection = m_sections[i + 1];
+			const auto& sysSectionNum = sys.sections[i].numerator;
+			const auto& sysSectionDen = sys.sections[i].denominator;
 
-			const auto fwSum = DotProduct(stateFwView, fwView);
-			const auto recSum = DotProduct(stateRecView, recView);
+			const auto fwSum = currentSection[0] * sysSectionNum[0]
+							   + currentSection[1] * sysSectionNum[1]
+							   + currentSection[2] * sysSectionNum[2];
+			const auto recSum = nextSection[1] * sysSectionDen[0]
+								+ nextSection[2] * sysSectionDen[1];
 			output = static_cast<T>(fwSum - recSum);
 		}
 	}
 	return output;
+}
+
+template <class T>
+template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int>>
+void CascadedForm<T>::Feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys) {
+	while (first != last) {
+		*outFirst++ = Feed(*first++, sys);
+	}
 }
 
 } // namespace dspbb
