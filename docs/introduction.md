@@ -23,6 +23,12 @@ What DSPBB bring to the table:
 
 Let's look at a simplified crossfeed implementation:
 ```c++
+#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Primitives/SignalView.hpp>
+#include <dspbb/Filtering/IIR.hpp>
+
+using namespace dspbb;
+
 auto Crossfeed(SignalView<const float> left, SignalView<const float> right)
   -> std::pair<Signal<float>, Signal<float>>
 {
