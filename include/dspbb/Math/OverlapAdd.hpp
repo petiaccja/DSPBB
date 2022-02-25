@@ -125,13 +125,9 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	if (chunkSize == 0) {
 		chunkSize = impl::ola::OptimalPracticalSize(u.Size(), v.Size());
 	}
-	if (chunkSize < 2 * v.Size() - 1) {
-		throw std::invalid_argument("Chunk size must be at least the size of the shorter signal.");
-	}
+	assert(chunkSize >= 2 * v.Size() - 1);
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
-	if (offset + out.Size() > fullLength) {
-		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
-	}
+	assert(offset + out.Size() <= fullLength && "Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	if (clearOut) {
 		using R = typename signal_traits<std::decay_t<SignalR>>::type;
 		std::fill(out.begin(), out.end(), R(remove_complex_t<R>(0)));
@@ -173,9 +169,7 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize = 0, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
-	if (out.Size() != fullLength) {
-		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
-	}
+	assert(out.Size() == fullLength && "Use ConvolutionLength to calculate output size properly.");
 	size_t offset = 0;
 	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }
@@ -183,9 +177,7 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFul
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize = 0, bool clearOut = true) {
 	const size_t centralLength = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
-	if (out.Size() != centralLength) {
-		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
-	}
+	assert(out.Size() == centralLength && "Use ConvolutionLength to calculate output size properly.");
 	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
 	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }

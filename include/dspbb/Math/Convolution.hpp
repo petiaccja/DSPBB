@@ -50,9 +50,7 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvFull) 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
-	if (offset + out.Size() > fullLength) {
-		throw std::out_of_range("Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
-	}
+	assert(offset + out.Size() <= fullLength && "Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 
 	// Slided is faster, but it's accuracy degrades for large input and a compensated reduction is better.
 	const size_t shorterSize = std::min(u.Length(), v.Length());
@@ -67,9 +65,7 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offse
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
-	if (out.Size() != fullLength) {
-		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
-	}
+	assert(out.Size() == fullLength && "Use ConvolutionLength to calculate output size properly.");
 	const size_t offset = 0;
 	Convolution(out, u, v, offset, clearOut);
 }
@@ -77,9 +73,7 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFu
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, bool clearOut = true) {
 	const size_t centralLength = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
-	if (out.Size() != centralLength) {
-		throw std::invalid_argument("Use ConvolutionLength to calculate output size properly.");
-	}
+	assert(out.Size() == centralLength && "Use ConvolutionLength to calculate output size properly.");
 	const size_t offset = std::min(u.Size() - 1, v.Size() - 1);
 	Convolution(out, u, v, offset, clearOut);
 }

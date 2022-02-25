@@ -24,9 +24,7 @@ namespace impl {
 	void Fft(SpectrumView<std::complex<T>> out, SignalView<const T> in) {
 		const size_t halfSize = in.Size() / 2 + 1;
 		const size_t fullSize = in.Size();
-		if (out.Size() != halfSize && out.Size() != fullSize) {
-			throw std::invalid_argument("Output size must be N or N/2+1.");
-		}
+		assert(out.Size() == halfSize || out.Size() == fullSize);
 
 		pocketfft_dspbb::shape_t shape = { in.Size() };
 		pocketfft_dspbb::stride_t stride_in = { sizeof(T) };
@@ -45,9 +43,7 @@ namespace impl {
 
 	template <class T>
 	void Fft(SpectrumView<std::complex<T>> out, SignalView<const std::complex<T>> in) {
-		if (out.Size() != in.Size()) {
-			throw std::invalid_argument("Output and input size must be the same.");
-		}
+		assert(out.Size() == in.Size());
 
 		pocketfft_dspbb::shape_t shape = { in.Size() };
 		pocketfft_dspbb::stride_t stride = { sizeof(std::complex<T>) };
@@ -59,9 +55,7 @@ namespace impl {
 	void Ifft(SignalView<T> out, SpectrumView<const std::complex<T>> in) {
 		const size_t halfSize = out.Size() / 2 + 1;
 		const size_t fullSize = out.Size();
-		if (in.Size() != halfSize && in.Size() != fullSize) {
-			throw std::invalid_argument("Input size must be N or N/2+1.");
-		}
+		assert(in.Size() == halfSize || in.Size() == fullSize);
 
 		pocketfft_dspbb::shape_t shape = { out.Size() };
 		pocketfft_dspbb::stride_t stride_in = { sizeof(std::complex<T>) };
@@ -71,9 +65,7 @@ namespace impl {
 
 	template <class T>
 	void Ifft(SignalView<std::complex<T>> out, SpectrumView<const std::complex<T>> in) {
-		if (out.Size() != in.Size()) {
-			throw std::invalid_argument("Output and input size must be the same.");
-		}
+		assert(out.Size() == in.Size());
 
 		pocketfft_dspbb::shape_t shape = { out.Size() };
 		pocketfft_dspbb::stride_t stride = { sizeof(std::complex<T>) };

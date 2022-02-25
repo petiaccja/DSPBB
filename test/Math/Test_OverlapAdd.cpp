@@ -148,14 +148,6 @@ TEST_CASE("OLA Arbitrary offset end", "[OverlapAdd]") {
 	}
 }
 
-TEST_CASE("OLA Arbitrary offset out of bounds", "[OverlapAdd]") {
-	const auto signal = RandomSignal<std::complex<float>, TIME_DOMAIN>(107);
-	const auto filter = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
-
-	REQUIRE_THROWS(OverlapAdd(signal, filter, 95, 30, 33));
-	REQUIRE_THROWS(OverlapAdd(signal, filter, 0, 190, 33));
-}
-
 TEST_CASE("OLA 3-operand full & central", "[OverlapAdd]") {
 	const auto u = RandomSignal<std::complex<float>, TIME_DOMAIN>(107);
 	const auto v = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
@@ -173,13 +165,6 @@ TEST_CASE("OLA 3-operand full & central", "[OverlapAdd]") {
 	for (size_t i = 0; i < centralOut.Length(); ++i) {
 		REQUIRE(centralOut[i] == ApproxComplex(centralExpected[i]).margin(1e-4f));
 	}
-}
-
-TEST_CASE("OLA too small chunk size", "[OverlapAdd]") {
-	const auto u = RandomSignal<std::complex<float>, TIME_DOMAIN>(107);
-	const auto v = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
-	REQUIRE_THROWS(OverlapAdd(u, v, CONV_FULL, 30));
-	REQUIRE_NOTHROW(OverlapAdd(u, v, CONV_CENTRAL, 31));
 }
 
 TEST_CASE("OLA optimal theoretical FFT size", "[OverlapAdd]") {
