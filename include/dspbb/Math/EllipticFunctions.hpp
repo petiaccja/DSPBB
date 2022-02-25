@@ -94,9 +94,7 @@ T EllipticK(T k) {
 
 template <class T, std::enable_if_t<!is_complex_v<T>, int> = 0>
 auto EllipticAM(T x, T k) {
-	if (k < 0 || 1 < k) {
-		throw std::domain_error("k must be 0<=k<=1");
-	}
+	assert(T(0) <= k && k <= T(1));
 
 	// Special cases
 	if (k == T(1)) {

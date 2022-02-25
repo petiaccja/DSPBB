@@ -5,6 +5,7 @@
 #include "../../Primitives/SignalTraits.hpp"
 #include "../../Utility/TypeTraits.hpp"
 
+#include <cassert>
 
 namespace dspbb {
 
@@ -58,12 +59,8 @@ template <class SignalR,
 		  class SignalS,
 		  std::enable_if_t<is_mutable_signal_v<SignalR> && is_mutable_signal_v<SignalS> && is_same_domain_v<SignalR, SignalU, SignalV, SignalS>, int> = 0>
 auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS& state, impl::FilterOla, size_t chunkSize = 0) {
-	if (state.Size() != filter.Size() - 1) {
-		throw std::invalid_argument("State must have a length one less than the filter.");
-	}
-	if (out.Size() != signal.Size()) {
-		throw std::invalid_argument("Output and input signals must have the same size.");
-	}
+	assert(state.Size() == filter.Size() - 1);
+	assert(out.Size() == signal.Size());
 
 	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
 	OverlapAdd(AsView(out).SubSignal(0, std::min(out.Size(), state.Size())), state, filter, filter.Size() - 1, chunkSize, false);
@@ -77,12 +74,8 @@ template <class SignalR,
 		  class SignalS,
 		  std::enable_if_t<is_mutable_signal_v<SignalR> && is_mutable_signal_v<SignalS> && is_same_domain_v<SignalR, SignalU, SignalV, SignalS>, int> = 0>
 auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS& state, impl::FilterConv) {
-	if (state.Size() != filter.Size() - 1) {
-		throw std::invalid_argument("State must have a length one less than the filter.");
-	}
-	if (out.Size() != signal.Size()) {
-		throw std::invalid_argument("Output and input signals must have the same size.");
-	}
+	assert(state.Size() == filter.Size() - 1);
+	assert(out.Size() == signal.Size());
 
 	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
 	Convolution(AsView(out).SubSignal(0, std::min(out.Size(), state.Size())), state, filter, filter.Size() - 1, false);

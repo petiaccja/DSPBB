@@ -171,14 +171,6 @@ TEST_CASE("Arbitrary offset end", "[Convolution]") {
 	}
 }
 
-TEST_CASE("Arbitrary offset out of bounds", "[Convolution]") {
-	Signal<float> u{ ur.begin(), ur.end() };
-	Signal<float> v{ vr.begin(), vr.end() };
-
-	REQUIRE_THROWS(Convolution(u, v, 28, 6));
-	REQUIRE_THROWS(Convolution(u, v, 0, 51));
-}
-
 TEST_CASE("3-operand full & central", "[Convolution]") {
 	Signal<float> u{ ur.begin(), ur.end() };
 	Signal<float> v{ vr.begin(), vr.end() };

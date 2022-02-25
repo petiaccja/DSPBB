@@ -87,6 +87,7 @@ void Interpolate(SignalR&& output,
 				 const PolyphaseDecomposition<P, D>& polyphase,
 				 intptr_t offset) {
 	const auto rate = polyphase.numFilters;
+	//assert(output.Size() == input.Size() * rate);
 	size_t count = output.Size() / rate;
 
 	auto writeIt = output.begin();

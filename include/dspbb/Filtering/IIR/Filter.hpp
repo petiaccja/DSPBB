@@ -9,9 +9,7 @@ namespace dspbb {
 namespace impl {
 	template <class SignalR, class SignalT, class System, class State, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 	auto Filter(SignalR&& out, const SignalT& signal, const System& filter, State& state) {
-		if (out.Size() != signal.Size()) {
-			throw std::invalid_argument("Output and input signals must have the same size.");
-		}
+		assert(out.Size() == signal.Size());
 		state.Feed(signal.begin(), signal.end(), out.begin(), filter);
 	}
 } // namespace impl

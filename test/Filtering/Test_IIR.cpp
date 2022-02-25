@@ -40,15 +40,6 @@ TEST_CASE("Filter cascaded form", "[IIR]") {
 	REQUIRE(filtered.Size() == signal.Size());
 }
 
-TEST_CASE("Filter overrun", "[IIR]") {
-	constexpr int order = 7;
-	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
-	DirectFormI<float> state{ order };
-	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
-	BasicSignal<float, TIME_DOMAIN> out(1000, 1.0f);
-	REQUIRE_THROWS(Filter(out, signal, filter, state));
-}
-
 TEST_CASE("Filter continuity", "[IIR]") {
 	constexpr int order = 7;
 	const auto filter = TransferFunction(IirFilter<float>(order, Lowpass(BUTTERWORTH).Cutoff(0.3f)));
@@ -132,16 +123,6 @@ TEST_CASE("Butterworth bandstop", "[IIR]") {
 	REQUIRE(params.upperPassbandRipple < butterRippleTolerance);
 }
 
-TEST_CASE("Butterworth bandpass odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(BUTTERWORTH).Band(butterLower, butterUpper)));
-}
-
-TEST_CASE("Butterworth bandstop odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandstop(BUTTERWORTH).Band(butterLower, butterUpper)));
-}
-
 
 //------------------------------------------------------------------------------
 // Chebyshev 1 method
@@ -205,16 +186,6 @@ TEST_CASE("Chebyshev 1 bandstop", "[IIR]") {
 	REQUIRE(params.lowerPassbandRipple == Approx(cheby1Ripple).margin(0.005));
 	REQUIRE(params.stopbandAtten < cheby1RippleTolerance);
 	REQUIRE(params.upperPassbandRipple == Approx(cheby1Ripple).margin(0.005));
-}
-
-TEST_CASE("Chebyshev 1 bandpass odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(CHEBYSHEV1).Band(cheby1Lower, cheby1Upper)));
-}
-
-TEST_CASE("Chebyshev 1 bandstop odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandstop(CHEBYSHEV1).Band(cheby1Lower, cheby1Upper)));
 }
 
 
@@ -283,16 +254,6 @@ TEST_CASE("Chebyshev 2 bandstop", "[IIR]") {
 	REQUIRE(params.upperPassbandRipple < cheby2RippleTolerance);
 }
 
-TEST_CASE("Chebyshev 2 bandpass odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(CHEBYSHEV2).Band(cheby2Lower, cheby2Upper)));
-}
-
-TEST_CASE("Chebyshev 2 bandstop odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandstop(CHEBYSHEV2).Band(cheby2Lower, cheby2Upper)));
-}
-
 
 //------------------------------------------------------------------------------
 // Elliptic method
@@ -356,14 +317,4 @@ TEST_CASE("Elliptic bandstop", "[IIR]") {
 	REQUIRE(params.lowerPassbandRipple == Approx(ellipticPassRipple).margin(0.005));
 	REQUIRE(params.stopbandAtten == Approx(ellipticStopRipple).margin(0.005));
 	REQUIRE(params.upperPassbandRipple == Approx(ellipticPassRipple).margin(0.005));
-}
-
-TEST_CASE("Elliptic bandpass odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandpass(ELLIPTIC).Band(ellipticLower, ellipticUpper)));
-}
-
-TEST_CASE("Elliptic bandstop odd order", "[IIR]") {
-	constexpr int order = 7;
-	REQUIRE_THROWS(IirFilter<float>(order, Bandstop(ELLIPTIC).Band(ellipticLower, ellipticUpper)));
 }
