@@ -121,7 +121,7 @@ dspbb::Signal<T> RandomPositiveSignal(size_t size) {
 template <class T, dspbb::eSignalDomain Domain>
 dspbb::BasicSignal<T, Domain> RandomSignal(size_t length) {
 	thread_local std::mt19937_64 rne(723574);
-	thread_local std::uniform_real_distribution<float> rng;
+	thread_local std::uniform_real_distribution<float> rng(-1, 1);
 	dspbb::BasicSignal<T, Domain> s(length);
 	for (auto& v : s) {
 		if constexpr (dspbb::is_complex_v<T>) {

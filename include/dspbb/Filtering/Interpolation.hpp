@@ -6,6 +6,8 @@
 #include "../Primitives/SignalView.hpp"
 #include "Polyphase.hpp"
 
+#include <numeric>
+
 
 namespace dspbb {
 
@@ -80,95 +82,207 @@ auto Expand(const SignalT& input, size_t rate) {
 ///		the output sample rate. </remarks>
 template <class SignalR,
 		  class SignalT,
-		  class P, eSignalDomain D,
+		  class P,
+		  eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
-void Interpolate(SignalR&& output,
-				 const SignalT& input,
-				 const PolyphaseDecomposition<P, D>& polyphase,
-				 intptr_t offset) {
-	const auto rate = polyphase.numFilters;
-	//assert(output.Size() == input.Size() * rate);
-	size_t count = output.Size() / rate;
+void Interpolate(SignalR&& hrOutput,
+				 const SignalT& lrInput,
+				 const PolyphaseView<P, D>& polyphase,
+				 size_t hrOffset) {
+	const ptrdiff_t rate = polyphase.FilterCount();
+	const ptrdiff_t hrFilterSize = polyphase.OriginalSize();
+	const ptrdiff_t lrPhaseSize = polyphase.PhaseSize();
+	const ptrdiff_t hrOutputSize = hrOutput.Size();
+	const ptrdiff_t lrInputSize = lrInput.Size();
+	const ptrdiff_t hrInputSize = lrInputSize * rate;
 
-	auto writeIt = output.begin();
-	for (size_t inputIdx = 0; inputIdx < count; ++inputIdx) {
-		for (size_t i = 0; i < rate; ++i, ++writeIt) {
-			const auto& filter = polyphase[i];
-			intptr_t offsetInputIdx = intptr_t(inputIdx) - intptr_t(filter.Size()) + 1 + intptr_t(offset);
-			const intptr_t inputIndexClamped = std::max(offsetInputIdx, intptr_t(0));
-			const auto subInput = AsConstView(input).SubSignal(inputIndexClamped);
-			const auto subFilter = filter.SubSignal(-std::min(intptr_t(0), offsetInputIdx));
-			const size_t dotLength = std::min(subFilter.Size(), subInput.Size());
-			*writeIt = DotProduct(subFilter.SubSignal(0, dotLength), subInput.SubSignal(0, dotLength));
+	const ptrdiff_t hrOutputMaxSize = ConvolutionLength(hrInputSize, hrFilterSize, CONV_FULL);
+	assert(hrOffset + hrOutputSize <= hrOutputMaxSize);
+
+	for (size_t hrOutputIdx = hrOffset; hrOutputIdx < hrOffset + hrOutputSize; ++hrOutputIdx) {
+		const ptrdiff_t hrInputIdx = 1 - hrFilterSize + hrOutputIdx;
+		const ptrdiff_t lrInputIdx = (hrInputIdx + hrFilterSize - 1) / rate - lrPhaseSize + 1;
+		const ptrdiff_t polyphaseIdx = (hrInputIdx + hrFilterSize - 1) % rate;
+
+		const auto& phase = polyphase[polyphaseIdx];
+
+		const Interval inputSpan = { ptrdiff_t(0), ptrdiff_t(lrInput.Size()) };
+		const Interval lrInputInterval = { lrInputIdx, lrInputIdx + lrPhaseSize };
+		const Interval lrPhaseInterval = { lrInputInterval.last - ptrdiff_t(phase.Size()), lrInputInterval.last };
+		const Interval lrInputProductInterval = Intersection(inputSpan, Intersection(lrInputInterval, lrPhaseInterval));
+		const Interval lrPhaseProductInterval = lrInputProductInterval - lrInputIdx;
+
+		if (lrInputProductInterval.Size() > 0) {
+			const auto lrInputView = AsView(lrInput).SubSignal(lrInputProductInterval.first,
+															   lrInputProductInterval.last - lrInputProductInterval.first);
+			const auto lrPhaseView = phase.SubSignal(lrPhaseProductInterval.first - lrPhaseSize + ptrdiff_t(phase.Size()),
+													 lrPhaseProductInterval.last - lrPhaseProductInterval.first);
+			const auto value = DotProduct(lrInputView, lrPhaseView);
+			hrOutput[hrOutputIdx - hrOffset] = value;
 		}
 	}
 }
 
+template <class SignalT, class P, eSignalDomain Domain, std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
+auto Interpolate(const SignalT& lrInput,
+				 const PolyphaseView<P, Domain>& polyphase,
+				 size_t hrOffset,
+				 size_t hrLength) {
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using R = multiplies_result_t<T, P>;
 
-/// <summary>
-/// Arbitrary rational resampling of a signal using approximate polyphase interpolation.
-/// </summary>
-/// <param name="polyphase"> A polyphase decomposition of an appropriate low-pass filter.
-///		The number of phases is arbitrary (see remarks), but must be at least 2. </param>
-/// <param name="sampleRates"> A pair of the {input, output} sample rates.
-///		For example, use {16000, 44100} if you want to increase the sample rate of a signal by 2.75625 times. </param>
-/// <param name="startPoint"> A rational number that tells where to take the first output sample. For example, specify {1, 2}
-///		so that the first output sample will be taken from halfway between the first and second input samples. Specify {3, 77}
-///		to take the first output sample from just after the first input sample. The denominator is arbitrary, the numerator
-///		must be larger than zero, and float(num)/float(den) must be smaller or equal to length(<paramref name="input"/>)-1.</param>
-/// <returns> A rational number that tells from where the next output sample would have been taken.
-///		Analogues in meaning to <paramref name="startPoint"/>, but its denominator is not necessarily the same.
-///		When resampling streams in batches, you can use this as a base for the <paramref name="startPoint"/> to a subsequent Resample call to ensure
-///		the output stream is continuous. </returns>
+	BasicSignal<R, Domain> out(hrLength, R(0));
+	Interpolate(out, lrInput, polyphase, hrOffset);
+	return out;
+}
+
+
+namespace impl {
+	template <class T1, class T2>
+	constexpr auto lcm(T1 x, T2 y) {
+		return std::lcm(x, y);
+	}
+	template <class T1, class... T>
+	constexpr auto lcm(T1 head, T... tail) {
+		return std::lcm(head, dspbb::impl::lcm(tail...));
+	}
+} // namespace impl
+
+
+namespace resample {
+
+	template <class ConvType>
+	constexpr std::pair<uint64_t, uint64_t> ResamplingLength(size_t inputSize,
+															 size_t filterSize,
+															 size_t numPhases,
+															 std::pair<uint64_t, uint64_t> sampleRates,
+															 const ConvType&) {
+		static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
+		const uint64_t interpolatedSize = numPhases * inputSize;
+		const uint64_t filteredSize = ConvolutionLength(interpolatedSize, filterSize, ConvType{});
+
+		const uint64_t sampleRatesGcd = std::gcd(sampleRates.first, sampleRates.second);
+		const uint64_t sampleCountGcd = std::gcd(filteredSize, sampleRates.first / sampleRatesGcd);
+		const std::pair length = {
+			(filteredSize / sampleCountGcd) * (sampleRates.second / sampleRatesGcd),
+			sampleRates.first * numPhases / sampleCountGcd / sampleRatesGcd
+		};
+		return length;
+	}
+
+	constexpr std::pair<uint64_t, uint64_t> Output2InputIndex(std::pair<uint64_t, uint64_t> sampleRates,
+															  std::pair<uint64_t, uint64_t> outputIndex) {
+		const std::pair inputIndex = {
+			outputIndex.first * sampleRates.first,
+			outputIndex.second * sampleRates.second
+		};
+
+		return inputIndex;
+	}
+
+	struct PhaseSample {
+		size_t inputIndex;
+		size_t phaseIndex;
+		uint64_t weight;
+	};
+
+	constexpr std::pair<PhaseSample, PhaseSample> InputIndex2Sample(std::pair<uint64_t, uint64_t> inputIndex, size_t numPhases) {
+		const uint64_t firstIndex = inputIndex.first / inputIndex.second;
+		const std::pair fractionalIndex = {
+			inputIndex.first % inputIndex.second,
+			inputIndex.second
+		};
+		const size_t firstPhase = fractionalIndex.first * numPhases / fractionalIndex.second;
+		const size_t secondWeight = fractionalIndex.first * numPhases % fractionalIndex.second;
+		const size_t secondPhase = (firstPhase + 1) % numPhases;
+		const size_t firstWeight = fractionalIndex.second - secondWeight;
+		const size_t secondIndex = secondPhase == 0 ? firstIndex + 1 : firstIndex;
+
+		return {
+			PhaseSample{ firstIndex, firstPhase, firstWeight },
+			PhaseSample{ secondIndex, secondPhase, secondWeight }
+		};
+	}
+
+	template <class SignalT, class SignalU>
+	auto DotProductSample(const SignalT& input, const SignalU& filter, size_t inputReverseFirst) {
+		const ptrdiff_t desiredFirst = ptrdiff_t(inputReverseFirst) - filter.Size() + 1;
+		const ptrdiff_t desiredLast = ptrdiff_t(inputReverseFirst) + 1;
+		const ptrdiff_t possibleFirst = std::max(ptrdiff_t(0), desiredFirst);
+		const ptrdiff_t possibleLast = std::min(ptrdiff_t(input.Size()), desiredLast);
+		const ptrdiff_t count = possibleLast - possibleFirst;
+		assert(count >= 0);
+		const ptrdiff_t offset = possibleFirst - desiredFirst;
+
+		const auto inputView = AsConstView(input).SubSignal(possibleFirst, count);
+		const auto filterView = AsConstView(filter).SubSignal(offset, count);
+		return DotProduct(inputView, filterView);
+	}
+
+	constexpr double ResamplingFilterCutoff(std::pair<uint64_t, uint64_t> sampleRates, size_t numPhases) {
+		const double base = 1.0 / double(numPhases);
+		const double rate = std::min(1.0, double(sampleRates.second) / double(sampleRates.first));
+		return base * rate;
+	}
+
+	constexpr std::pair<uint64_t, uint64_t> ResamplingDelay(size_t filterSize,
+															size_t numPhases,
+															std::pair<uint64_t, uint64_t> sampleRates) {
+		return {
+			(filterSize - 1) * sampleRates.second,
+			sampleRates.first * 2 * numPhases
+		};
+	}
+
+} // namespace resample
+
+using resample::ResamplingLength;
+using resample::ResamplingFilterCutoff;
+using resample::ResamplingDelay;
+
+
 template <class SignalR,
 		  class SignalT,
-		  class P, eSignalDomain D,
+		  class P,
+		  eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
-std::pair<int64_t, uint64_t> Resample(SignalR&& output,
-									  const SignalT& input,
-									  const PolyphaseDecomposition<P, D>& polyphase,
-									  std::pair<uint64_t, uint64_t> sampleRates,
-									  std::pair<int64_t, uint64_t> startPoint = { 0, 1 }) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+void Resample(SignalR&& output,
+			  const SignalT& input,
+			  const PolyphaseView<P, D>& polyphase,
+			  std::pair<uint64_t, uint64_t> sampleRates,
+			  std::pair<int64_t, uint64_t> startPoint = { 0, 1 }) {
 	assert(sampleRates.first > 0);
 	assert(sampleRates.second > 0);
 	assert(startPoint.second > 0);
-	assert(polyphase.numFilters > 0);
-	const size_t commonRate = std::lcm(std::lcm(std::lcm(sampleRates.first, sampleRates.second), startPoint.second), polyphase.numFilters);
+	assert(polyphase.FilterCount() > 0);
 
-	// All these are in common rate.
-	const int64_t commonStartPoint = startPoint.first * commonRate / startPoint.second;
-	const uint64_t commonStep = sampleRates.first * commonRate / sampleRates.second;
-	int64_t commonSample = commonStartPoint;
-
-	for (auto& o : output) {
-		const int64_t commonFraction = commonSample % commonRate;
-
-		const int64_t polyphaseIndex = commonFraction * polyphase.numFilters / commonRate;
-		const int64_t polyphaseIndexNext = (polyphaseIndex + 1) % polyphase.numFilters;
-		const int64_t polyphaseFraction = commonFraction * polyphase.numFilters % commonRate;
-
-		const int64_t inputIndex = commonSample / commonRate - polyphase[polyphaseIndex].Size() + 1;
-		const int64_t inputIndexNext = commonSample / commonRate - int64_t(polyphase[polyphaseIndexNext].Size()) + 1 + int64_t(polyphaseIndexNext == 0);
-
-		int64_t inputIndexClamped = std::max(inputIndex, int64_t(0));
-		int64_t inputIndexClampedNext = std::max(inputIndexNext, int64_t(0));
-
-		const auto filter = polyphase[polyphaseIndex].SubSignal(inputIndexClamped - inputIndex);
-		const auto filterNext = polyphase[polyphaseIndexNext].SubSignal(inputIndexClampedNext - inputIndexNext);
-		const auto inputSection = AsView(input).SubSignal(inputIndexClamped);
-		const auto inputSectionNext = AsView(input).SubSignal(inputIndexClampedNext);
-
-		const auto dotLength = std::min(inputSection.Size(), filter.Size());
-		const auto sample = DotProduct(inputSection.SubSignal(0, dotLength), filter.SubSignal(0, dotLength));
-		const auto dotLengthNext = std::min(inputSectionNext.Size(), filterNext.Size());
-		const auto sampleNext = DotProduct(inputSectionNext.SubSignal(0, dotLengthNext), filterNext.SubSignal(0, dotLengthNext));
-		o = (sample * R(commonRate - polyphaseFraction) + sampleNext * R(polyphaseFraction)) / R(commonRate);
-
-		// Next sample
-		commonSample += commonStep;
+	auto outputIndex = startPoint;
+	for (auto outputIt = output.begin(); outputIt != output.end(); ++outputIt, outputIndex.first += outputIndex.second) {
+		const auto inputIndex = resample::Output2InputIndex(sampleRates, outputIndex);
+		const auto [firstSampleLoc, secondSampleLoc] = resample::InputIndex2Sample(inputIndex, polyphase.FilterCount());
+		const auto firstSampleVal = resample::DotProductSample(input, polyphase[firstSampleLoc.phaseIndex], firstSampleLoc.inputIndex);
+		const auto secondSampleVal = resample::DotProductSample(input, polyphase[secondSampleLoc.phaseIndex], secondSampleLoc.inputIndex);
+		using CommonType = decltype(firstSampleVal);
+		*outputIt = (firstSampleVal * CommonType(firstSampleLoc.weight) + secondSampleVal * CommonType(secondSampleLoc.weight))
+					/ (CommonType(firstSampleLoc.weight) + CommonType(secondSampleLoc.weight));
 	}
-	return { commonSample, commonRate };
+}
+
+template <class SignalT,
+		  class P,
+		  eSignalDomain Domain,
+		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
+auto Resample(const SignalT& input,
+			  const PolyphaseView<P, Domain>& polyphase,
+			  std::pair<uint64_t, uint64_t> sampleRates,
+			  std::pair<int64_t, uint64_t> startPoint,
+			  size_t orLength) {
+	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using R = multiplies_result_t<T, P>;
+
+	BasicSignal<R, Domain> out(orLength, R(0));
+	Resample(out, input, polyphase, sampleRates, startPoint);
+	return out;
 }
 
 

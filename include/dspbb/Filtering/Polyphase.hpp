@@ -10,41 +10,91 @@ namespace dspbb {
 
 
 template <class T, eSignalDomain Domain>
-struct PolyphaseDecomposition {
-	BasicSignalView<T, Domain> filterBank;
-	size_t numFilters;
+class PolyphaseView {
+public:
+	PolyphaseView() = default;
+	PolyphaseView(BasicSignalView<T, Domain> data, size_t numFilters)
+		: m_bufferView(data), m_filterCount(numFilters) {}
+
 	BasicSignalView<T, Domain> operator[](size_t index) {
 		auto loc = SubSignalLocation(index);
-		return filterBank.SubSignal(loc.first, loc.second);
+		return m_bufferView.SubSignal(loc.first, loc.second);
 	}
 	BasicSignalView<const T, Domain> operator[](size_t index) const {
 		auto loc = SubSignalLocation(index);
-		return filterBank.SubSignal(loc.first, loc.second);
+		return m_bufferView.SubSignal(loc.first, loc.second);
 	}
-	size_t Size() const {
-		return (filterBank.Size() + numFilters - 1) / numFilters;
+	size_t PhaseSize() const {
+		return (m_bufferView.Size() + m_filterCount - 1) / m_filterCount;
+	}
+	size_t OriginalSize() const {
+		return m_bufferView.Size();
+	}
+	size_t FilterCount() const {
+		return m_filterCount;
 	}
 
 private:
 	std::pair<size_t, size_t> SubSignalLocation(size_t index) const {
-		assert(index < numFilters);
-		const size_t numExtended = filterBank.Size() % numFilters;
-		const size_t baseFilterSize = filterBank.Size() / numFilters;
+		assert(index < m_filterCount);
+		const size_t numExtended = m_bufferView.Size() % m_filterCount;
+		const size_t baseFilterSize = m_bufferView.Size() / m_filterCount;
 		const size_t thisFilterSize = baseFilterSize + size_t(index < numExtended);
 		const size_t offset = baseFilterSize * index + std::min(numExtended, index);
 		return { offset, thisFilterSize };
 	}
+
+private:
+	BasicSignalView<T, Domain> m_bufferView;
+	size_t m_filterCount = 1;
 };
 
 template <class T, eSignalDomain Domain>
-void PolyphaseNormalize(PolyphaseDecomposition<T, Domain>& polyphase) {
-	for (size_t i = 0; i < polyphase.numFilters; ++i) {
+class PolyphaseFilter : public PolyphaseView<T, Domain> {
+public:
+	PolyphaseFilter() = default;
+	PolyphaseFilter(size_t hrFilterSize, size_t numPhases) : m_buffer(hrFilterSize) {
+		static_cast<PolyphaseView<T, Domain>&>(*this) = { AsView(m_buffer), numPhases };
+	}
+	PolyphaseFilter(const PolyphaseFilter& rhs) : m_buffer(rhs.m_buffer) {
+		static_cast<PolyphaseView<T, Domain>&>(*this) = { AsView(m_buffer), rhs.FilterCount() };
+	}
+	PolyphaseFilter(PolyphaseFilter&& rhs) : m_buffer(std::move(rhs.m_buffer)) {
+		static_cast<PolyphaseView<T, Domain>&>(*this) = rhs;
+		static_cast<PolyphaseView<T, Domain>&>(rhs) = {};
+	}
+	PolyphaseFilter& operator=(const PolyphaseFilter& rhs) {
+		m_buffer = rhs.m_buffer;
+		static_cast<PolyphaseView<T, Domain>&>(*this) = { AsView(m_buffer), rhs.FilterCount() };
+		return *this;
+	}
+	PolyphaseFilter& operator=(PolyphaseFilter&& rhs) {
+		m_buffer = std::move(rhs.m_buffer);
+		static_cast<PolyphaseView<T, Domain>&>(*this) = rhs;
+		static_cast<PolyphaseView<T, Domain>&>(rhs) = {};
+		return *this;
+	}
+
+	BasicSignalView<T, Domain> Buffer() {
+		return AsView(m_buffer);
+	}
+	BasicSignalView<const T, Domain> Buffer() const {
+		return AsView(m_buffer);
+	}
+
+private:
+	BasicSignal<T, Domain> m_buffer;
+};
+
+template <class T, eSignalDomain Domain>
+void PolyphaseNormalize(PolyphaseView<T, Domain>& polyphase) {
+	for (size_t i = 0; i < polyphase.FilterCount(); ++i) {
 		polyphase[i] *= T(1) / Sum(polyphase[i]);
 	}
 }
 
 template <class T, eSignalDomain Domain>
-auto PolyphaseNormalized(PolyphaseDecomposition<T, Domain>&& polyphase) {
+auto PolyphaseNormalized(PolyphaseFilter<T, Domain> polyphase) {
 	PolyphaseNormalize(polyphase);
 	return polyphase;
 }
@@ -54,10 +104,9 @@ auto PolyphaseDecompose(SignalR&& output, const SignalT& filter, size_t numFilte
 	assert(output.Size() == filter.Size());
 	assert(output.Data() != filter.Data());
 
-	PolyphaseDecomposition<typename signal_traits<std::decay_t<SignalR>>::type, signal_traits<std::decay_t<SignalR>>::domain> view{
-		AsView(output),
-		numFilters,
-	};
+	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	constexpr auto Domain = signal_traits<std::decay_t<SignalR>>::domain;
+	PolyphaseView<R, Domain> view{ AsView(output), numFilters };
 
 	for (size_t phaseIdx = 0; phaseIdx < numFilters; ++phaseIdx) {
 		auto filterPhase = view[phaseIdx];
@@ -70,6 +119,17 @@ auto PolyphaseDecompose(SignalR&& output, const SignalT& filter, size_t numFilte
 	}
 
 	return view;
+}
+
+template <class SignalT>
+auto PolyphaseDecompose(const SignalT& filter, size_t numFilters) {
+	using R = typename signal_traits<std::decay_t<SignalT>>::type;
+	constexpr auto Domain = signal_traits<std::decay_t<SignalT>>::domain;
+	PolyphaseFilter<R, Domain> polyphase{ filter.Size(), numFilters };
+
+	PolyphaseDecompose(polyphase.Buffer(), filter, numFilters);
+
+	return polyphase;
 }
 
 
