@@ -168,18 +168,30 @@ TEST_CASE("Resampling length central", "[Interpolation]") {
 	}
 }
 
-TEST_CASE("Resampling output 2 input index", "[Interpolation]") {
+TEST_CASE("Resampling change sample rate", "[Interpolation]") {
 	constexpr int inputRate = 7;
 	constexpr int outputRate = 17;
 
-	constexpr std::pair outputIndex = { 57ull, 13ull };
-	constexpr auto inputIndex = resample::Output2InputIndex({ inputRate, outputRate }, outputIndex);
+	constexpr std::pair originalSample = { 28ull, 42ull };
 
-	const double outputIndexReal = double(outputIndex.first) / double(outputIndex.second);
-	const double inputIndexRealExpected = outputIndexReal * double(inputRate) / double(outputRate);
-	const double inputIndexReal = double(inputIndex.first) / double(inputIndex.second);
+	SECTION("Regular") {
+		constexpr auto newSample = resample::ChangeSampleRate({ inputRate, outputRate }, originalSample, false);
 
-	REQUIRE(inputIndexReal == inputIndexRealExpected);
+		const double outputIndexReal = double(originalSample.first) / double(originalSample.second);
+		const double inputIndexRealExpected = outputIndexReal / double(inputRate) * double(outputRate);
+		const double inputIndexReal = double(newSample.first) / double(newSample.second);
+
+		REQUIRE(inputIndexReal == Approx(inputIndexRealExpected));
+	}
+	SECTION("Simplify") {
+		constexpr auto newSample = resample::ChangeSampleRate({ inputRate, outputRate }, originalSample, true);
+
+		const double outputIndexReal = double(originalSample.first) / double(originalSample.second);
+		const double inputIndexRealExpected = outputIndexReal / double(inputRate) * double(outputRate);
+		const double inputIndexReal = double(newSample.first) / double(newSample.second);
+
+		REQUIRE(inputIndexReal == Approx(inputIndexRealExpected));
+	}
 }
 
 TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
@@ -378,5 +390,42 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 
 		INFO("filterSize=" << filterSize)
 		REQUIRE(crossingExpected == Approx(crossingResampled));
+	}
+}
+
+
+TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
+	// Interpolate a ramp and see if it's continuous.
+	REQUIRE(false);
+}
+
+
+TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
+	constexpr size_t numPhases = 6;
+	constexpr size_t filterSize = 31;
+	constexpr std::pair sampleRates = { 4ULL, 7ULL };
+
+	SECTION("Initial point") {
+		constexpr std::pair nextOutputSample = { 0ULL, 1ULL };
+		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+
+		REQUIRE(inputIndex == 0);
+		REQUIRE(double(startPoint.first) / double(startPoint.second) == Approx(0));
+	}
+	SECTION("One off") {
+		constexpr std::pair nextOutputSample = { 7ULL, 7ULL };
+		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+
+		REQUIRE(inputIndex == 0);
+		REQUIRE(double(startPoint.first) / double(startPoint.second) == Approx(1));
+	}
+	SECTION("Middle point") {
+		constexpr std::pair nextOutputSample = { 6ULL * 7ULL, 4ULL };
+		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+
+		REQUIRE(inputIndex == 1);
+		const double expectedTotalOffset = double(nextOutputSample.first) / double(nextOutputSample.second);
+		const double actualTotalOffset = double(inputIndex) * sampleRates.second / sampleRates.first + double(startPoint.first) / double(startPoint.second);
+		REQUIRE(expectedTotalOffset == Approx(actualTotalOffset));
 	}
 }
