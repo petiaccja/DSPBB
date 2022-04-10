@@ -223,3 +223,52 @@ TEST_CASE("Rational random hammer", "[Rational]") {
 		REQUIRE(float(result) == Approx(expected));
 	}
 }
+
+
+TEST_CASE("Rational ==", "[Rational]") {
+	REQUIRE(Rational{ 4, 6 } == Rational{ 6, 9 });
+	REQUIRE(Rational{ -4, 6 } == Rational{ -6, 9 });
+	REQUIRE(Rational{ 23, 9 } == Rational{ 23, 9 });
+	REQUIRE_FALSE(Rational{ 23, 5 } == Rational{ 23, 9 });
+	REQUIRE_FALSE(Rational{ -23, 5 } == Rational{ 23, 9 });
+	REQUIRE_FALSE(Rational{ 21, 63 } == Rational{ 82, 26 });
+}
+
+TEST_CASE("Rational !=", "[Rational]") {
+	REQUIRE_FALSE(Rational{ 4, 6 } != Rational{ 6, 9 });
+	REQUIRE_FALSE(Rational{ -4, 6 } != Rational{ -6, 9 });
+	REQUIRE_FALSE(Rational{ 23, 9 } != Rational{ 23, 9 });
+	REQUIRE(Rational{ 23, 5 } != Rational{ 23, 9 });
+	REQUIRE(Rational{ -23, 5 } != Rational{ 23, 9 });
+	REQUIRE(Rational{ 21, 63 } != Rational{ 82, 26 });
+}
+
+TEST_CASE("Rational <", "[Rational]") {
+	REQUIRE(Rational{ 314, 100 } < Rational{ 355, 113 });
+	REQUIRE(Rational{ 27, 61 } < Rational{ 28, 62 });
+	REQUIRE_FALSE(Rational{ 355, 113 } < Rational{ 314, 100 });
+	REQUIRE_FALSE(Rational{ 28, 62 } < Rational{ 27, 61 });
+}
+
+TEST_CASE("Rational >", "[Rational]") {
+	REQUIRE_FALSE(Rational{ 314, 100 } > Rational{ 355, 113 });
+	REQUIRE_FALSE(Rational{ 27, 61 } > Rational{ 28, 62 });
+	REQUIRE(Rational{ 355, 113 } > Rational{ 314, 100 });
+	REQUIRE(Rational{ 28, 62 } > Rational{ 27, 61 });
+}
+
+TEST_CASE("Rational <=", "[Rational]") {
+	REQUIRE(Rational{ 314, 100 } <= Rational{ 355, 113 });
+	REQUIRE(Rational{ 27, 61 } <= Rational{ 28, 62 });
+	REQUIRE(Rational{ 20, 60 } <= Rational{ 15, 45 });
+	REQUIRE_FALSE(Rational{ 355, 113 } <= Rational{ 314, 100 });
+	REQUIRE_FALSE(Rational{ 28, 62 } <= Rational{ 27, 61 });
+}
+
+TEST_CASE("Rational >=", "[Rational]") {
+	REQUIRE_FALSE(Rational{ 314, 100 } >= Rational{ 355, 113 });
+	REQUIRE_FALSE(Rational{ 27, 61 } >= Rational{ 28, 62 });
+	REQUIRE(Rational{ 15, 45 } >= Rational{ 20, 60 });
+	REQUIRE(Rational{ 355, 113 } >= Rational{ 314, 100 });
+	REQUIRE(Rational{ 28, 62 } >= Rational{ 27, 61 });
+}
