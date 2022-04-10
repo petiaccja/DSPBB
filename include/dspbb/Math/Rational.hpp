@@ -112,9 +112,8 @@ constexpr Rational<T>::Rational(int_t value) noexcept
 
 template <class T>
 constexpr Rational<T>::Rational(int_t numerator, int_t denominator) noexcept
-	: num(numerator / std::gcd(numerator, denominator)), den(denominator / std::gcd(numerator, denominator)) {
-	assert(denominator > 0);
-}
+	: num(numerator / std::gcd(numerator, (void(assert(denominator > 0)), denominator))),
+	  den(denominator / std::gcd(numerator, (void(assert(denominator > 0)), denominator))) {}
 
 template <class T>
 constexpr typename Rational<T>::int_t Rational<T>::Numerator() const {
