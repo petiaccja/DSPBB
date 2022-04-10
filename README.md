@@ -32,7 +32,7 @@ The library now implements most of the features that I was planning and is large
 - [Installation](docs/installation.md)
 - [Features](docs/features.md)
 - [Performance](docs/performance.md)
-- [Accuracy](docs/accuracy.md)
+- [Numerical accuracy](docs/accuracy.md)
 
 <a name="license"></a>
 ## License

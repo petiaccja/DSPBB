@@ -11,7 +11,7 @@ There are many libraries out there for DSP:
 
 However, they are either paid for commercial use, are not maintained anymore, lack some features or are tailored towards a specific field. I needed something different, but I encourage you to check out the libraries listed above as well.
 
-What DSPBB bring to the table:
+What DSPBB brings to the table:
 - **Template-based**: You can specify `float` or `double` anywhere. Some things will work for integrals and custom types (i.e. fixed point, arbitrary precision) as well, but as `std::complex` is not specialized for these, support is limited.
 - **Low-level, generic design**: DSPBB does not focus on any specific field. No crossfeed, no equalizer, just the boring math needed to implement these quickly.
 - **Stateless API**: Almost all functionality is provided by free functions, simplistic classes are only used to organize data. This minimizes memory allocations to make embedded development easier
