@@ -67,6 +67,7 @@ constexpr Rational<T> operator*(const Rational<T>& lhs, T rhs) noexcept {
 }
 template <class T>
 constexpr Rational<T> operator/(const Rational<T>& lhs, T rhs) noexcept {
+	assert(rhs != 0);
 	const auto simpl = std::gcd(rhs, lhs.Numerator());
 	const auto sign = rhs < 0 ? T(-1) : T(1);
 	return { sign * lhs.Numerator() / simpl,
@@ -99,6 +100,7 @@ constexpr Rational<T> operator*(const Rational<T>& lhs, const Rational<T>& rhs) 
 }
 template <class T>
 constexpr Rational<T> operator/(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+	assert(rhs.Numerator() != 0);
 	const auto sign = rhs.Numerator() < 0 ? T(-1) : T(1);
 	return lhs * Rational<T>{ sign * rhs.Denominator(), sign * rhs.Numerator() };
 }
@@ -210,7 +212,7 @@ constexpr Rational<T> operator-(T lhs, const Rational<T>& rhs) noexcept {
 }
 template <class T>
 constexpr Rational<T> operator*(T lhs, const Rational<T>& rhs) noexcept {
-	return Rational<T>{ lhs } * rhs;
+	return rhs * lhs;
 }
 template <class T>
 constexpr Rational<T> operator/(T lhs, const Rational<T>& rhs) noexcept {
