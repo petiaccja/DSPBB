@@ -40,7 +40,7 @@ public:
 	Rational& operator/=(const Rational& rhs) noexcept;
 
 	template <class FloatT, std::enable_if_t<std::is_floating_point_v<FloatT>, int> = 0>
-	operator FloatT() const;
+	explicit operator FloatT() const;
 
 private:
 	int_t num;
