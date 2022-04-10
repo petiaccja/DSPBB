@@ -123,6 +123,7 @@ constexpr typename Rational<T>::int_t Rational<T>::Numerator() const {
 
 template <class T>
 constexpr typename Rational<T>::int_t Rational<T>::Denominator() const {
+	assert(den > 0); // Just to shut up static analyzers.
 	return den;
 }
 
