@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <numeric>
 #include <tuple>
 #include <type_traits>
@@ -60,14 +61,16 @@ constexpr Rational<T> operator-(const Rational<T>& lhs, T rhs) noexcept {
 template <class T>
 constexpr Rational<T> operator*(const Rational<T>& lhs, T rhs) noexcept {
 	const auto simplification = std::gcd(rhs, lhs.Denominator());
-	return { lhs.Numerator() * (rhs / simplification),
-			 lhs.Denominator() / simplification };
+	const auto sign = rhs < 0 ? T(-1) : T(1);
+	return { sign * lhs.Numerator() * (rhs / simplification),
+			 sign * lhs.Denominator() / simplification };
 }
 template <class T>
 constexpr Rational<T> operator/(const Rational<T>& lhs, T rhs) noexcept {
 	const auto simpl = std::gcd(rhs, lhs.Numerator());
-	return { lhs.Numerator() / simpl,
-			 lhs.Denominator() * (rhs / simpl) };
+	const auto sign = rhs < 0 ? T(-1) : T(1);
+	return { sign * lhs.Numerator() / simpl,
+			 sign * lhs.Denominator() * (rhs / simpl) };
 }
 
 
@@ -96,7 +99,8 @@ constexpr Rational<T> operator*(const Rational<T>& lhs, const Rational<T>& rhs) 
 }
 template <class T>
 constexpr Rational<T> operator/(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
-	return lhs * Rational<T>{ rhs.Denominator(), rhs.Numerator() };
+	const auto sign = rhs.Numerator() < 0 ? T(-1) : T(1);
+	return lhs * Rational<T>{ sign * rhs.Denominator(), sign * rhs.Numerator() };
 }
 
 
@@ -106,7 +110,9 @@ constexpr Rational<T>::Rational(int_t value) noexcept
 
 template <class T>
 constexpr Rational<T>::Rational(int_t numerator, int_t denominator) noexcept
-	: num(numerator / std::gcd(numerator, denominator)), den(denominator / std::gcd(numerator, denominator)) {}
+	: num(numerator / std::gcd(numerator, denominator)), den(denominator / std::gcd(numerator, denominator)) {
+	assert(denominator > 0);
+}
 
 template <class T>
 constexpr typename Rational<T>::int_t Rational<T>::Numerator() const {
