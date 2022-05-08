@@ -287,7 +287,8 @@ resample::ContinuationParams Resample(SignalR&& output,
 	assert(startPoint >= 0ll);
 	assert(polyphase.FilterCount() > 0);
 
-	const auto maxLength = resample::ResamplingLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
+	[[maybe_unused]] const auto maxLength = resample::ResamplingLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
+	assert(startPoint + int64_t(output.Size()) < maxLength);
 
 	auto outputIndex = startPoint;
 	for (auto outputIt = output.begin(); outputIt != output.end(); ++outputIt, outputIndex += 1) {
@@ -300,8 +301,7 @@ resample::ContinuationParams Resample(SignalR&& output,
 					/ (CommonType(firstSampleLoc.weight) + CommonType(secondSampleLoc.weight));
 	}
 
-	return {};
-	//return resample::Continuation();
+	return resample::Continuation(outputIndex, polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates);
 }
 
 template <class SignalT,
