@@ -84,87 +84,79 @@ TEST_CASE("Interpolation central", "[Interpolation]") {
 
 TEST_CASE("Resampling length full", "[Interpolation]") {
 	SECTION("Upsample exact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 2, 3 };
+		constexpr Rational<int64_t> sampleRates = { 2, 3 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		constexpr size_t numPhases = 5;
 
 		constexpr auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(16500.0 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(16500.0 / 5).margin(0.01));
 	}
 	SECTION("Upsample inexact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 3, 5 };
+		constexpr Rational<int64_t> sampleRates = { 3, 5 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		constexpr size_t numPhases = 5;
 
 		constexpr auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(18333.333 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(18333.333 / 5).margin(0.01));
 	}
 	SECTION("Downsample exact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 11000, 3500 };
+		constexpr Rational<int64_t> sampleRates = { 11000, 3500 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		volatile size_t numPhases = 5;
 
 		const auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(3500.0 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
 	}
 	SECTION("Downsample inexact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 22000, 7001 };
+		constexpr Rational<int64_t> sampleRates = { 22000, 7001 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		constexpr size_t numPhases = 5;
 
 		constexpr auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(3500.5 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(3500.5 / 5).margin(0.01));
 	}
 }
 
 TEST_CASE("Resampling length central", "[Interpolation]") {
 	SECTION("Upsample exact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 9000, 14000 };
+		constexpr Rational<int64_t> sampleRates = { 9000, 14000 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		constexpr size_t numPhases = 5;
 
 		constexpr auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(14000.0 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(14000.0 / 5).margin(0.01));
 	}
 	SECTION("Upsample inexact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 27000, 14000 };
+		constexpr Rational<int64_t> sampleRates = { 27000, 14000 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		constexpr size_t numPhases = 5;
 
 		constexpr auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(4666.667 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(4666.667 / 5).margin(0.01));
 	}
 	SECTION("Downsample exact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 9000, 3500 };
+		constexpr Rational<int64_t> sampleRates = { 9000, 3500 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		volatile size_t numPhases = 5;
 
 		const auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(3500.0 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
 	}
 	SECTION("Downsample inexact") {
-		constexpr std::pair<uint64_t, uint64_t> sampleRates = { 18000, 7001 };
+		constexpr Rational<int64_t> sampleRates = { 18000, 7001 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
 		constexpr size_t numPhases = 5;
 
 		constexpr auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		const double real = double(size.first) / double(size.second);
-		REQUIRE(real == Approx(3500.5 / 5).margin(0.01));
+		REQUIRE(double(size) == Approx(3500.5 / 5).margin(0.01));
 	}
 }
 
@@ -172,25 +164,21 @@ TEST_CASE("Resampling change sample rate", "[Interpolation]") {
 	constexpr int inputRate = 7;
 	constexpr int outputRate = 17;
 
-	constexpr std::pair originalSample = { 28ull, 42ull };
+	constexpr Rational originalSample = { 28ll, 42ll };
 
 	SECTION("Regular") {
-		constexpr auto newSample = resample::ChangeSampleRate({ inputRate, outputRate }, originalSample, false);
+		constexpr auto newSample = resample::ChangeSampleRate(inputRate, outputRate, originalSample);
 
-		const double outputIndexReal = double(originalSample.first) / double(originalSample.second);
-		const double inputIndexRealExpected = outputIndexReal / double(inputRate) * double(outputRate);
-		const double inputIndexReal = double(newSample.first) / double(newSample.second);
+		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
 
-		REQUIRE(inputIndexReal == Approx(inputIndexRealExpected));
+		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
 	}
 	SECTION("Simplify") {
-		constexpr auto newSample = resample::ChangeSampleRate({ inputRate, outputRate }, originalSample, true);
+		constexpr auto newSample = resample::ChangeSampleRate(inputRate, outputRate, originalSample);
 
-		const double outputIndexReal = double(originalSample.first) / double(originalSample.second);
-		const double inputIndexRealExpected = outputIndexReal / double(inputRate) * double(outputRate);
-		const double inputIndexReal = double(newSample.first) / double(newSample.second);
+		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
 
-		REQUIRE(inputIndexReal == Approx(inputIndexRealExpected));
+		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
 	}
 }
 
@@ -199,7 +187,7 @@ TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
 		const auto [firstSample, secondSample] = resample::InputIndex2Sample({ 43, 7 }, 7);
 		REQUIRE(firstSample.inputIndex == 6);
 		REQUIRE(firstSample.phaseIndex == 1);
-		REQUIRE(firstSample.weight == 7);
+		REQUIRE(firstSample.weight == 1);
 
 		REQUIRE(secondSample.inputIndex == 6);
 		REQUIRE(secondSample.phaseIndex == 2);
@@ -276,7 +264,7 @@ TEST_CASE("Resampling spectrum invariance - upsample mild", "[Interpolation]") {
 		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
 
 		const auto length = ResamplingLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, length.first / length.second);
+		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
 		INFO("filterSize=" << filterSize)
@@ -297,7 +285,7 @@ TEST_CASE("Resampling spectrum invariance - upsample strong", "[Interpolation]")
 		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
 
 		const auto length = ResamplingLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, length.first / length.second);
+		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
 		INFO("filterSize=" << filterSize)
@@ -318,7 +306,7 @@ TEST_CASE("Resampling spectrum invariance - downsample mild", "[Interpolation]")
 		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
 
 		const auto length = ResamplingLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, length.first / length.second);
+		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
 		INFO("filterSize=" << filterSize)
@@ -339,7 +327,7 @@ TEST_CASE("Resampling spectrum invariance - downsample strong", "[Interpolation]
 		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
 
 		const auto length = ResamplingLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, length.first / length.second);
+		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
 		INFO("filterSize=" << filterSize)
@@ -381,7 +369,7 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 		const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, supersamplingRate));
 
 		const auto length = ResamplingLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, length.first / length.second);
+		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 
 		const double crossingSignal = FindCrossing(signal, 500.0);
 		const double crossingResampled = FindCrossing(resampled, 500.0);
@@ -403,29 +391,29 @@ TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
 TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 	constexpr size_t numPhases = 6;
 	constexpr size_t filterSize = 31;
-	constexpr std::pair sampleRates = { 4ULL, 7ULL };
+	constexpr Rational sampleRates = { 4LL, 7LL };
 
 	SECTION("Initial point") {
-		constexpr std::pair nextOutputSample = { 0ULL, 1ULL };
+		constexpr Rational nextOutputSample = { 0LL, 1LL };
 		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 0);
-		REQUIRE(double(startPoint.first) / double(startPoint.second) == Approx(0));
+		REQUIRE(double(startPoint) == Approx(0));
 	}
 	SECTION("One off") {
-		constexpr std::pair nextOutputSample = { 7ULL, 7ULL };
+		constexpr Rational nextOutputSample = { 7LL, 7LL };
 		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 0);
-		REQUIRE(double(startPoint.first) / double(startPoint.second) == Approx(1));
+		REQUIRE(double(startPoint) == Approx(1));
 	}
 	SECTION("Middle point") {
-		constexpr std::pair nextOutputSample = { 6ULL * 7ULL, 4ULL };
+		constexpr Rational nextOutputSample = { 6LL * 7LL, 4LL };
 		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 1);
-		const double expectedTotalOffset = double(nextOutputSample.first) / double(nextOutputSample.second);
-		const double actualTotalOffset = double(inputIndex) * sampleRates.second / sampleRates.first + double(startPoint.first) / double(startPoint.second);
+		const double expectedTotalOffset = double(nextOutputSample);
+		const double actualTotalOffset = double(inputIndex) / double(sampleRates) + double(startPoint);
 		REQUIRE(expectedTotalOffset == Approx(actualTotalOffset));
 	}
 }

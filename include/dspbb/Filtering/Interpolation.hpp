@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Math/DotProduct.hpp"
+#include "../Math/Rational.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalTraits.hpp"
 #include "../Primitives/SignalView.hpp"
@@ -97,7 +98,7 @@ void Interpolate(SignalR&& hrOutput,
 	const ptrdiff_t hrInputSize = lrInputSize * rate;
 
 	const ptrdiff_t hrOutputMaxSize = ConvolutionLength(hrInputSize, hrFilterSize, CONV_FULL);
-	assert(hrOffset + hrOutputSize <= hrOutputMaxSize);
+	assert(ptrdiff_t(hrOffset) + hrOutputSize <= hrOutputMaxSize);
 
 	for (size_t hrOutputIdx = hrOffset; hrOutputIdx < hrOffset + hrOutputSize; ++hrOutputIdx) {
 		const ptrdiff_t hrInputIdx = 1 - hrFilterSize + hrOutputIdx;
@@ -144,7 +145,7 @@ namespace impl {
 	}
 	template <class T1, class... T>
 	constexpr auto lcm(T1 head, T... tail) {
-		return std::lcm(head, dspbb::impl::lcm(tail...));
+		return std::lcm(head, impl::lcm(tail...));
 	}
 } // namespace impl
 
@@ -152,29 +153,23 @@ namespace impl {
 namespace resample {
 
 	template <class ConvType>
-	constexpr std::pair<uint64_t, uint64_t> ResamplingLength(size_t inputSize,
-															 size_t filterSize,
-															 size_t numPhases,
-															 std::pair<uint64_t, uint64_t> sampleRates,
-															 const ConvType&) {
+	constexpr Rational<int64_t> ResamplingLength(size_t inputSize,
+												 size_t filterSize,
+												 size_t numPhases,
+												 Rational<int64_t> sampleRates,
+												 const ConvType&) {
 		static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
-		const uint64_t interpolatedSize = numPhases * inputSize;
-		const uint64_t filteredSize = ConvolutionLength(interpolatedSize, filterSize, ConvType{});
+		const int64_t interpolatedSize = int64_t(numPhases) * inputSize;
+		const int64_t filteredInterpolatedSize = ConvolutionLength(interpolatedSize, filterSize, ConvType{});
 
-		const uint64_t sampleRatesGcd = std::gcd(sampleRates.first, sampleRates.second);
-		const uint64_t sampleCountGcd = std::gcd(filteredSize, sampleRates.first / sampleRatesGcd);
-		const std::pair length = {
-			(filteredSize / sampleCountGcd) * (sampleRates.second / sampleRatesGcd),
-			sampleRates.first * numPhases / sampleCountGcd / sampleRatesGcd
-		};
-		return length;
+		return filteredInterpolatedSize / sampleRates / int64_t(numPhases);
 	}
 
 	template <class ConvType>
-	constexpr std::pair<uint64_t, uint64_t> ResamplingStartPoint(size_t filterSize,
-																 size_t numPhases,
-																 std::pair<uint64_t, uint64_t> sampleRates,
-																 const ConvType&) {
+	constexpr Rational<int64_t> ResamplingStartPoint(size_t filterSize,
+													 size_t numPhases,
+													 std::pair<uint64_t, uint64_t> sampleRates,
+													 const ConvType&) {
 		if constexpr (std::is_same_v<ConvType, impl::ConvFull>) {
 			return { 0, 1 };
 		}
@@ -186,25 +181,10 @@ namespace resample {
 		}
 	}
 
-	constexpr std::pair<uint64_t, uint64_t> ChangeSampleRate(std::pair<uint64_t, uint64_t> sampleRates,
-															 std::pair<uint64_t, uint64_t> sample,
-															 bool simplify = false) {
-		if (simplify) {
-			const auto gcdOutput = std::gcd(sample.first, sample.second);
-			const auto outputIndexSimplified = std::pair{ sample.first / gcdOutput, sample.second / gcdOutput };
-			const auto gcdRate = std::gcd(sampleRates.second, sampleRates.first);
-			const auto sampleRateSimplified = std::pair{ sampleRates.first / gcdRate, sampleRates.second / gcdRate };
-			const auto gcd1 = std::gcd(sampleRateSimplified.second, outputIndexSimplified.second);
-			const auto gcd2 = std::gcd(sampleRateSimplified.first, outputIndexSimplified.first);
-			return {
-				(outputIndexSimplified.first / gcd2) * (sampleRateSimplified.second / gcd1),
-				(outputIndexSimplified.second / gcd1) * (sampleRateSimplified.first / gcd2)
-			};
-		}
-		return {
-			sample.first * sampleRates.second,
-			sample.second * sampleRates.first
-		};
+	constexpr Rational<int64_t> ChangeSampleRate(int64_t sourceRate,
+												 int64_t targetRate,
+												 Rational<int64_t> sample) {
+		return sample * Rational{ targetRate, sourceRate };
 	}
 
 	struct PhaseSample {
@@ -213,16 +193,17 @@ namespace resample {
 		uint64_t weight;
 	};
 
-	constexpr std::pair<PhaseSample, PhaseSample> InputIndex2Sample(std::pair<uint64_t, uint64_t> inputIndex, size_t numPhases) {
-		const uint64_t firstIndex = inputIndex.first / inputIndex.second;
-		const std::pair fractionalIndex = {
-			inputIndex.first % inputIndex.second,
-			inputIndex.second
-		};
-		const size_t firstPhase = fractionalIndex.first * numPhases / fractionalIndex.second;
-		const size_t secondWeight = fractionalIndex.first * numPhases % fractionalIndex.second;
+	constexpr std::pair<PhaseSample, PhaseSample> InputIndex2Sample(Rational<int64_t> inputIndex, size_t numPhases) {
+		const Rational indexFrac = frac(inputIndex);
+
+		const size_t firstPhase = floor(indexFrac * int64_t(numPhases));
 		const size_t secondPhase = (firstPhase + 1) % numPhases;
-		const size_t firstWeight = fractionalIndex.second - secondWeight;
+
+		const Rational t = frac(indexFrac * int64_t(numPhases));
+		const size_t secondWeight = t.Numerator();
+		const size_t firstWeight = t.Denominator() - t.Numerator();
+
+		const size_t firstIndex = floor(inputIndex);
 		const size_t secondIndex = secondPhase == 0 ? firstIndex + 1 : firstIndex;
 
 		return {
@@ -263,27 +244,24 @@ namespace resample {
 
 	struct ContinuationParams {
 		size_t firstInputSample;
-		std::pair<uint64_t, uint64_t> startPoint;
+		Rational<int64_t> startPoint;
 	};
 
-	constexpr ContinuationParams Continuation(std::pair<uint64_t, uint64_t> nextOutputSample,
+	constexpr ContinuationParams Continuation(Rational<int64_t> nextOutputSample,
 											  size_t filterSize,
 											  size_t numPhases,
-											  std::pair<uint64_t, uint64_t> sampleRates) {
-		const auto nextInputSample = ChangeSampleRate({ sampleRates.second, sampleRates.first }, nextOutputSample, true);
-		const auto nextInterpolatedSample = std::pair{ nextInputSample.first * numPhases, nextInputSample.second * numPhases };
-		const auto firstInputSample = std::pair{ int64_t(nextInterpolatedSample.first) - int64_t(nextInputSample.second * filterSize) + int64_t(nextInputSample.second),
-												 nextInterpolatedSample.second };
-		if (firstInputSample.first <= 0) {
+											  Rational<int64_t> sampleRates) {
+		const auto nextInputSample = ChangeSampleRate(sampleRates.Denominator(), sampleRates.Numerator(), nextOutputSample);
+		const auto convolutionOffset = Rational{ int64_t(filterSize) - 1, int64_t(numPhases) };
+		const auto firstInputSample = nextInputSample - convolutionOffset;
+
+		if (firstInputSample <= 0ll) {
 			return { 0, nextOutputSample };
 		}
 		else {
-			const size_t firstInputSampleWhole = firstInputSample.first / firstInputSample.second;
-			const auto inputStartPoint = std::pair<uint64_t, uint64_t>{
-				firstInputSample.first - firstInputSampleWhole * firstInputSample.second + int64_t(nextInputSample.second * filterSize) - int64_t(nextInputSample.second),
-				firstInputSample.second
-			};
-			const auto outputStartPoint = ChangeSampleRate(sampleRates, inputStartPoint, true);
+			const size_t firstInputSampleWhole = floor(firstInputSample);
+			const auto inputStartPoint = frac(firstInputSample) + convolutionOffset;
+			const auto outputStartPoint = ChangeSampleRate(sampleRates.Numerator(), sampleRates.Denominator(), inputStartPoint);
 			return { firstInputSampleWhole, outputStartPoint };
 		}
 	}
@@ -301,20 +279,19 @@ template <class SignalR,
 		  eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
 resample::ContinuationParams Resample(SignalR&& output,
-			  const SignalT& input,
-			  const PolyphaseView<P, D>& polyphase,
-			  std::pair<uint64_t, uint64_t> sampleRates,
-			  std::pair<uint64_t, uint64_t> startPoint = { 0, 1 }) {
-	assert(sampleRates.first > 0);
-	assert(sampleRates.second > 0);
-	assert(startPoint.second > 0);
+									  const SignalT& input,
+									  const PolyphaseView<P, D>& polyphase,
+									  Rational<int64_t> sampleRates,
+									  Rational<int64_t> startPoint = { 0, 1 }) {
+	assert(sampleRates >= 0ll);
+	assert(startPoint >= 0ll);
 	assert(polyphase.FilterCount() > 0);
 
 	const auto maxLength = resample::ResamplingLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
 
 	auto outputIndex = startPoint;
-	for (auto outputIt = output.begin(); outputIt != output.end(); ++outputIt, outputIndex.first += outputIndex.second) {
-		const auto inputIndex = resample::ChangeSampleRate({ sampleRates.second, sampleRates.first }, outputIndex);
+	for (auto outputIt = output.begin(); outputIt != output.end(); ++outputIt, outputIndex += 1) {
+		const auto inputIndex = resample::ChangeSampleRate(sampleRates.Denominator(), sampleRates.Numerator(), outputIndex);
 		const auto [firstSampleLoc, secondSampleLoc] = resample::InputIndex2Sample(inputIndex, polyphase.FilterCount());
 		const auto firstSampleVal = resample::DotProductSample(input, polyphase[firstSampleLoc.phaseIndex], firstSampleLoc.inputIndex);
 		const auto secondSampleVal = resample::DotProductSample(input, polyphase[secondSampleLoc.phaseIndex], secondSampleLoc.inputIndex);
@@ -323,7 +300,8 @@ resample::ContinuationParams Resample(SignalR&& output,
 					/ (CommonType(firstSampleLoc.weight) + CommonType(secondSampleLoc.weight));
 	}
 
-	return resample::Continuation()
+	return {};
+	//return resample::Continuation();
 }
 
 template <class SignalT,
@@ -332,8 +310,8 @@ template <class SignalT,
 		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
 auto Resample(const SignalT& input,
 			  const PolyphaseView<P, Domain>& polyphase,
-			  std::pair<uint64_t, uint64_t> sampleRates,
-			  std::pair<uint64_t, uint64_t> startPoint,
+			  Rational<int64_t> sampleRates,
+			  Rational<int64_t> startPoint,
 			  size_t orLength) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using R = multiplies_result_t<T, P>;

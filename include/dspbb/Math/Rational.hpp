@@ -229,6 +229,7 @@ namespace impl {
 	}
 } // namespace impl
 
+
 template <class T>
 constexpr bool operator==(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
 	const auto [lhsNum, rhsNum] = impl::CommonNumerators(lhs, rhs);
@@ -255,6 +256,75 @@ constexpr bool operator<=(const Rational<T>& lhs, const Rational<T>& rhs) noexce
 template <class T>
 constexpr bool operator>=(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
 	return !(lhs < rhs);
+}
+
+
+template <class T>
+constexpr bool operator==(const Rational<T>& lhs, T rhs) noexcept {
+	return lhs == Rational{ rhs };
+}
+template <class T>
+constexpr bool operator!=(const Rational<T>& lhs, T rhs) noexcept {
+	return !(lhs == rhs);
+}
+template <class T>
+constexpr bool operator<(const Rational<T>& lhs, T rhs) noexcept {
+	return lhs < Rational{ rhs };
+}
+template <class T>
+constexpr bool operator>(const Rational<T>& lhs, T rhs) noexcept {
+	return lhs > Rational{ rhs };
+}
+template <class T>
+constexpr bool operator<=(const Rational<T>& lhs, T rhs) noexcept {
+	return !(lhs > rhs);
+}
+template <class T>
+constexpr bool operator>=(const Rational<T>& lhs, T rhs) noexcept {
+	return !(lhs < rhs);
+}
+
+
+template <class T>
+constexpr bool operator==(T lhs, const Rational<T>& rhs) noexcept {
+	return Rational{ lhs } == rhs;
+}
+template <class T>
+constexpr bool operator!=(T lhs, const Rational<T>& rhs) noexcept {
+	return !(lhs == rhs);
+}
+template <class T>
+constexpr bool operator<(T lhs, const Rational<T>& rhs) noexcept {
+	return Rational{ lhs } < rhs;
+}
+template <class T>
+constexpr bool operator>(T lhs, const Rational<T>& rhs) noexcept {
+	return Rational{ lhs } > rhs;
+}
+template <class T>
+constexpr bool operator<=(T lhs, const Rational<T>& rhs) noexcept {
+	return !(lhs > rhs);
+}
+template <class T>
+constexpr bool operator>=(T lhs, const Rational<T>& rhs) noexcept {
+	return !(lhs < rhs);
+}
+
+
+
+template <class T>
+constexpr T ceil(const Rational<T>& rational) {
+	return (rational.Numerator() + rational.Denominator() - 1) / rational.Denominator();
+}
+
+template <class T>
+constexpr T floor(const Rational<T>& rational) {
+	return rational.Numerator() / rational.Denominator();
+}
+
+template <class T>
+constexpr Rational<T> frac(const Rational<T> rational) {
+	return rational - floor(rational);
 }
 
 
