@@ -374,7 +374,7 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 		const double crossingSignal = FindCrossing(signal, 500.0);
 		const double crossingResampled = FindCrossing(resampled, 500.0);
 		const auto resamplingDelay = ResamplingDelay(filterSize, supersamplingRate, { inputRate, outputRate });
-		const double crossingExpected = double(resamplingDelay.first) / resamplingDelay.second + crossingSignal * outputRate / inputRate;
+		const double crossingExpected = double(resamplingDelay) + crossingSignal * outputRate / inputRate;
 
 		INFO("filterSize=" << filterSize)
 		REQUIRE(crossingExpected == Approx(crossingResampled));
@@ -416,4 +416,63 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 		const double actualTotalOffset = double(inputIndex) / double(sampleRates) + double(startPoint);
 		REQUIRE(expectedTotalOffset == Approx(actualTotalOffset));
 	}
+	SECTION("Far point") {
+		constexpr Rational nextOutputSample = { 156LL, 1LL };
+		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+
+		REQUIRE(inputIndex == 84);
+		const double expectedTotalOffset = double(nextOutputSample);
+		const double actualTotalOffset = double(inputIndex) / double(sampleRates) + double(startPoint);
+		REQUIRE(expectedTotalOffset == Approx(actualTotalOffset));
+	}
+}
+
+
+TEST_CASE("Resampling continuation output", "[Interpolation]") {
+	constexpr size_t numPhases = 6;
+	constexpr size_t filterSize = 511;
+	constexpr Rational sampleRates = { 4LL, 7LL };
+	constexpr float filterCutoff = float(ResamplingFilterCutoff(sampleRates, numPhases));
+
+	const auto filter = FirFilter<float, TIME_DOMAIN>(filterSize, Lowpass(LEAST_SQUARES).Cutoff(0.90f * filterCutoff, filterCutoff));
+	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
+
+	// This creates a linearly increasing ramp-like function
+	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
+
+	const Rational maxLength = ResamplingLength(signal.Size(), filterSize, numPhases, sampleRates, CONV_FULL);
+
+	auto output = Signal<float>(floor(maxLength), 0.0f);
+
+	size_t chunkSize = 1;
+	size_t outputWritten = 0;
+	size_t firstInputSample = 0;
+	Rational<int64_t> startPoint{ 0 };
+	while (outputWritten < output.Size() / 2) {
+		const auto [newFirstInputSample, newStartPoint] = Resample(AsView(output).SubSignal(outputWritten, chunkSize),
+																   AsView(signal).SubSignal(firstInputSample),
+																   polyphase,
+																   sampleRates,
+																   startPoint);
+
+		startPoint = newStartPoint;
+		firstInputSample += newFirstInputSample;
+		outputWritten += chunkSize;
+		chunkSize *= 2;
+	}
+
+	// Find the linear part of the output
+	const auto first = std::find_if(output.begin(), output.end(), [](float v) { return v >= 3.0f; });
+	const auto last = std::max_element(output.begin(), output.end());
+
+	REQUIRE(first != last);
+	REQUIRE(first != output.end());
+	REQUIRE(last != output.end());
+	REQUIRE(first - output.begin() < ptrdiff_t(output.Size()) / 30 + ceil(ResamplingDelay(filterSize, numPhases, sampleRates)));
+	REQUIRE(last - output.begin() >= ptrdiff_t(output.Size()) / 2);
+
+	// Check if increments between adjacent elements of the output ramp are roughly equal
+	SignalView<float> left{ first, last - 1 };
+	SignalView<float> right{ first + 1, last };
+	REQUIRE(Max(right - left) == Approx(Min(right - left)).epsilon(0.02));
 }

@@ -40,7 +40,7 @@ public:
 	Rational& operator/=(const Rational& rhs) noexcept;
 
 	template <class FloatT, std::enable_if_t<std::is_floating_point_v<FloatT>, int> = 0>
-	explicit operator FloatT() const;
+	constexpr explicit operator FloatT() const;
 
 private:
 	int_t num;
@@ -197,7 +197,7 @@ Rational<T>& Rational<T>::operator/=(const Rational& rhs) noexcept {
 
 template <class T>
 template <class FloatT, std::enable_if_t<std::is_floating_point_v<FloatT>, int>>
-Rational<T>::operator FloatT() const {
+constexpr Rational<T>::operator FloatT() const {
 	return static_cast<FloatT>(num) / static_cast<FloatT>(den);
 }
 

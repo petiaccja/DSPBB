@@ -227,19 +227,16 @@ namespace resample {
 		return DotProduct(inputView, filterView);
 	}
 
-	constexpr double ResamplingFilterCutoff(std::pair<uint64_t, uint64_t> sampleRates, size_t numPhases) {
+	constexpr double ResamplingFilterCutoff(Rational<int64_t> sampleRates, size_t numPhases) {
 		const double base = 1.0 / double(numPhases);
-		const double rate = std::min(1.0, double(sampleRates.second) / double(sampleRates.first));
+		const double rate = std::min(1.0, 1.0 / double(sampleRates));
 		return base * rate;
 	}
 
-	constexpr std::pair<uint64_t, uint64_t> ResamplingDelay(size_t filterSize,
-															size_t numPhases,
-															std::pair<uint64_t, uint64_t> sampleRates) {
-		return {
-			(filterSize - 1) * sampleRates.second,
-			sampleRates.first * 2 * numPhases
-		};
+	constexpr Rational<int64_t> ResamplingDelay(size_t filterSize,
+												size_t numPhases,
+												Rational<int64_t> sampleRates) {
+		return Rational<int64_t>{ int64_t(filterSize) - 1, 2 * int64_t(numPhases) } / sampleRates;
 	}
 
 	struct ContinuationParams {
