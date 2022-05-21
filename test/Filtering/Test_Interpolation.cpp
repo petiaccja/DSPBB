@@ -8,14 +8,6 @@
 
 using namespace dspbb;
 
-auto MakeRamp(size_t size) {
-	Signal<float> signal;
-	for (size_t i = 0; i < size; ++i) {
-		signal.PushBack(float(i));
-	}
-	return signal;
-}
-
 
 template <class SignalT>
 SignalT InterpolateRefImpl(const SignalT& signal, const SignalT& filter, size_t rate, size_t offset, size_t length) {
