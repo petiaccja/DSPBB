@@ -12,8 +12,8 @@ namespace dspbb {
 template <class T, eSignalDomain Domain>
 class PolyphaseView {
 public:
-	PolyphaseView() = default;
-	PolyphaseView(BasicSignalView<T, Domain> data, size_t numFilters)
+	PolyphaseView() noexcept = default;
+	PolyphaseView(BasicSignalView<T, Domain> data, size_t numFilters) noexcept
 		: m_bufferView(data), m_filterCount(numFilters) {}
 
 	BasicSignalView<T, Domain> operator[](size_t index) {
@@ -24,13 +24,13 @@ public:
 		auto loc = SubSignalLocation(index);
 		return m_bufferView.SubSignal(loc.first, loc.second);
 	}
-	size_t PhaseSize() const {
+	size_t PhaseSize() const noexcept {
 		return (m_bufferView.Size() + m_filterCount - 1) / m_filterCount;
 	}
-	size_t OriginalSize() const {
+	size_t OriginalSize() const noexcept {
 		return m_bufferView.Size();
 	}
-	size_t FilterCount() const {
+	size_t FilterCount() const noexcept {
 		return m_filterCount;
 	}
 
@@ -59,7 +59,7 @@ public:
 	PolyphaseFilter(const PolyphaseFilter& rhs) : m_buffer(rhs.m_buffer) {
 		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.FilterCount() });
 	}
-	PolyphaseFilter(PolyphaseFilter&& rhs) : m_buffer(std::move(rhs.m_buffer)) {
+	PolyphaseFilter(PolyphaseFilter&& rhs) noexcept : m_buffer(std::move(rhs.m_buffer)) {
 		PolyphaseView<T, Domain>::operator=(rhs);
 		rhs.PolyphaseView<T, Domain>::operator=({});
 	}
@@ -68,12 +68,13 @@ public:
 		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.FilterCount() });
 		return *this;
 	}
-	PolyphaseFilter& operator=(PolyphaseFilter&& rhs) {
+	PolyphaseFilter& operator=(PolyphaseFilter&& rhs) noexcept {
 		m_buffer = std::move(rhs.m_buffer);
 		PolyphaseView<T, Domain>::operator=(rhs);
 		rhs.PolyphaseView<T, Domain>::operator=({});
 		return *this;
 	}
+	~PolyphaseFilter() = default;
 
 	BasicSignalView<T, Domain> Buffer() {
 		return AsView(m_buffer);

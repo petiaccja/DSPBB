@@ -56,7 +56,7 @@ TEST_CASE("Interpolation full", "[Interpolation]") {
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, 0, length);
 		const auto answer = Interpolate(signal, polyphase, 0, length);
 
-		INFO("filterSize=" << filterSize);
+		INFO("filterSize=" << filterSize)
 		REQUIRE(reference.Size() == answer.Size());
 		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
 	}
@@ -75,7 +75,7 @@ TEST_CASE("Interpolation central", "[Interpolation]") {
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, filterSize - 1, length);
 		const auto answer = Interpolate(signal, polyphase, filterSize - 1, length);
 
-		INFO("filterSize=" << filterSize);
+		INFO("filterSize=" << filterSize)
 		REQUIRE(reference.Size() == answer.Size());
 		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
 	}
@@ -105,7 +105,7 @@ TEST_CASE("Resampling length full", "[Interpolation]") {
 		constexpr Rational<int64_t> sampleRates = { 11000, 3500 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
-		volatile size_t numPhases = 5;
+		constexpr size_t numPhases = 5;
 
 		const auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
 		REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
@@ -144,7 +144,7 @@ TEST_CASE("Resampling length central", "[Interpolation]") {
 		constexpr Rational<int64_t> sampleRates = { 9000, 3500 };
 		constexpr size_t signalSize = 2000;
 		constexpr size_t filterSize = 1001;
-		volatile size_t numPhases = 5;
+		constexpr size_t numPhases = 5;
 
 		const auto size = ResamplingLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
 		REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
@@ -470,7 +470,7 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 
 	const size_t maxLength = InterpLength(signal.Size(), filterSize, numPhases, CONV_FULL);
 
-	auto output = Signal<float>(floor(maxLength), 0.0f);
+	auto output = Signal<float>(maxLength, 0.0f);
 
 	size_t chunkSize = 1;
 	size_t outputWritten = 0;
