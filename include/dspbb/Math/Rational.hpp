@@ -220,93 +220,93 @@ constexpr Rational<T> operator/(T lhs, const Rational<T>& rhs) noexcept {
 }
 
 namespace impl {
-	template <class T>
-	constexpr std::pair<T, T> CommonNumerators(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+	template <class T1, class T2>
+	constexpr auto CommonNumerators(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 		const auto common = std::lcm(lhs.Denominator(), rhs.Denominator());
 		const auto lhsNum = lhs.Numerator() * (common / lhs.Denominator());
 		const auto rhsNum = rhs.Numerator() * (common / rhs.Denominator());
-		return { lhsNum, rhsNum };
+		return std::pair{ lhsNum, rhsNum };
 	}
 } // namespace impl
 
 
-template <class T>
-constexpr bool operator==(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+template <class T1, class T2>
+constexpr bool operator==(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 	const auto [lhsNum, rhsNum] = impl::CommonNumerators(lhs, rhs);
 	return lhsNum == rhsNum;
 }
-template <class T>
-constexpr bool operator!=(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+template <class T1, class T2>
+constexpr bool operator!=(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 	return !(lhs == rhs);
 }
-template <class T>
-constexpr bool operator<(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+template <class T1, class T2>
+constexpr bool operator<(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 	const auto [lhsNum, rhsNum] = impl::CommonNumerators(lhs, rhs);
 	return lhsNum < rhsNum;
 }
-template <class T>
-constexpr bool operator>(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+template <class T1, class T2>
+constexpr bool operator>(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 	const auto [lhsNum, rhsNum] = impl::CommonNumerators(lhs, rhs);
 	return lhsNum > rhsNum;
 }
-template <class T>
-constexpr bool operator<=(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+template <class T1, class T2>
+constexpr bool operator<=(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 	return !(lhs > rhs);
 }
-template <class T>
-constexpr bool operator>=(const Rational<T>& lhs, const Rational<T>& rhs) noexcept {
+template <class T1, class T2>
+constexpr bool operator>=(const Rational<T1>& lhs, const Rational<T2>& rhs) noexcept {
 	return !(lhs < rhs);
 }
 
 
-template <class T>
-constexpr bool operator==(const Rational<T>& lhs, T rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator==(const Rational<T>& lhs, S rhs) noexcept {
 	return lhs == Rational{ rhs };
 }
-template <class T>
-constexpr bool operator!=(const Rational<T>& lhs, T rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator!=(const Rational<T>& lhs, S rhs) noexcept {
 	return !(lhs == rhs);
 }
-template <class T>
-constexpr bool operator<(const Rational<T>& lhs, T rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator<(const Rational<T>& lhs, S rhs) noexcept {
 	return lhs < Rational{ rhs };
 }
-template <class T>
-constexpr bool operator>(const Rational<T>& lhs, T rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator>(const Rational<T>& lhs, S rhs) noexcept {
 	return lhs > Rational{ rhs };
 }
-template <class T>
-constexpr bool operator<=(const Rational<T>& lhs, T rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator<=(const Rational<T>& lhs, S rhs) noexcept {
 	return !(lhs > rhs);
 }
-template <class T>
-constexpr bool operator>=(const Rational<T>& lhs, T rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator>=(const Rational<T>& lhs, S rhs) noexcept {
 	return !(lhs < rhs);
 }
 
 
-template <class T>
-constexpr bool operator==(T lhs, const Rational<T>& rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator==(S lhs, const Rational<T>& rhs) noexcept {
 	return Rational{ lhs } == rhs;
 }
-template <class T>
-constexpr bool operator!=(T lhs, const Rational<T>& rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator!=(S lhs, const Rational<T>& rhs) noexcept {
 	return !(lhs == rhs);
 }
-template <class T>
-constexpr bool operator<(T lhs, const Rational<T>& rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator<(S lhs, const Rational<T>& rhs) noexcept {
 	return Rational{ lhs } < rhs;
 }
-template <class T>
-constexpr bool operator>(T lhs, const Rational<T>& rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator>(S lhs, const Rational<T>& rhs) noexcept {
 	return Rational{ lhs } > rhs;
 }
-template <class T>
-constexpr bool operator<=(T lhs, const Rational<T>& rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator<=(S lhs, const Rational<T>& rhs) noexcept {
 	return !(lhs > rhs);
 }
-template <class T>
-constexpr bool operator>=(T lhs, const Rational<T>& rhs) noexcept {
+template <class S, class T, std::enable_if_t<std::is_constructible_v<Rational<T>, S>, int> = 0>
+constexpr bool operator>=(S lhs, const Rational<T>& rhs) noexcept {
 	return !(lhs < rhs);
 }
 

@@ -164,7 +164,7 @@ TEST_CASE("Resampling change sample rate", "[Interpolation]") {
 	constexpr int inputRate = 7;
 	constexpr int outputRate = 17;
 
-	constexpr Rational originalSample = { 28ll, 42ll };
+	constexpr Rational<int64_t> originalSample = { 28, 42 };
 
 	SECTION("Regular") {
 		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
@@ -420,24 +420,24 @@ TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
 TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 	constexpr size_t numPhases = 6;
 	constexpr size_t filterSize = 31;
-	constexpr Rational sampleRates = { 4LL, 7LL };
+	constexpr Rational<int64_t> sampleRates = { 4, 7 };
 
 	SECTION("Initial point") {
-		constexpr Rational nextOutputSample = { 0LL, 1LL };
+		constexpr Rational<int64_t> nextOutputSample = { 0, 1 };
 		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 0);
 		REQUIRE(double(startPoint) == Approx(0));
 	}
 	SECTION("One off") {
-		constexpr Rational nextOutputSample = { 7LL, 7LL };
+		constexpr Rational<int64_t> nextOutputSample = { 7, 7 };
 		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 0);
 		REQUIRE(double(startPoint) == Approx(1));
 	}
 	SECTION("Middle point") {
-		constexpr Rational nextOutputSample = { 6LL * 7LL, 4LL };
+		constexpr Rational<int64_t> nextOutputSample = { 6 * 7, 4 };
 		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 1);
@@ -446,7 +446,7 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 		REQUIRE(expectedTotalOffset == Approx(actualTotalOffset));
 	}
 	SECTION("Far point") {
-		constexpr Rational nextOutputSample = { 156LL, 1LL };
+		constexpr Rational<int64_t> nextOutputSample = { 156, 1 };
 		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 84);
@@ -509,7 +509,7 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 TEST_CASE("Resampling continuation output", "[Interpolation]") {
 	constexpr size_t numPhases = 6;
 	constexpr size_t filterSize = 511;
-	constexpr Rational sampleRates = { 4LL, 7LL };
+	constexpr Rational<int64_t> sampleRates = { 4, 7 };
 	constexpr float filterCutoff = float(ResamplingFilterCutoff(sampleRates, numPhases));
 
 	const auto filter = FirFilter<float, TIME_DOMAIN>(filterSize, Lowpass(LEAST_SQUARES).Cutoff(0.90f * filterCutoff, filterCutoff));

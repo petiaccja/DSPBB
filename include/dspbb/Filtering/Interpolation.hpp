@@ -102,7 +102,7 @@ namespace impl {
 		const auto convolutionOffset = Rational{ int64_t(filterSize) - 1, int64_t(numPhases) };
 		const auto firstInputSample = nextInputSample - convolutionOffset;
 
-		if (firstInputSample <= 0ll) {
+		if (firstInputSample <= 0) {
 			return { 0, nextOutputSample };
 		}
 		else {
