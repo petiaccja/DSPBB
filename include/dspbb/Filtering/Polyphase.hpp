@@ -54,24 +54,24 @@ class PolyphaseFilter : public PolyphaseView<T, Domain> {
 public:
 	PolyphaseFilter() = default;
 	PolyphaseFilter(size_t hrFilterSize, size_t numPhases) : m_buffer(hrFilterSize) {
-		static_cast<PolyphaseView<T, Domain>&>(*this) = { AsView(m_buffer), numPhases };
+		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), numPhases });
 	}
 	PolyphaseFilter(const PolyphaseFilter& rhs) : m_buffer(rhs.m_buffer) {
-		static_cast<PolyphaseView<T, Domain>&>(*this) = { AsView(m_buffer), rhs.FilterCount() };
+		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.FilterCount() });
 	}
 	PolyphaseFilter(PolyphaseFilter&& rhs) : m_buffer(std::move(rhs.m_buffer)) {
-		static_cast<PolyphaseView<T, Domain>&>(*this) = rhs;
-		static_cast<PolyphaseView<T, Domain>&>(rhs) = {};
+		PolyphaseView<T, Domain>::operator=(rhs);
+		rhs.PolyphaseView<T, Domain>::operator=({});
 	}
 	PolyphaseFilter& operator=(const PolyphaseFilter& rhs) {
 		m_buffer = rhs.m_buffer;
-		static_cast<PolyphaseView<T, Domain>&>(*this) = { AsView(m_buffer), rhs.FilterCount() };
+		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.FilterCount() });
 		return *this;
 	}
 	PolyphaseFilter& operator=(PolyphaseFilter&& rhs) {
 		m_buffer = std::move(rhs.m_buffer);
-		static_cast<PolyphaseView<T, Domain>&>(*this) = rhs;
-		static_cast<PolyphaseView<T, Domain>&>(rhs) = {};
+		PolyphaseView<T, Domain>::operator=(rhs);
+		rhs.PolyphaseView<T, Domain>::operator=({});
 		return *this;
 	}
 
