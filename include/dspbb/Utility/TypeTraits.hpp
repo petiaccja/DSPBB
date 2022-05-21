@@ -6,6 +6,9 @@
 #include <iterator>
 #include <type_traits>
 
+#pragma warning(push)
+#pragma warning(disable : 4244)
+
 namespace dspbb {
 
 template <class T>
@@ -151,3 +154,5 @@ constexpr bool is_random_access_iterator_v = is_random_access_iterator<Iter>::va
 
 
 } // namespace dspbb
+
+#pragma warning(pop)

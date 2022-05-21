@@ -155,7 +155,7 @@ namespace impl {
 
 } // namespace impl
 
-template <class SignalR, template <typename, typename...> class Desc, class... Params>
+template <class SignalR, template <typename, typename...> class Desc, class... Params, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 auto FirFilter(SignalR&& out, const Desc<impl::FirMethodLeastSquares, Params...>& desc)
 	-> decltype(void(impl::TranslateLeastSquares(desc))) {
 	const auto [response, weight] = impl::TranslateLeastSquares(desc);

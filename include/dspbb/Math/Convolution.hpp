@@ -24,7 +24,7 @@ using impl::CONV_FULL;
 /// <summary> Calculates the length of the result of the convolution U*V. </summary>
 /// <param name="lengthU"> Length of U. </param>
 /// <param name="lengthV"> Length of V. </param>
-inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvCentral) {
+constexpr size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvCentral) {
 	if (lengthU == 0 || lengthV == 0) {
 		return 0;
 	}
@@ -37,7 +37,7 @@ inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvCentra
 /// <summary> Calculates the length of the result of the convolution U*V. </summary>
 /// <param name="lengthU"> Length of U. </param>
 /// <param name="lengthV"> Length of V. </param>
-inline size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvFull) {
+constexpr size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvFull) {
 	if (lengthU == 0 || lengthV == 0) {
 		return 0;
 	}
