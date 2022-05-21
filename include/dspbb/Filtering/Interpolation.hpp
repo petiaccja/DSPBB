@@ -1,14 +1,12 @@
 #pragma once
 
+#include "../Generators/Spaces.hpp"
 #include "../Math/DotProduct.hpp"
 #include "../Math/Rational.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalTraits.hpp"
 #include "../Primitives/SignalView.hpp"
 #include "Polyphase.hpp"
-
-#include <numeric>
-
 
 namespace dspbb {
 
@@ -164,9 +162,6 @@ namespace impl {
 //------------------------------------------------------------------------------
 
 
-/// <summary>
-/// Erases all but every <paramref name="rate"/>th sample.
-/// </summary>
 template <class SignalR,
 		  class SignalT,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT> && is_mutable_signal_v<SignalR>, int> = 0>
@@ -181,6 +176,7 @@ void Decimate(SignalR&& output,
 	}
 }
 
+
 template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Decimate(const SignalT& input, size_t rate) {
 	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
@@ -191,10 +187,6 @@ auto Decimate(const SignalT& input, size_t rate) {
 }
 
 
-/// <summary>
-/// Inserts zeros between samples to increase sample rate by a factor of <paramref name="rate"/>.
-/// </summary>
-/// <remarks> Follow expansion by a low-pass filter to interpolate a signal. </remarks>
 template <class SignalR,
 		  class SignalT,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT> && is_mutable_signal_v<SignalR>, int> = 0>
@@ -223,15 +215,6 @@ auto Expand(const SignalT& input, size_t rate) {
 }
 
 
-/// <summary>
-/// Inserts meaningful samples to increase sample rate by a factor of <paramref name="polyphase"/>.numFilters.
-/// </summary>
-/// <param name="polyphase"> A polyphase decomposition of an appropriate low-pass filter.
-///		The number of phases defines the interpolation ratio. </param>
-///	<remarks> No need to follow up with low-pass filtering.
-///		The polyphase filter must have the appropriate cutoff-frequency of
-///		(input sample rate / 2), and the polyphase filter must operate at
-///		the output sample rate. </remarks>
 template <class SignalR,
 		  class SignalT,
 		  class P,
@@ -276,6 +259,7 @@ InterpSuspensionPoint Interpolate(SignalR&& hrOutput,
 	return impl::FindInterpSuspensionPoint(hrOutputIdx, polyphase.OriginalSize(), polyphase.FilterCount());
 }
 
+
 template <class SignalT, class P, eSignalDomain Domain, std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
 auto Interpolate(const SignalT& lrInput,
 				 const PolyphaseView<P, Domain>& polyphase,
@@ -288,6 +272,7 @@ auto Interpolate(const SignalT& lrInput,
 	Interpolate(out, lrInput, polyphase, hrOffset);
 	return out;
 }
+
 
 template <class SignalR,
 		  class SignalT,
@@ -319,6 +304,7 @@ ResamplingSuspensionPoint Resample(SignalR&& output,
 
 	return impl::FindResamplingSuspensionPoint(outputIndex, polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates);
 }
+
 
 template <class SignalT,
 		  class P,
