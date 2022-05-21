@@ -72,6 +72,40 @@ auto Expand(const SignalT& input, size_t rate) {
 }
 
 
+
+template <class ConvType>
+constexpr size_t InterpolationLength(size_t inputSize,
+									 size_t filterSize,
+									 size_t numPhases,
+									 const ConvType&) {
+	static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
+
+	const ptrdiff_t hrInputSize = inputSize * numPhases;
+	return ConvolutionLength(hrInputSize, filterSize, ConvType{});
+}
+
+constexpr double InterpolationFilterCutoff(size_t numPhases) {
+	return 1.0 / double(numPhases);
+}
+
+
+struct InterpolationContinuation {
+	size_t firstInputSample;
+	size_t startPoint;
+};
+
+inline InterpolationContinuation CalcInterpolationContinuation(size_t nextOutputSample, size_t filterSize, size_t numPhases) {
+	const ptrdiff_t firstOutputSample = ptrdiff_t(nextOutputSample) - ptrdiff_t(filterSize - 1);
+	if (firstOutputSample < 0) {
+		return { 0, nextOutputSample };
+	}
+
+	const size_t firstInputSample = firstOutputSample / numPhases;
+	const size_t startPoint = firstOutputSample - (numPhases * firstInputSample) + (filterSize - 1);
+
+	return { firstInputSample, startPoint };
+}
+
 /// <summary>
 /// Inserts meaningful samples to increase sample rate by a factor of <paramref name="polyphase"/>.numFilters.
 /// </summary>
@@ -86,10 +120,10 @@ template <class SignalR,
 		  class P,
 		  eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
-void Interpolate(SignalR&& hrOutput,
-				 const SignalT& lrInput,
-				 const PolyphaseView<P, D>& polyphase,
-				 size_t hrOffset) {
+InterpolationContinuation Interpolate(SignalR&& hrOutput,
+									  const SignalT& lrInput,
+									  const PolyphaseView<P, D>& polyphase,
+									  size_t hrOffset) {
 	const ptrdiff_t rate = polyphase.FilterCount();
 	const ptrdiff_t hrFilterSize = polyphase.OriginalSize();
 	const ptrdiff_t lrPhaseSize = polyphase.PhaseSize();
@@ -100,7 +134,8 @@ void Interpolate(SignalR&& hrOutput,
 	const ptrdiff_t hrOutputMaxSize = ConvolutionLength(hrInputSize, hrFilterSize, CONV_FULL);
 	assert(ptrdiff_t(hrOffset) + hrOutputSize <= hrOutputMaxSize);
 
-	for (size_t hrOutputIdx = hrOffset; hrOutputIdx < hrOffset + hrOutputSize; ++hrOutputIdx) {
+	size_t hrOutputIdx = hrOffset;
+	for (; hrOutputIdx < hrOffset + hrOutputSize; ++hrOutputIdx) {
 		const ptrdiff_t hrInputIdx = 1 - hrFilterSize + hrOutputIdx;
 		const ptrdiff_t lrInputIdx = (hrInputIdx + hrFilterSize - 1) / rate - lrPhaseSize + 1;
 		const ptrdiff_t polyphaseIdx = (hrInputIdx + hrFilterSize - 1) % rate;
@@ -122,6 +157,8 @@ void Interpolate(SignalR&& hrOutput,
 			hrOutput[hrOutputIdx - hrOffset] = value;
 		}
 	}
+
+	return CalcInterpolationContinuation(hrOutputIdx, polyphase.OriginalSize(), polyphase.FilterCount());
 }
 
 template <class SignalT, class P, eSignalDomain Domain, std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
@@ -309,11 +346,11 @@ auto Resample(const SignalT& input,
 			  const PolyphaseView<P, Domain>& polyphase,
 			  Rational<int64_t> sampleRates,
 			  Rational<int64_t> startPoint,
-			  size_t orLength) {
+			  size_t outputLength) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
 	using R = multiplies_result_t<T, P>;
 
-	BasicSignal<R, Domain> out(orLength, R(0));
+	BasicSignal<R, Domain> out(outputLength, R(0));
 	Resample(out, input, polyphase, sampleRates, startPoint);
 	return out;
 }

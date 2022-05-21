@@ -383,8 +383,37 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 
 
 TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
-	// Interpolate a ramp and see if it's continuous.
-	REQUIRE(false);
+	constexpr size_t numPhases = 6;
+	constexpr size_t filterSize = 31;
+
+	SECTION("Initial point") {
+		constexpr size_t nextOutputSample = 0;
+		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+
+		REQUIRE(inputIndex == 0);
+		REQUIRE(startPoint == 0);
+	}
+	SECTION("One off") {
+		constexpr size_t nextOutputSample = 2;
+		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+
+		REQUIRE(inputIndex == 0);
+		REQUIRE(startPoint == 2);
+	}
+	SECTION("Middle point") {
+		constexpr size_t nextOutputSample = 36;
+		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+
+		REQUIRE(inputIndex == 1);
+		REQUIRE(startPoint == 30);
+	}
+	SECTION("Far point") {
+		constexpr size_t nextOutputSample = 158;
+		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+
+		REQUIRE(inputIndex == 21);
+		REQUIRE(startPoint == 32);
+	}
 }
 
 
@@ -426,6 +455,55 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 		REQUIRE(expectedTotalOffset == Approx(actualTotalOffset));
 	}
 }
+
+
+TEST_CASE("Interpolation continuation output", "[Interpolation]") {
+	constexpr size_t numPhases = 6;
+	constexpr size_t filterSize = 511;
+	constexpr float filterCutoff = float(InterpolationFilterCutoff(numPhases));
+
+	const auto filter = FirFilter<float, TIME_DOMAIN>(filterSize, Lowpass(LEAST_SQUARES).Cutoff(0.90f * filterCutoff, filterCutoff));
+	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
+
+	// This creates a linearly increasing ramp-like function
+	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
+
+	const size_t maxLength = InterpolationLength(signal.Size(), filterSize, numPhases, CONV_FULL);
+
+	auto output = Signal<float>(floor(maxLength), 0.0f);
+
+	size_t chunkSize = 1;
+	size_t outputWritten = 0;
+	size_t firstInputSample = 0;
+	size_t startPoint{ 0 };
+	while (outputWritten < output.Size() / 2) {
+		const auto [newFirstInputSample, newStartPoint] = Interpolate(AsView(output).SubSignal(outputWritten, chunkSize),
+																	  AsView(signal).SubSignal(firstInputSample),
+																	  polyphase,
+																	  startPoint);
+
+		startPoint = newStartPoint;
+		firstInputSample += newFirstInputSample;
+		outputWritten += chunkSize;
+		chunkSize *= 2;
+	}
+
+	// Find the linear part of the output
+	const auto first = std::find_if(output.begin(), output.end(), [](float v) { return v >= 3.0f; });
+	const auto last = std::max_element(output.begin(), output.end());
+
+	REQUIRE(first != last);
+	REQUIRE(first != output.end());
+	REQUIRE(last != output.end());
+	REQUIRE(first - output.begin() < ptrdiff_t(output.Size()) / 30 + filterSize - 1);
+	REQUIRE(last - output.begin() >= ptrdiff_t(output.Size()) / 2);
+
+	// Check if increments between adjacent elements of the output ramp are roughly equal
+	SignalView<float> left{ first, last - 1 };
+	SignalView<float> right{ first + 1, last };
+	REQUIRE(Max(right - left) == Approx(Min(right - left)).epsilon(0.02));
+}
+
 
 
 TEST_CASE("Resampling continuation output", "[Interpolation]") {
