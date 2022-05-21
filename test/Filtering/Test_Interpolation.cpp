@@ -167,14 +167,14 @@ TEST_CASE("Resampling change sample rate", "[Interpolation]") {
 	constexpr Rational originalSample = { 28ll, 42ll };
 
 	SECTION("Regular") {
-		constexpr auto newSample = resample::ChangeSampleRate(inputRate, outputRate, originalSample);
+		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
 
 		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
 
 		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
 	}
 	SECTION("Simplify") {
-		constexpr auto newSample = resample::ChangeSampleRate(inputRate, outputRate, originalSample);
+		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
 
 		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
 
@@ -184,7 +184,7 @@ TEST_CASE("Resampling change sample rate", "[Interpolation]") {
 
 TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
 	SECTION("Zero weight") {
-		const auto [firstSample, secondSample] = resample::InputIndex2Sample({ 43, 7 }, 7);
+		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 43, 7 }, 7);
 		REQUIRE(firstSample.inputIndex == 6);
 		REQUIRE(firstSample.phaseIndex == 1);
 		REQUIRE(firstSample.weight == 1);
@@ -194,7 +194,7 @@ TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
 		REQUIRE(secondSample.weight == 0);
 	}
 	SECTION("Split weight") {
-		const auto [firstSample, secondSample] = resample::InputIndex2Sample({ 87, 14 }, 5);
+		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 87, 14 }, 5);
 		REQUIRE(firstSample.inputIndex == 6);
 		REQUIRE(firstSample.phaseIndex == 1);
 		REQUIRE(firstSample.weight == 13);
@@ -204,7 +204,7 @@ TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
 		REQUIRE(secondSample.weight == 1);
 	}
 	SECTION("Rollover") {
-		const auto [firstSample, secondSample] = resample::InputIndex2Sample({ 27, 14 }, 5);
+		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 27, 14 }, 5);
 		REQUIRE(firstSample.inputIndex == 1);
 		REQUIRE(firstSample.phaseIndex == 4);
 		REQUIRE(firstSample.weight == 5);
@@ -218,10 +218,10 @@ TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
 TEST_CASE("Resampling dot product sample", "[Interpolation]") {
 	const Signal<int> signal = { 1, 2, 3, 6, 5, 7 };
 	const Signal<int> filter = { -1, 3, -2 }; // Convolution: -2, 3, -1
-	REQUIRE(-2 == resample::DotProductSample(signal, filter, 0));
-	REQUIRE(-1 == resample::DotProductSample(signal, filter, 2));
-	REQUIRE(-5 == resample::DotProductSample(signal, filter, 5));
-	REQUIRE(-7 == resample::DotProductSample(signal, filter, 7));
+	REQUIRE(-2 == impl::DotProductSample(signal, filter, 0));
+	REQUIRE(-1 == impl::DotProductSample(signal, filter, 2));
+	REQUIRE(-5 == impl::DotProductSample(signal, filter, 5));
+	REQUIRE(-7 == impl::DotProductSample(signal, filter, 7));
 }
 
 TEST_CASE("Resampling filter cutoff", "[Interpolation]") {
@@ -388,28 +388,28 @@ TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
 
 	SECTION("Initial point") {
 		constexpr size_t nextOutputSample = 0;
-		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+		const auto [inputIndex, startPoint] = impl::FindInterpSuspensionPoint(nextOutputSample, filterSize, numPhases);
 
 		REQUIRE(inputIndex == 0);
 		REQUIRE(startPoint == 0);
 	}
 	SECTION("One off") {
 		constexpr size_t nextOutputSample = 2;
-		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+		const auto [inputIndex, startPoint] = impl::FindInterpSuspensionPoint(nextOutputSample, filterSize, numPhases);
 
 		REQUIRE(inputIndex == 0);
 		REQUIRE(startPoint == 2);
 	}
 	SECTION("Middle point") {
 		constexpr size_t nextOutputSample = 36;
-		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+		const auto [inputIndex, startPoint] = impl::FindInterpSuspensionPoint(nextOutputSample, filterSize, numPhases);
 
 		REQUIRE(inputIndex == 1);
 		REQUIRE(startPoint == 30);
 	}
 	SECTION("Far point") {
 		constexpr size_t nextOutputSample = 158;
-		const auto [inputIndex, startPoint] = CalcInterpolationContinuation(nextOutputSample, filterSize, numPhases);
+		const auto [inputIndex, startPoint] = impl::FindInterpSuspensionPoint(nextOutputSample, filterSize, numPhases);
 
 		REQUIRE(inputIndex == 21);
 		REQUIRE(startPoint == 32);
@@ -424,21 +424,21 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 
 	SECTION("Initial point") {
 		constexpr Rational nextOutputSample = { 0LL, 1LL };
-		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 0);
 		REQUIRE(double(startPoint) == Approx(0));
 	}
 	SECTION("One off") {
 		constexpr Rational nextOutputSample = { 7LL, 7LL };
-		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 0);
 		REQUIRE(double(startPoint) == Approx(1));
 	}
 	SECTION("Middle point") {
 		constexpr Rational nextOutputSample = { 6LL * 7LL, 4LL };
-		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 1);
 		const double expectedTotalOffset = double(nextOutputSample);
@@ -447,7 +447,7 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 	}
 	SECTION("Far point") {
 		constexpr Rational nextOutputSample = { 156LL, 1LL };
-		const auto [inputIndex, startPoint] = resample::Continuation(nextOutputSample, filterSize, numPhases, sampleRates);
+		const auto [inputIndex, startPoint] = impl::FindResamplingSuspensionPoint(nextOutputSample, filterSize, numPhases, sampleRates);
 
 		REQUIRE(inputIndex == 84);
 		const double expectedTotalOffset = double(nextOutputSample);
@@ -460,7 +460,7 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 	constexpr size_t numPhases = 6;
 	constexpr size_t filterSize = 511;
-	constexpr float filterCutoff = float(InterpolationFilterCutoff(numPhases));
+	constexpr float filterCutoff = float(InterpFilterCutoff(numPhases));
 
 	const auto filter = FirFilter<float, TIME_DOMAIN>(filterSize, Lowpass(LEAST_SQUARES).Cutoff(0.90f * filterCutoff, filterCutoff));
 	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
@@ -468,7 +468,7 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 	// This creates a linearly increasing ramp-like function
 	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
 
-	const size_t maxLength = InterpolationLength(signal.Size(), filterSize, numPhases, CONV_FULL);
+	const size_t maxLength = InterpLength(signal.Size(), filterSize, numPhases, CONV_FULL);
 
 	auto output = Signal<float>(floor(maxLength), 0.0f);
 
