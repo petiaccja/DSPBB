@@ -4,6 +4,7 @@
 #include "../LTISystems/Systems.hpp"
 #include "../Math/FFT.hpp"
 #include "../Math/Functions.hpp"
+#include "../Math/Solvers.hpp"
 #include "../Math/Statistics.hpp"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
@@ -106,25 +107,6 @@ namespace impl {
 		} while (it != spectrum.end());
 
 		return bands;
-	}
-
-	template <class T, class Func>
-	T Bisect(Func f, T a, T b) {
-		auto lower = std::min(a, b);
-		auto upper = std::max(a, b);
-		int i = 100;
-		do {
-			const T c = (lower + upper) / T(2);
-			const auto flower = f(lower);
-			const auto fc = f(c);
-			if (fc * flower > decltype(fc)(0)) {
-				lower = c;
-			}
-			else {
-				upper = c;
-			}
-		} while (i-- > 0);
-		return lower;
 	}
 
 	template <class T>
