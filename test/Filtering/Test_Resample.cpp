@@ -365,7 +365,7 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 
 		const double crossingSignal = FindCrossing(signal, 500.0);
 		const double crossingResampled = FindCrossing(resampled, 500.0);
-		const auto resamplingDelay = ResamplingDelay(filterSize, supersamplingRate, { inputRate, outputRate });
+		const auto resamplingDelay = ResampleDelay(filterSize, supersamplingRate, { inputRate, outputRate });
 		const double crossingExpected = double(resamplingDelay) + crossingSignal * outputRate / inputRate;
 
 		INFO("filterSize=" << filterSize)
@@ -538,11 +538,38 @@ TEST_CASE("Resampling continuation output", "[Interpolation]") {
 	REQUIRE(first != last);
 	REQUIRE(first != output.end());
 	REQUIRE(last != output.end());
-	REQUIRE(first - output.begin() < ptrdiff_t(output.Size()) / 30 + ceil(ResamplingDelay(filterSize, numPhases, sampleRates)));
+	REQUIRE(first - output.begin() < ptrdiff_t(output.Size()) / 30 + ceil(ResampleDelay(filterSize, numPhases, sampleRates)));
 	REQUIRE(last - output.begin() >= ptrdiff_t(output.Size()) / 2);
 
 	// Check if increments between adjacent elements of the output ramp are roughly equal
 	SignalView<float> left{ first, last - 1 };
 	SignalView<float> right{ first + 1, last };
 	REQUIRE(Max(right - left) == Approx(Min(right - left)).epsilon(0.02));
+}
+
+
+
+TEST_CASE("Resampling central/full", "[Interpolation]") {
+	constexpr size_t numPhases = 6;
+	constexpr size_t filterSize = 511;
+	constexpr Rational<int64_t> sampleRates = { 4, 7 };
+	constexpr float filterCutoff = float(ResampleFilterCutoff(sampleRates, numPhases));
+
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
+	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
+
+	const auto signal = TriangularWindow<float, TIME_DOMAIN>(2000);
+
+	SECTION("central") {
+		const auto result = Resample(signal, polyphase, sampleRates, CONV_CENTRAL);
+		const auto reversed = Signal<float>(result.rbegin(), result.rend());
+		REQUIRE(result[0] > 20 / 2000.f);
+		REQUIRE(Max(result - reversed) < 2 / 2000.f);
+	}
+	SECTION("full") {
+		const auto result = Resample(signal, polyphase, sampleRates, CONV_FULL);
+		const auto reversed = Signal<float>(result.rbegin(), result.rend());
+		REQUIRE(std::abs(result[0]) < 1e-4f);
+		REQUIRE(Max(result - reversed) < 2 / 2000.f);
+	}
 }
