@@ -86,7 +86,7 @@ Signal<float> DialTone(char character) {
 //  - We set a loose pass-band ripple because the precise magnitude of the picked-up tone is not important
 //  - We set a strict stop-band ripple to heavily suppress noise outside the narrow band
 constexpr int filterOrder = 6;
-const auto filterDesc = Bandpass(ELLIPTIC).PassbandRipple(0.15f).StopbandRipple(0.02f);
+const auto filterDesc = Iir.Bandpass.Elliptic.PassbandRipple(0.15f).StopbandRipple(0.02f);
 float Normalize(float f) { return NormalizedFrequency(f, sampleRate); }; // A little helper since we need normalized frequencies.
 
 // IirFilter returns the zero-pole representation of the designed filter. To apply it
