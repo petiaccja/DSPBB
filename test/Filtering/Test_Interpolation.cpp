@@ -1,6 +1,6 @@
 #include "../TestUtils.hpp"
 
-#include <dspbb/Filtering/Interpolation.hpp>
+#include <dspbb/Filtering/Resample.hpp>
 #include <dspbb/Math/Convolution.hpp>
 
 #include <catch2/catch.hpp>

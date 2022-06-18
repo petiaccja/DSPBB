@@ -2,7 +2,7 @@
 
 #include <dspbb/Filtering/FIR.hpp>
 #include <dspbb/Filtering/FilterParameters.hpp>
-#include <dspbb/Filtering/Interpolation.hpp>
+#include <dspbb/Filtering/Resample.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Math/Statistics.hpp>
