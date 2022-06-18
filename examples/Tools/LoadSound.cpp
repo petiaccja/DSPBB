@@ -1,6 +1,6 @@
 #include "LoadSound.hpp"
 
-#include <dspbb/Filtering/Interpolation.hpp>
+#include <dspbb/Filtering/Resample.hpp>
 
 #include <sndfile.hh>
 

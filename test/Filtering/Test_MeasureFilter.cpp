@@ -1,4 +1,4 @@
-#include <dspbb/Filtering/FilterParameters.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Generators/Spaces.hpp>
 #include <dspbb/Math/DotProduct.hpp>
 #include <dspbb/Utility/Numbers.hpp>
@@ -157,69 +157,69 @@ Spectrum<float> MockSpectrum(size_t size, const std::vector<Band>& bands) {
 
 TEST_CASE("Classify flat low-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, lowpassFlat);
-	REQUIRE_NOTHROW(ParametrizeLowpassFilter(response));
-	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandstopFilter(response));
+	REQUIRE_NOTHROW(MeasureLowpassFilter(response));
+	REQUIRE_THROWS(MeasureHighpassFilter(response));
+	REQUIRE_THROWS(MeasureBandpassFilter(response));
+	REQUIRE_THROWS(MeasureBandstopFilter(response));
 }
 
 TEST_CASE("Classify ripple low-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, lowpassRipple);
-	REQUIRE_NOTHROW(ParametrizeLowpassFilter(response));
-	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandstopFilter(response));
+	REQUIRE_NOTHROW(MeasureLowpassFilter(response));
+	REQUIRE_THROWS(MeasureHighpassFilter(response));
+	REQUIRE_THROWS(MeasureBandpassFilter(response));
+	REQUIRE_THROWS(MeasureBandstopFilter(response));
 }
 
 
 TEST_CASE("Classify flat high-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, highpassFlat);
-	REQUIRE_THROWS(ParametrizeLowpassFilter(response));
-	REQUIRE_NOTHROW(ParametrizeHighpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandstopFilter(response));
+	REQUIRE_THROWS(MeasureLowpassFilter(response));
+	REQUIRE_NOTHROW(MeasureHighpassFilter(response));
+	REQUIRE_THROWS(MeasureBandpassFilter(response));
+	REQUIRE_THROWS(MeasureBandstopFilter(response));
 }
 
 TEST_CASE("Classify ripple high-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, highpassRipple);
-	REQUIRE_THROWS(ParametrizeLowpassFilter(response));
-	REQUIRE_NOTHROW(ParametrizeHighpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandstopFilter(response));
+	REQUIRE_THROWS(MeasureLowpassFilter(response));
+	REQUIRE_NOTHROW(MeasureHighpassFilter(response));
+	REQUIRE_THROWS(MeasureBandpassFilter(response));
+	REQUIRE_THROWS(MeasureBandstopFilter(response));
 }
 
 
 TEST_CASE("Classify flat band-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandpassFlat);
-	REQUIRE_THROWS(ParametrizeLowpassFilter(response));
-	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
-	REQUIRE_NOTHROW(ParametrizeBandpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandstopFilter(response));
+	REQUIRE_THROWS(MeasureLowpassFilter(response));
+	REQUIRE_THROWS(MeasureHighpassFilter(response));
+	REQUIRE_NOTHROW(MeasureBandpassFilter(response));
+	REQUIRE_THROWS(MeasureBandstopFilter(response));
 }
 
 TEST_CASE("Classify ripple band-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandpassRipple);
-	REQUIRE_THROWS(ParametrizeLowpassFilter(response));
-	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
-	REQUIRE_NOTHROW(ParametrizeBandpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandstopFilter(response));
+	REQUIRE_THROWS(MeasureLowpassFilter(response));
+	REQUIRE_THROWS(MeasureHighpassFilter(response));
+	REQUIRE_NOTHROW(MeasureBandpassFilter(response));
+	REQUIRE_THROWS(MeasureBandstopFilter(response));
 }
 
 
 TEST_CASE("Classify flat band-stop", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandstopFlat);
-	REQUIRE_THROWS(ParametrizeLowpassFilter(response));
-	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
-	REQUIRE_NOTHROW(ParametrizeBandstopFilter(response));
+	REQUIRE_THROWS(MeasureLowpassFilter(response));
+	REQUIRE_THROWS(MeasureHighpassFilter(response));
+	REQUIRE_THROWS(MeasureBandpassFilter(response));
+	REQUIRE_NOTHROW(MeasureBandstopFilter(response));
 }
 
 TEST_CASE("Classify ripple band-stop", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandstopRipple);
-	REQUIRE_THROWS(ParametrizeLowpassFilter(response));
-	REQUIRE_THROWS(ParametrizeHighpassFilter(response));
-	REQUIRE_THROWS(ParametrizeBandpassFilter(response));
-	REQUIRE_NOTHROW(ParametrizeBandstopFilter(response));
+	REQUIRE_THROWS(MeasureLowpassFilter(response));
+	REQUIRE_THROWS(MeasureHighpassFilter(response));
+	REQUIRE_THROWS(MeasureBandpassFilter(response));
+	REQUIRE_NOTHROW(MeasureBandstopFilter(response));
 }
 
 
@@ -228,10 +228,10 @@ TEST_CASE("Classify distinguish", "[FilterParameters]") {
 	const auto hp = MockSpectrum(1000, highpassFlat);
 	const auto bp = MockSpectrum(1000, bandpassFlat);
 	const auto bs = MockSpectrum(1000, bandstopFlat);
-	REQUIRE(std::holds_alternative<LowpassParameters<float>>(ParametrizeFilter(lp)));
-	REQUIRE(std::holds_alternative<HighpassParameters<float>>(ParametrizeFilter(hp)));
-	REQUIRE(std::holds_alternative<BandpassParameters<float>>(ParametrizeFilter(bp)));
-	REQUIRE(std::holds_alternative<BandstopParameters<float>>(ParametrizeFilter(bs)));
+	REQUIRE(std::holds_alternative<LowpassParameters<float>>(MeasureFilter(lp)));
+	REQUIRE(std::holds_alternative<HighpassParameters<float>>(MeasureFilter(hp)));
+	REQUIRE(std::holds_alternative<BandpassParameters<float>>(MeasureFilter(bp)));
+	REQUIRE(std::holds_alternative<BandstopParameters<float>>(MeasureFilter(bs)));
 }
 
 
@@ -241,7 +241,7 @@ TEST_CASE("Classify distinguish", "[FilterParameters]") {
 
 TEST_CASE("Parametrize flat low-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, lowpassFlat);
-	const auto params = ParametrizeLowpassFilter(response);
+	const auto params = MeasureLowpassFilter(response);
 	REQUIRE(params.passbandEdge == Approx(transitionLower).margin(0.005f));
 	REQUIRE(params.stopbandEdge == Approx(transitionUpper).margin(0.005f));
 	REQUIRE(params.passbandRipple == Approx(0.0f).margin(1e-5f));
@@ -250,7 +250,7 @@ TEST_CASE("Parametrize flat low-pass", "[FilterParameters]") {
 
 TEST_CASE("Parametrize ripple low-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, lowpassRipple);
-	const auto params = ParametrizeLowpassFilter(response);
+	const auto params = MeasureLowpassFilter(response);
 	REQUIRE(params.passbandEdge == Approx(transitionLower).margin(0.005f));
 	REQUIRE(params.stopbandEdge == Approx(transitionUpper).margin(0.005f));
 	REQUIRE(params.passbandRipple == Approx(ripplePass).margin(1e-4f));
@@ -260,7 +260,7 @@ TEST_CASE("Parametrize ripple low-pass", "[FilterParameters]") {
 
 TEST_CASE("Parametrize flat high-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, highpassFlat);
-	const auto params = ParametrizeHighpassFilter(response);
+	const auto params = MeasureHighpassFilter(response);
 	REQUIRE(params.stopbandEdge == Approx(transitionLower).margin(0.005f));
 	REQUIRE(params.passbandEdge == Approx(transitionUpper).margin(0.005f));
 	REQUIRE(params.stopbandAtten == Approx(0.0f).margin(1e-5f));
@@ -269,7 +269,7 @@ TEST_CASE("Parametrize flat high-pass", "[FilterParameters]") {
 
 TEST_CASE("Parametrize ripple high-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, highpassRipple);
-	const auto params = ParametrizeHighpassFilter(response);
+	const auto params = MeasureHighpassFilter(response);
 	REQUIRE(params.stopbandEdge == Approx(transitionLower).margin(0.005f));
 	REQUIRE(params.passbandEdge == Approx(transitionUpper).margin(0.005f));
 	REQUIRE(params.stopbandAtten == Approx(rippleStop).margin(1e-4f));
@@ -279,7 +279,7 @@ TEST_CASE("Parametrize ripple high-pass", "[FilterParameters]") {
 
 TEST_CASE("Parametrize flat band-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandpassFlat);
-	const auto params = ParametrizeBandpassFilter(response);
+	const auto params = MeasureBandpassFilter(response);
 	REQUIRE(params.lowerStopbandEdge == Approx(transitionLower1).margin(0.005f));
 	REQUIRE(params.passbandLowerEdge == Approx(transitionUpper1).margin(0.005f));
 	REQUIRE(params.passbandUpperEdge == Approx(transitionLower2).margin(0.005f));
@@ -291,7 +291,7 @@ TEST_CASE("Parametrize flat band-pass", "[FilterParameters]") {
 
 TEST_CASE("Parametrize ripple band-pass", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandpassRipple);
-	const auto params = ParametrizeBandpassFilter(response);
+	const auto params = MeasureBandpassFilter(response);
 	REQUIRE(params.lowerStopbandEdge == Approx(transitionLower1).margin(0.005f));
 	REQUIRE(params.passbandLowerEdge == Approx(transitionUpper1).margin(0.005f));
 	REQUIRE(params.passbandUpperEdge == Approx(transitionLower2).margin(0.005f));
@@ -304,7 +304,7 @@ TEST_CASE("Parametrize ripple band-pass", "[FilterParameters]") {
 
 TEST_CASE("Parametrize flat band-stop", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandstopFlat);
-	const auto params = ParametrizeBandstopFilter(response);
+	const auto params = MeasureBandstopFilter(response);
 	REQUIRE(params.lowerPassbandEdge == Approx(transitionLower1).margin(0.005f));
 	REQUIRE(params.stopbandLowerEdge == Approx(transitionUpper1).margin(0.005f));
 	REQUIRE(params.stopbandUpperEdge == Approx(transitionLower2).margin(0.005f));
@@ -316,7 +316,7 @@ TEST_CASE("Parametrize flat band-stop", "[FilterParameters]") {
 
 TEST_CASE("Parametrize ripple band-stop", "[FilterParameters]") {
 	const auto response = MockSpectrum(1000, bandstopRipple);
-	const auto params = ParametrizeBandstopFilter(response);
+	const auto params = MeasureBandstopFilter(response);
 	REQUIRE(params.lowerPassbandEdge == Approx(transitionLower1).margin(0.005f));
 	REQUIRE(params.stopbandLowerEdge == Approx(transitionUpper1).margin(0.005f));
 	REQUIRE(params.stopbandUpperEdge == Approx(transitionLower2).margin(0.005f));

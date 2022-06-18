@@ -1,8 +1,8 @@
 #include "../TestUtils.hpp"
 
 #include <dspbb/Filtering/FIR.hpp>
-#include <dspbb/Filtering/FilterParameters.hpp>
-#include <dspbb/Filtering/Interpolation.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
+#include <dspbb/Filtering/Resample.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/Convolution.hpp>
 #include <dspbb/Math/Statistics.hpp>
@@ -21,7 +21,7 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 	constexpr int length = 80;
 
 	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
+	const auto filter = DesignFilter<double, TIME_DOMAIN>(taps, Fir.Lowpass.LeastSquares.Cutoff(0.3f, 0.33f));
 
 	const auto expected = Convolution(signal, filter, 0, length);
 
@@ -83,7 +83,7 @@ TEST_CASE("Filter central", "[FIR]") {
 	constexpr int length = 80;
 
 	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
+	const auto filter = DesignFilter<double, TIME_DOMAIN>(taps, Fir.Lowpass.LeastSquares.Cutoff(0.3f, 0.33f));
 
 	const auto expected = Convolution(signal, filter, CONV_CENTRAL);
 
@@ -102,7 +102,7 @@ TEST_CASE("Filter full", "[FIR]") {
 	constexpr int length = 80;
 
 	const auto signal = RandomSignal<double, TIME_DOMAIN>(length);
-	const auto filter = FirFilter<double, TIME_DOMAIN>(taps, Lowpass(LEAST_SQUARES).Cutoff(0.3f, 0.33f));
+	const auto filter = DesignFilter<double, TIME_DOMAIN>(taps, Fir.Lowpass.LeastSquares.Cutoff(0.3f, 0.33f));
 
 	const auto expected = Convolution(signal, filter, CONV_FULL);
 
@@ -162,12 +162,12 @@ TEST_CASE("Windowed low-pass", "[FIR]") {
 	constexpr size_t numTaps = 255;
 	static constexpr float cutoff = 0.3f;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Lowpass.Windowed.Cutoff(cutoff).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeLowpassFilter(amplitude);
+	const auto params = MeasureLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge < cutoff);
 	REQUIRE(params.stopbandEdge > cutoff);
 	REQUIRE(params.passbandRipple < 0.05f);
@@ -178,12 +178,12 @@ TEST_CASE("Windowed high-pass", "[FIR]") {
 	constexpr size_t numTaps = 255;
 	static constexpr float cutoff = 0.3f;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Highpass.Windowed.Cutoff(cutoff).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeHighpassFilter(amplitude);
+	const auto params = MeasureHighpassFilter(amplitude);
 	REQUIRE(params.stopbandEdge < cutoff);
 	REQUIRE(params.passbandEdge > cutoff);
 	REQUIRE(params.stopbandAtten < 0.05f);
@@ -195,12 +195,12 @@ TEST_CASE("Windowed band-pass", "[FIR]") {
 	static constexpr float bandLow = 0.3f;
 	static constexpr float bandHigh = 0.6f;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandpass.Windowed.Band(bandLow, bandHigh).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandpassFilter(amplitude);
+	const auto params = MeasureBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge < bandLow);
 	REQUIRE(params.passbandLowerEdge > bandLow);
 	REQUIRE(params.passbandUpperEdge < bandHigh);
@@ -215,12 +215,12 @@ TEST_CASE("Windowed band-stop", "[FIR]") {
 	static constexpr float bandLow = 0.3f;
 	static constexpr float bandHigh = 0.6f;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandstop.Windowed.Band(bandLow, bandHigh).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandstopFilter(amplitude);
+	const auto params = MeasureBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge < bandLow);
 	REQUIRE(params.stopbandLowerEdge > bandLow);
 	REQUIRE(params.stopbandUpperEdge < bandHigh);
@@ -233,7 +233,7 @@ TEST_CASE("Windowed band-stop", "[FIR]") {
 TEST_CASE("Windowed arbitrary", "[FIR]") {
 	constexpr size_t numTaps = 255;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Arbitrary(WINDOWED).Response(TestArbitraryResponse).Window(windows::blackman));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Arbitrary.Windowed.Response(TestArbitraryResponse).Window(windows::blackman));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
@@ -244,17 +244,17 @@ TEST_CASE("Windowed arbitrary", "[FIR]") {
 }
 
 TEST_CASE("Windowed hilbert magnitude", "[FIR]") {
-	const auto odd = FirFilter<float, TIME_DOMAIN>(377, Hilbert(WINDOWED).Window(windows::blackman));
-	const auto even = FirFilter<float, TIME_DOMAIN>(376, Hilbert(WINDOWED).Window(windows::blackman));
+	const auto odd = DesignFilter<float, TIME_DOMAIN>(377, Fir.Hilbert.Windowed.Window(windows::blackman));
+	const auto even = DesignFilter<float, TIME_DOMAIN>(376, Fir.Hilbert.Windowed.Window(windows::blackman));
 
 	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
-	const auto paramsOdd = ParametrizeBandpassFilter(amplitudeOdd);
+	const auto paramsOdd = MeasureBandpassFilter(amplitudeOdd);
 	REQUIRE(paramsOdd.passbandLowerEdge < 0.05f);
 	REQUIRE(paramsOdd.passbandUpperEdge > 0.95f);
 	REQUIRE(paramsOdd.passbandRipple < 0.05f);
 
 	const auto [amplitudeEven, phaseEven] = FrequencyResponse(even);
-	const auto paramsEven = ParametrizeHighpassFilter(amplitudeEven);
+	const auto paramsEven = MeasureHighpassFilter(amplitudeEven);
 	REQUIRE(paramsEven.passbandEdge < 0.05f);
 	REQUIRE(paramsEven.passbandRipple < 0.05f);
 }
@@ -265,17 +265,17 @@ TEST_CASE("Windowed methods equal", "[FIR]") {
 	constexpr float bandLow = 0.2f;
 	constexpr float bandHigh = 0.6f;
 
-	const auto lp1 = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
-	const auto lp2 = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
+	const auto lp1 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Lowpass.Windowed.Cutoff(cutoff).Window(windows::blackman));
+	const auto lp2 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Lowpass.Windowed.Cutoff(cutoff).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
 
-	const auto hp1 = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman));
-	const auto hp2 = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(WINDOWED).Cutoff(cutoff).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
+	const auto hp1 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Highpass.Windowed.Cutoff(cutoff).Window(windows::blackman));
+	const auto hp2 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Highpass.Windowed.Cutoff(cutoff).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
 
-	const auto bp1 = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman));
-	const auto bp2 = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
+	const auto bp1 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandpass.Windowed.Band(bandLow, bandHigh).Window(windows::blackman));
+	const auto bp2 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandpass.Windowed.Band(bandLow, bandHigh).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
 
-	const auto bs1 = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman));
-	const auto bs2 = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(WINDOWED).Band(bandLow, bandHigh).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
+	const auto bs1 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandstop.Windowed.Band(bandLow, bandHigh).Window(windows::blackman));
+	const auto bs2 = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandstop.Windowed.Band(bandLow, bandHigh).Window(windows::blackman.operator()<float, TIME_DOMAIN>(numTaps)));
 
 	REQUIRE(Max(Abs(lp1 - lp2)) < 1e-4f);
 	REQUIRE(Max(Abs(hp1 - hp2)) < 1e-4f);
@@ -294,12 +294,12 @@ TEST_CASE("Least squares low-pass", "[FIR]") {
 	constexpr float cutoffEnd = 0.32f;
 	constexpr float width = cutoffEnd - cutoffBegin;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Lowpass(LEAST_SQUARES).Cutoff(cutoffBegin, cutoffEnd));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Lowpass.LeastSquares.Cutoff(cutoffBegin, cutoffEnd));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeLowpassFilter(amplitude);
+	const auto params = MeasureLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge > cutoffBegin - width / 2);
 	REQUIRE(params.passbandEdge < cutoffBegin + width / 2);
 	REQUIRE(params.stopbandEdge > cutoffEnd - width / 2);
@@ -314,12 +314,12 @@ TEST_CASE("Least squares high-pass", "[FIR]") {
 	constexpr float cutoffEnd = 0.32f;
 	constexpr float width = cutoffEnd - cutoffBegin;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Highpass(LEAST_SQUARES).Cutoff(cutoffBegin, cutoffEnd));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Highpass.LeastSquares.Cutoff(cutoffBegin, cutoffEnd));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeHighpassFilter(amplitude);
+	const auto params = MeasureHighpassFilter(amplitude);
 	REQUIRE(params.stopbandEdge > cutoffBegin - width / 2);
 	REQUIRE(params.stopbandEdge < cutoffBegin + width / 2);
 	REQUIRE(params.passbandEdge > cutoffEnd - width / 2);
@@ -338,12 +338,12 @@ TEST_CASE("Least squares band-pass", "[FIR]") {
 	constexpr float lowWidth = bandLowEnd - bandLowBegin;
 	constexpr float highWidth = bandHighEnd - bandHighBegin;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandpass(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandpass.LeastSquares.Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandpassFilter(amplitude);
+	const auto params = MeasureBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge > bandLowBegin - lowWidth / 2);
 	REQUIRE(params.lowerStopbandEdge < bandLowBegin + lowWidth / 2);
 	REQUIRE(params.passbandLowerEdge > bandLowEnd - lowWidth / 2);
@@ -366,12 +366,12 @@ TEST_CASE("Least squares band-stop", "[FIR]") {
 	constexpr float lowWidth = bandLowEnd - bandLowBegin;
 	constexpr float highWidth = bandHighEnd - bandHighBegin;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Bandstop(LEAST_SQUARES).Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandstop.LeastSquares.Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandstopFilter(amplitude);
+	const auto params = MeasureBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge > bandLowBegin - lowWidth / 2);
 	REQUIRE(params.lowerPassbandEdge < bandLowBegin + lowWidth / 2);
 	REQUIRE(params.stopbandLowerEdge > bandLowEnd - lowWidth / 2);
@@ -388,7 +388,7 @@ TEST_CASE("Least squares band-stop", "[FIR]") {
 TEST_CASE("Least squares arbitrary", "[FIR]") {
 	constexpr size_t numTaps = 255;
 
-	const auto impulse = FirFilter<float, TIME_DOMAIN>(numTaps, Arbitrary(LEAST_SQUARES).Response(TestArbitraryResponse));
+	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Arbitrary.LeastSquares.Response(TestArbitraryResponse));
 	REQUIRE(impulse.Size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
@@ -400,17 +400,17 @@ TEST_CASE("Least squares arbitrary", "[FIR]") {
 
 TEST_CASE("Least squares hilbert magnitude", "[FIR]") {
 	const float transition = 0.03f;
-	const auto odd = FirFilter<float, TIME_DOMAIN>(155, Hilbert(LEAST_SQUARES).TransitionWidth(transition));
-	const auto even = FirFilter<float, TIME_DOMAIN>(154, Hilbert(LEAST_SQUARES).TransitionWidth(transition));
+	const auto odd = DesignFilter<float, TIME_DOMAIN>(155, Fir.Hilbert.LeastSquares.TransitionWidth(transition));
+	const auto even = DesignFilter<float, TIME_DOMAIN>(154, Fir.Hilbert.LeastSquares.TransitionWidth(transition));
 
 	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
-	const auto paramsOdd = ParametrizeBandpassFilter(amplitudeOdd);
+	const auto paramsOdd = MeasureBandpassFilter(amplitudeOdd);
 	REQUIRE(paramsOdd.passbandLowerEdge < 0.05f);
 	REQUIRE(paramsOdd.passbandUpperEdge > 0.95f);
 	REQUIRE(paramsOdd.passbandRipple < 0.05f);
 
 	const auto [amplitudeEven, phaseEven] = FrequencyResponse(even);
-	const auto paramsEven = ParametrizeHighpassFilter(amplitudeEven);
+	const auto paramsEven = MeasureHighpassFilter(amplitudeEven);
 	REQUIRE(paramsEven.passbandEdge < 0.05f);
 	REQUIRE(paramsEven.passbandRipple < 0.05f);
 }
@@ -441,14 +441,14 @@ TEST_CASE("Least squares weights", "[FIR]") {
 		return 3.0f;
 	};
 
-	const auto filterL = FirFilter<float, TIME_DOMAIN>(27, Arbitrary(LEAST_SQUARES).Response(response).Weight(weightL));
-	const auto filterH = FirFilter<float, TIME_DOMAIN>(27, Arbitrary(LEAST_SQUARES).Response(response).Weight(weightH));
+	const auto filterL = DesignFilter<float, TIME_DOMAIN>(27, Fir.Arbitrary.LeastSquares.Response(response).Weight(weightL));
+	const auto filterH = DesignFilter<float, TIME_DOMAIN>(27, Fir.Arbitrary.LeastSquares.Response(response).Weight(weightH));
 
 	const auto [amplitudeL, phaseL] = FrequencyResponse(filterL);
 	const auto [amplitudeH, phaseH] = FrequencyResponse(filterH);
 
-	const auto paramsL = ParametrizeLowpassFilter(amplitudeL);
-	const auto paramsH = ParametrizeLowpassFilter(amplitudeH);
+	const auto paramsL = MeasureLowpassFilter(amplitudeL);
+	const auto paramsH = MeasureLowpassFilter(amplitudeH);
 
 	REQUIRE(paramsL.passbandRipple < 0.5f * paramsH.passbandRipple);
 	REQUIRE(0.5f * paramsL.stopbandAtten > paramsH.stopbandAtten);
@@ -459,7 +459,7 @@ TEST_CASE("Least squares weights", "[FIR]") {
 //------------------------------------------------------------------------------
 
 TEST_CASE("Hilbert odd form", "[FIR]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(247, Hilbert(WINDOWED));
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(247, Fir.Hilbert.Windowed);
 	REQUIRE(filter.Size() == 247);
 	REQUIRE(IsAntiSymmetric(filter));
 	const auto nonZeroSamples = Decimate(filter, 2);
@@ -473,7 +473,7 @@ TEST_CASE("Hilbert odd form", "[FIR]") {
 }
 
 TEST_CASE("Hilbert even form", "[FIR]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(246, Hilbert(WINDOWED));
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(246, Fir.Hilbert.Windowed);
 	REQUIRE(filter.Size() == 246);
 	REQUIRE(IsAntiSymmetric(filter));
 	REQUIRE(Min(Abs(filter)) > 0.0f);
@@ -484,7 +484,7 @@ TEST_CASE("Hilbert even form", "[FIR]") {
 }
 
 TEST_CASE("Hilbert odd small form", "[FIR]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(19, Hilbert(WINDOWED));
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(19, Fir.Hilbert.Windowed);
 	REQUIRE(filter.Size() == 19);
 	REQUIRE(IsAntiSymmetric(filter));
 	const auto nonZeroSamples = Decimate(filter, 2);
@@ -498,7 +498,7 @@ TEST_CASE("Hilbert odd small form", "[FIR]") {
 }
 
 TEST_CASE("Hilbert even small form", "[FIR]") {
-	const auto filter = FirFilter<float, TIME_DOMAIN>(10, Hilbert(WINDOWED));
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(10, Fir.Hilbert.Windowed);
 	REQUIRE(filter.Size() == 10);
 	REQUIRE(IsAntiSymmetric(filter));
 	REQUIRE(Min(Abs(filter)) > 0.0f);
@@ -511,7 +511,7 @@ TEST_CASE("Hilbert even small form", "[FIR]") {
 
 TEST_CASE("Hilbert odd phase shift", "[FIR]") {
 	constexpr size_t testSignalSize = 4096;
-	const auto filter = FirFilter<float, TIME_DOMAIN>(377, Hilbert(WINDOWED));
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(377, Fir.Hilbert.Windowed);
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
 	const auto imaginarySignal = Convolution(filter, testSignal, CONV_CENTRAL);
 	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
@@ -521,7 +521,7 @@ TEST_CASE("Hilbert odd phase shift", "[FIR]") {
 
 TEST_CASE("Hilbert even phase shift", "[FIR]") {
 	constexpr size_t testSignalSize = 4096;
-	const auto filter = FirFilter<float, TIME_DOMAIN>(376, Hilbert(WINDOWED));
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(376, Fir.Hilbert.Windowed);
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
 	const auto imaginarySignal = Convolution(filter, testSignal, CONV_CENTRAL);
 	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());

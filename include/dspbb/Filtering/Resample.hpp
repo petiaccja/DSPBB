@@ -14,23 +14,23 @@ namespace dspbb {
 // Public utilities
 //------------------------------------------------------------------------------
 
-struct InterpSuspensionPoint {
+struct InterpolSuspensionPoint {
 	size_t firstInputSample;
 	size_t startPoint;
 };
 
 
-struct ResamplingSuspensionPoint {
+struct ResampleSuspensionPoint {
 	size_t firstInputSample;
 	Rational<int64_t> startPoint;
 };
 
 
 template <class ConvType>
-constexpr size_t InterpLength(size_t inputSize,
-							  size_t filterSize,
-							  size_t numPhases,
-							  const ConvType&) {
+constexpr size_t InterpolLength(size_t inputSize,
+								size_t filterSize,
+								size_t numPhases,
+								const ConvType&) {
 	static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
 
 	const ptrdiff_t hrInputSize = inputSize * numPhases;
@@ -38,17 +38,17 @@ constexpr size_t InterpLength(size_t inputSize,
 }
 
 
-constexpr double InterpFilterCutoff(size_t numPhases) {
+constexpr double InterpolFilterCutoff(size_t numPhases) {
 	return 1.0 / double(numPhases);
 }
 
 
 template <class ConvType>
-constexpr Rational<int64_t> ResamplingLength(size_t inputSize,
-											 size_t filterSize,
-											 size_t numPhases,
-											 Rational<int64_t> sampleRates,
-											 const ConvType&) {
+constexpr Rational<int64_t> ResampleLength(size_t inputSize,
+										   size_t filterSize,
+										   size_t numPhases,
+										   Rational<int64_t> sampleRates,
+										   const ConvType&) {
 	static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
 	const int64_t interpolatedSize = int64_t(numPhases) * inputSize;
 	const int64_t filteredInterpolatedSize = ConvolutionLength(interpolatedSize, filterSize, ConvType{});
@@ -57,16 +57,16 @@ constexpr Rational<int64_t> ResamplingLength(size_t inputSize,
 }
 
 
-constexpr double ResamplingFilterCutoff(Rational<int64_t> sampleRates, size_t numPhases) {
+constexpr double ResampleFilterCutoff(Rational<int64_t> sampleRates, size_t numPhases) {
 	const double base = 1.0 / double(numPhases);
 	const double rate = std::min(1.0, 1.0 / double(sampleRates));
 	return base * rate;
 }
 
 
-constexpr Rational<int64_t> ResamplingDelay(size_t filterSize,
-											size_t numPhases,
-											Rational<int64_t> sampleRates) {
+constexpr Rational<int64_t> ResampleDelay(size_t filterSize,
+										  size_t numPhases,
+										  Rational<int64_t> sampleRates) {
 	return Rational<int64_t>{ int64_t(filterSize) - 1, 2 * int64_t(numPhases) } / sampleRates;
 }
 
@@ -76,7 +76,7 @@ constexpr Rational<int64_t> ResamplingDelay(size_t filterSize,
 //------------------------------------------------------------------------------
 
 namespace impl {
-	inline InterpSuspensionPoint FindInterpSuspensionPoint(size_t nextOutputSample, size_t filterSize, size_t numPhases) {
+	inline InterpolSuspensionPoint FindInterpolSuspensionPoint(size_t nextOutputSample, size_t filterSize, size_t numPhases) {
 		const ptrdiff_t firstOutputSample = ptrdiff_t(nextOutputSample) - ptrdiff_t(filterSize - 1);
 		if (firstOutputSample < 0) {
 			return { 0, nextOutputSample };
@@ -94,10 +94,10 @@ namespace impl {
 		return sample * Rational{ targetRate, sourceRate };
 	}
 
-	constexpr ResamplingSuspensionPoint FindResamplingSuspensionPoint(Rational<int64_t> nextOutputSample,
-																	  size_t filterSize,
-																	  size_t numPhases,
-																	  Rational<int64_t> sampleRates) {
+	constexpr ResampleSuspensionPoint FindResampleSuspensionPoint(Rational<int64_t> nextOutputSample,
+																  size_t filterSize,
+																  size_t numPhases,
+																  Rational<int64_t> sampleRates) {
 		const auto nextInputSample = ChangeSampleRate(sampleRates.Denominator(), sampleRates.Numerator(), nextOutputSample);
 		const auto convolutionOffset = Rational{ int64_t(filterSize) - 1, int64_t(numPhases) };
 		const auto firstInputSample = nextInputSample - convolutionOffset;
@@ -220,16 +220,16 @@ template <class SignalR,
 		  class P,
 		  eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
-InterpSuspensionPoint Interpolate(SignalR&& hrOutput,
-								  const SignalT& lrInput,
-								  const PolyphaseView<P, D>& polyphase,
-								  size_t hrOffset) {
+InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
+									const SignalT& lrInput,
+									const PolyphaseView<P, D>& polyphase,
+									size_t hrOffset) {
 	const ptrdiff_t rate = polyphase.FilterCount();
 	const ptrdiff_t hrFilterSize = polyphase.OriginalSize();
 	const ptrdiff_t lrPhaseSize = polyphase.PhaseSize();
 	const ptrdiff_t hrOutputSize = hrOutput.Size();
 
-	const ptrdiff_t hrOutputMaxSize = InterpLength(lrInput.Size(), hrFilterSize, rate, CONV_FULL);
+	const ptrdiff_t hrOutputMaxSize = InterpolLength(lrInput.Size(), hrFilterSize, rate, CONV_FULL);
 	assert(ptrdiff_t(hrOffset) + hrOutputSize <= hrOutputMaxSize);
 
 	size_t hrOutputIdx = hrOffset;
@@ -256,7 +256,7 @@ InterpSuspensionPoint Interpolate(SignalR&& hrOutput,
 		}
 	}
 
-	return impl::FindInterpSuspensionPoint(hrOutputIdx, polyphase.OriginalSize(), polyphase.FilterCount());
+	return impl::FindInterpolSuspensionPoint(hrOutputIdx, polyphase.OriginalSize(), polyphase.FilterCount());
 }
 
 
@@ -279,16 +279,16 @@ template <class SignalR,
 		  class P,
 		  eSignalDomain D,
 		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
-ResamplingSuspensionPoint Resample(SignalR&& output,
-								   const SignalT& input,
-								   const PolyphaseView<P, D>& polyphase,
-								   Rational<int64_t> sampleRates,
-								   Rational<int64_t> startPoint = { 0, 1 }) {
+ResampleSuspensionPoint Resample(SignalR&& output,
+								 const SignalT& input,
+								 const PolyphaseView<P, D>& polyphase,
+								 Rational<int64_t> sampleRates,
+								 Rational<int64_t> startPoint = { 0, 1 }) {
 	assert(sampleRates >= 0ll);
 	assert(startPoint >= 0ll);
 	assert(polyphase.FilterCount() > 0);
 
-	[[maybe_unused]] const auto maxLength = ResamplingLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
+	[[maybe_unused]] const auto maxLength = ResampleLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
 	assert(startPoint + int64_t(output.Size()) < maxLength);
 
 	auto outputIndex = startPoint;
@@ -302,7 +302,7 @@ ResamplingSuspensionPoint Resample(SignalR&& output,
 					/ (CommonType(firstSampleLoc.weight) + CommonType(secondSampleLoc.weight));
 	}
 
-	return impl::FindResamplingSuspensionPoint(outputIndex, polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates);
+	return impl::FindResampleSuspensionPoint(outputIndex, polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates);
 }
 
 
@@ -321,6 +321,36 @@ auto Resample(const SignalT& input,
 	BasicSignal<R, Domain> out(outputLength, R(0));
 	Resample(out, input, polyphase, sampleRates, startPoint);
 	return out;
+}
+
+
+template <class SignalT,
+		  class P,
+		  eSignalDomain Domain,
+		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
+auto Resample(const SignalT& input,
+			  const PolyphaseView<P, Domain>& polyphase,
+			  Rational<int64_t> sampleRates,
+			  impl::ConvCentral) {
+	const Rational<int64_t> startPointIn = {
+		int64_t(std::min(polyphase.OriginalSize(), input.Size() * polyphase.FilterCount()) - 1),
+		int64_t(polyphase.FilterCount())
+	};
+	const size_t outputLength = floor(ResampleLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_CENTRAL));
+	return Resample(input, polyphase, sampleRates, startPointIn / sampleRates, outputLength);
+}
+
+
+template <class SignalT,
+		  class P,
+		  eSignalDomain Domain,
+		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
+auto Resample(const SignalT& input,
+			  const PolyphaseView<P, Domain>& polyphase,
+			  Rational<int64_t> sampleRates,
+			  impl::ConvFull) {
+	const size_t outputLength = floor(ResampleLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL));
+	return Resample(input, polyphase, sampleRates, Rational<int64_t>{ 0 }, outputLength);
 }
 
 

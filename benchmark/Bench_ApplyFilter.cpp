@@ -68,7 +68,7 @@ public:
 
 
 template <class T, int64_t MaxOrder>
-class IirFilterFixture : public celero::TestFixture {
+class DesignFilterFixture : public celero::TestFixture {
 public:
 	std::vector<ExperimentValue> getExperimentValues() const override {
 		std::vector<ExperimentValue> experimentValues;
@@ -118,8 +118,8 @@ public:
 using BaselineFixture = FirFilterFixture<float, 1, 1, 8192>;
 using ConvFixture = FirFilterFixture<float, 1, maxFirOrder, 16>;
 using OlaFixture = FirFilterFixture<float, 32, maxFirOrder, 16>;
-using TfFixture = IirFilterFixture<float, maxIirDirectOrder>;
-using CascadeFixture = IirFilterFixture<float, maxIirCascadeOrder>;
+using TfFixture = DesignFilterFixture<float, maxIirDirectOrder>;
+using CascadeFixture = DesignFilterFixture<float, maxIirCascadeOrder>;
 
 BASELINE_F(ApplyFilter, gain, BaselineFixture, 25, 1) {
 	Multiply(AsView(out).SubSignal(0, signal.Size()), signal, filter[0]);

@@ -86,24 +86,24 @@ Signal<float> DialTone(char character) {
 //  - We set a loose pass-band ripple because the precise magnitude of the picked-up tone is not important
 //  - We set a strict stop-band ripple to heavily suppress noise outside the narrow band
 constexpr int filterOrder = 6;
-const auto filterDesc = Bandpass(ELLIPTIC).PassbandRipple(0.15f).StopbandRipple(0.02f);
+const auto filterDesc = Iir.Bandpass.Elliptic.PassbandRipple(0.15f).StopbandRipple(0.02f);
 float Normalize(float f) { return NormalizedFrequency(f, sampleRate); }; // A little helper since we need normalized frequencies.
 
-// IirFilter returns the zero-pole representation of the designed filter. To apply it
+// DesignFilter returns the zero-pole representation of the designed filter. To apply it
 // to a signal, you have to convert it to a transfer function or a cascaded biquad.
 // Unless you have a good reason, use cascaded biquads for their superior stability and accuracy.
 const std::array<CascadedBiquad<float>, 4> filterBank1 = {
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[0] - 10.f), Normalize(frequencies1[0] + 10.f))) },
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[1] - 10.f), Normalize(frequencies1[1] + 10.f))) },
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[2] - 10.f), Normalize(frequencies1[2] + 10.f))) },
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[3] - 10.f), Normalize(frequencies1[3] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[0] - 10.f), Normalize(frequencies1[0] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[1] - 10.f), Normalize(frequencies1[1] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[2] - 10.f), Normalize(frequencies1[2] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies1[3] - 10.f), Normalize(frequencies1[3] + 10.f))) },
 };
 
 const std::array<CascadedBiquad<float>, 4> filterBank2 = {
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[0] - 10.f), Normalize(frequencies2[0] + 10.f))) },
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[1] - 10.f), Normalize(frequencies2[1] + 10.f))) },
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[2] - 10.f), Normalize(frequencies2[2] + 10.f))) },
-	CascadedBiquad{ IirFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[3] - 10.f), Normalize(frequencies2[3] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[0] - 10.f), Normalize(frequencies2[0] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[1] - 10.f), Normalize(frequencies2[1] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[2] - 10.f), Normalize(frequencies2[2] + 10.f))) },
+	CascadedBiquad{ DesignFilter<float>(filterOrder, filterDesc.Band(Normalize(frequencies2[3] - 10.f), Normalize(frequencies2[3] + 10.f))) },
 };
 
 
