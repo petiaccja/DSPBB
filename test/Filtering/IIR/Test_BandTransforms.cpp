@@ -1,5 +1,5 @@
-#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Filtering/IIR/BandTransforms.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
 
 #include <catch2/catch.hpp>
 

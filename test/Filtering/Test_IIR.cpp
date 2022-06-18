@@ -1,7 +1,7 @@
 #include "../TestUtils.hpp"
 
-#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Filtering/IIR.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Math/Statistics.hpp>
 
 #include <catch2/catch.hpp>
