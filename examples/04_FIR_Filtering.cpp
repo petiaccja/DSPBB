@@ -51,7 +51,7 @@ public:
 	void SetLevels(float bass, float mid, float treble) {
 		const auto normalizedResponse = [&](float nf) { return EqualizedResponse(nf * float(m_sampleRate) / 2.0f, bass, mid, treble); };
 		// We will use a least squares FIR filter with no weighting and default grid size.
-		FirFilter(m_filter, Fir.Arbitrary.LeastSquares.Response(normalizedResponse));
+		DesignFilter(m_filter, Fir.Arbitrary.LeastSquares.Response(normalizedResponse));
 	}
 
 	void Filter(SignalView<const float> leftIn, SignalView<const float> rightIn, SignalView<float> leftOut, SignalView<float> rightOut) {
