@@ -1,4 +1,4 @@
-#include <dspbb/Filtering/FilterParameters.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Filtering/Windowing.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>

@@ -1,4 +1,4 @@
-#include <dspbb/Filtering/FilterParameters.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Filtering/IIR/BandTransforms.hpp>
 
 #include <catch2/catch.hpp>
@@ -42,7 +42,7 @@ TEST_CASE("Lowpass to lowpass", "[IIR band transforms]") {
 	const auto [amplitude, phase] = FrequencyResponse(lp, 1024);
 	const float crossover = CrossoverPoint(amplitude.begin(), amplitude.end(), minus3dB).value() / float(amplitude.Size() - 1);
 	REQUIRE(crossover == Approx(0.3).epsilon(5e-3f));
-	REQUIRE_NOTHROW(ParametrizeLowpassFilter(amplitude));
+	REQUIRE_NOTHROW(MeasureLowpassFilter(amplitude));
 }
 
 TEST_CASE("Lowpass to highpass", "[IIR band transforms]") {
@@ -50,7 +50,7 @@ TEST_CASE("Lowpass to highpass", "[IIR band transforms]") {
 	const auto [amplitude, phase] = FrequencyResponse(hp, 1024);
 	const float crossover = CrossoverPoint(amplitude.begin(), amplitude.end(), minus3dB).value() / float(amplitude.Size() - 1);
 	REQUIRE(crossover == Approx(0.4).epsilon(5e-3f));
-	REQUIRE_NOTHROW(ParametrizeHighpassFilter(amplitude));
+	REQUIRE_NOTHROW(MeasureHighpassFilter(amplitude));
 }
 
 TEST_CASE("Lowpass to bandpass", "[IIR band transforms]") {
@@ -60,7 +60,7 @@ TEST_CASE("Lowpass to bandpass", "[IIR band transforms]") {
 	const float crossover2 = (500 + CrossoverPoint(amplitude.begin() + 500, amplitude.end(), minus3dB).value()) / float(amplitude.Size() - 1);
 	REQUIRE(crossover1 == Approx(0.35).epsilon(5e-3f));
 	REQUIRE(crossover2 == Approx(0.6).epsilon(5e-3f));
-	REQUIRE_NOTHROW(ParametrizeBandpassFilter(amplitude));
+	REQUIRE_NOTHROW(MeasureBandpassFilter(amplitude));
 }
 
 TEST_CASE("Lowpass to bandstop", "[IIR band transforms]") {
@@ -70,5 +70,5 @@ TEST_CASE("Lowpass to bandstop", "[IIR band transforms]") {
 	const float crossover2 = (500 + CrossoverPoint(amplitude.begin() + 500, amplitude.end(), minus3dB).value()) / float(amplitude.Size() - 1);
 	REQUIRE(crossover1 == Approx(0.45).epsilon(5e-3f));
 	REQUIRE(crossover2 == Approx(0.65).epsilon(5e-3f));
-	REQUIRE_NOTHROW(ParametrizeBandstopFilter(amplitude));
+	REQUIRE_NOTHROW(MeasureBandstopFilter(amplitude));
 }

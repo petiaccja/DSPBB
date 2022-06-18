@@ -1,7 +1,7 @@
 #include "../TestUtils.hpp"
 
 #include <dspbb/Filtering/FIR.hpp>
-#include <dspbb/Filtering/FilterParameters.hpp>
+#include <dspbb/Filtering/MeasureFilter.hpp>
 #include <dspbb/Filtering/Resample.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
 #include <dspbb/Math/Convolution.hpp>
@@ -167,7 +167,7 @@ TEST_CASE("Windowed low-pass", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeLowpassFilter(amplitude);
+	const auto params = MeasureLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge < cutoff);
 	REQUIRE(params.stopbandEdge > cutoff);
 	REQUIRE(params.passbandRipple < 0.05f);
@@ -183,7 +183,7 @@ TEST_CASE("Windowed high-pass", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeHighpassFilter(amplitude);
+	const auto params = MeasureHighpassFilter(amplitude);
 	REQUIRE(params.stopbandEdge < cutoff);
 	REQUIRE(params.passbandEdge > cutoff);
 	REQUIRE(params.stopbandAtten < 0.05f);
@@ -200,7 +200,7 @@ TEST_CASE("Windowed band-pass", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandpassFilter(amplitude);
+	const auto params = MeasureBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge < bandLow);
 	REQUIRE(params.passbandLowerEdge > bandLow);
 	REQUIRE(params.passbandUpperEdge < bandHigh);
@@ -220,7 +220,7 @@ TEST_CASE("Windowed band-stop", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandstopFilter(amplitude);
+	const auto params = MeasureBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge < bandLow);
 	REQUIRE(params.stopbandLowerEdge > bandLow);
 	REQUIRE(params.stopbandUpperEdge < bandHigh);
@@ -248,13 +248,13 @@ TEST_CASE("Windowed hilbert magnitude", "[FIR]") {
 	const auto even = DesignFilter<float, TIME_DOMAIN>(376, Fir.Hilbert.Windowed.Window(windows::blackman));
 
 	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
-	const auto paramsOdd = ParametrizeBandpassFilter(amplitudeOdd);
+	const auto paramsOdd = MeasureBandpassFilter(amplitudeOdd);
 	REQUIRE(paramsOdd.passbandLowerEdge < 0.05f);
 	REQUIRE(paramsOdd.passbandUpperEdge > 0.95f);
 	REQUIRE(paramsOdd.passbandRipple < 0.05f);
 
 	const auto [amplitudeEven, phaseEven] = FrequencyResponse(even);
-	const auto paramsEven = ParametrizeHighpassFilter(amplitudeEven);
+	const auto paramsEven = MeasureHighpassFilter(amplitudeEven);
 	REQUIRE(paramsEven.passbandEdge < 0.05f);
 	REQUIRE(paramsEven.passbandRipple < 0.05f);
 }
@@ -299,7 +299,7 @@ TEST_CASE("Least squares low-pass", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeLowpassFilter(amplitude);
+	const auto params = MeasureLowpassFilter(amplitude);
 	REQUIRE(params.passbandEdge > cutoffBegin - width / 2);
 	REQUIRE(params.passbandEdge < cutoffBegin + width / 2);
 	REQUIRE(params.stopbandEdge > cutoffEnd - width / 2);
@@ -319,7 +319,7 @@ TEST_CASE("Least squares high-pass", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeHighpassFilter(amplitude);
+	const auto params = MeasureHighpassFilter(amplitude);
 	REQUIRE(params.stopbandEdge > cutoffBegin - width / 2);
 	REQUIRE(params.stopbandEdge < cutoffBegin + width / 2);
 	REQUIRE(params.passbandEdge > cutoffEnd - width / 2);
@@ -343,7 +343,7 @@ TEST_CASE("Least squares band-pass", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandpassFilter(amplitude);
+	const auto params = MeasureBandpassFilter(amplitude);
 	REQUIRE(params.lowerStopbandEdge > bandLowBegin - lowWidth / 2);
 	REQUIRE(params.lowerStopbandEdge < bandLowBegin + lowWidth / 2);
 	REQUIRE(params.passbandLowerEdge > bandLowEnd - lowWidth / 2);
@@ -371,7 +371,7 @@ TEST_CASE("Least squares band-stop", "[FIR]") {
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	const auto params = ParametrizeBandstopFilter(amplitude);
+	const auto params = MeasureBandstopFilter(amplitude);
 	REQUIRE(params.lowerPassbandEdge > bandLowBegin - lowWidth / 2);
 	REQUIRE(params.lowerPassbandEdge < bandLowBegin + lowWidth / 2);
 	REQUIRE(params.stopbandLowerEdge > bandLowEnd - lowWidth / 2);
@@ -404,13 +404,13 @@ TEST_CASE("Least squares hilbert magnitude", "[FIR]") {
 	const auto even = DesignFilter<float, TIME_DOMAIN>(154, Fir.Hilbert.LeastSquares.TransitionWidth(transition));
 
 	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
-	const auto paramsOdd = ParametrizeBandpassFilter(amplitudeOdd);
+	const auto paramsOdd = MeasureBandpassFilter(amplitudeOdd);
 	REQUIRE(paramsOdd.passbandLowerEdge < 0.05f);
 	REQUIRE(paramsOdd.passbandUpperEdge > 0.95f);
 	REQUIRE(paramsOdd.passbandRipple < 0.05f);
 
 	const auto [amplitudeEven, phaseEven] = FrequencyResponse(even);
-	const auto paramsEven = ParametrizeHighpassFilter(amplitudeEven);
+	const auto paramsEven = MeasureHighpassFilter(amplitudeEven);
 	REQUIRE(paramsEven.passbandEdge < 0.05f);
 	REQUIRE(paramsEven.passbandRipple < 0.05f);
 }
@@ -447,8 +447,8 @@ TEST_CASE("Least squares weights", "[FIR]") {
 	const auto [amplitudeL, phaseL] = FrequencyResponse(filterL);
 	const auto [amplitudeH, phaseH] = FrequencyResponse(filterH);
 
-	const auto paramsL = ParametrizeLowpassFilter(amplitudeL);
-	const auto paramsH = ParametrizeLowpassFilter(amplitudeH);
+	const auto paramsL = MeasureLowpassFilter(amplitudeL);
+	const auto paramsH = MeasureLowpassFilter(amplitudeH);
 
 	REQUIRE(paramsL.passbandRipple < 0.5f * paramsH.passbandRipple);
 	REQUIRE(0.5f * paramsL.stopbandAtten > paramsH.stopbandAtten);

@@ -9,7 +9,7 @@
 #include "Tools/LoadSound.hpp"
 #include "Tools/PlaySound.hpp"
 
-#include "dspbb/Filtering/FilterParameters.hpp"
+#include "dspbb/Filtering/MeasureFilter.hpp"
 #include <dspbb/Filtering/FIR.hpp>
 
 #include <iostream>

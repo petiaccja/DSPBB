@@ -375,7 +375,7 @@ namespace impl {
 
 
 template <class T>
-LowpassParameters<T> ParametrizeLowpassFilter(const SpectrumView<const T>& response) {
+LowpassParameters<T> MeasureLowpassFilter(const SpectrumView<const T>& response) {
 	const std::vector<impl::Band> bands = impl::ExtractFilterBands(response, impl::threshold<T>);
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractLowpassParameters(bands, bandParams);
@@ -386,7 +386,7 @@ LowpassParameters<T> ParametrizeLowpassFilter(const SpectrumView<const T>& respo
 }
 
 template <class T>
-HighpassParameters<T> ParametrizeHighpassFilter(const SpectrumView<const T>& response) {
+HighpassParameters<T> MeasureHighpassFilter(const SpectrumView<const T>& response) {
 	const std::vector<impl::Band> bands = impl::ExtractFilterBands(response, impl::threshold<T>);
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractHighpassParameters(bands, bandParams);
@@ -397,7 +397,7 @@ HighpassParameters<T> ParametrizeHighpassFilter(const SpectrumView<const T>& res
 }
 
 template <class T>
-BandpassParameters<T> ParametrizeBandpassFilter(const SpectrumView<const T>& response) {
+BandpassParameters<T> MeasureBandpassFilter(const SpectrumView<const T>& response) {
 	const std::vector<impl::Band> bands = impl::ExtractFilterBands(response, impl::threshold<T>);
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractBandpassParameters(bands, bandParams);
@@ -408,7 +408,7 @@ BandpassParameters<T> ParametrizeBandpassFilter(const SpectrumView<const T>& res
 }
 
 template <class T>
-BandstopParameters<T> ParametrizeBandstopFilter(const SpectrumView<const T>& response) {
+BandstopParameters<T> MeasureBandstopFilter(const SpectrumView<const T>& response) {
 	const std::vector<impl::Band> bands = impl::ExtractFilterBands(response, impl::threshold<T>);
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractBandstopParameters(bands, bandParams);
@@ -419,7 +419,7 @@ BandstopParameters<T> ParametrizeBandstopFilter(const SpectrumView<const T>& res
 }
 
 template <class T>
-FilterParameters<T> ParametrizeFilter(const SpectrumView<const T>& response) {
+FilterParameters<T> MeasureFilter(const SpectrumView<const T>& response) {
 	const std::vector<impl::Band> bands = impl::ExtractFilterBands(response, impl::threshold<T>);
 	const std::vector<impl::BandParameters<T>> bandParams = impl::ParametrizeFilterBands(response, bands, impl::threshold<T>);
 	auto filterParams = impl::ExtractFilterParameters(bands, bandParams);
@@ -428,28 +428,28 @@ FilterParameters<T> ParametrizeFilter(const SpectrumView<const T>& response) {
 
 
 template <class T>
-LowpassParameters<T> ParametrizeLowpassFilter(const Spectrum<T>& response) {
-	return ParametrizeLowpassFilter(AsView(response));
+LowpassParameters<T> MeasureLowpassFilter(const Spectrum<T>& response) {
+	return MeasureLowpassFilter(AsView(response));
 }
 
 template <class T>
-HighpassParameters<T> ParametrizeHighpassFilter(const Spectrum<T>& response) {
-	return ParametrizeHighpassFilter(AsView(response));
+HighpassParameters<T> MeasureHighpassFilter(const Spectrum<T>& response) {
+	return MeasureHighpassFilter(AsView(response));
 }
 
 template <class T>
-BandpassParameters<T> ParametrizeBandpassFilter(const Spectrum<T>& response) {
-	return ParametrizeBandpassFilter(AsView(response));
+BandpassParameters<T> MeasureBandpassFilter(const Spectrum<T>& response) {
+	return MeasureBandpassFilter(AsView(response));
 }
 
 template <class T>
-BandstopParameters<T> ParametrizeBandstopFilter(const Spectrum<T>& response) {
-	return ParametrizeBandstopFilter(AsView(response));
+BandstopParameters<T> MeasureBandstopFilter(const Spectrum<T>& response) {
+	return MeasureBandstopFilter(AsView(response));
 }
 
 template <class T>
-FilterParameters<T> ParametrizeFilter(const Spectrum<T>& response) {
-	return ParametrizeFilter(AsView(response));
+FilterParameters<T> MeasureFilter(const Spectrum<T>& response) {
+	return MeasureFilter(AsView(response));
 }
 
 
