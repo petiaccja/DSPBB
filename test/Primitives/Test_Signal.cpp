@@ -172,10 +172,10 @@ TEST_CASE("Signal - append (complex)", "[Signal]") {
 }
 
 
-TEST_CASE("Signal - append (complex)", "[Signal]") {
+TEST_CASE("Signal - prepend (complex)", "[Signal]") {
 	Signal<std::complex<float>> s1 = { 1, 2, 3 };
 	Signal<std::complex<float>> s2 = { 4, 5, 6 };
-	s1.append(s2);
+	s1.prepend(s2);
 	REQUIRE(s2.size() == 3);
 	REQUIRE(s1.size() == 6);
 	REQUIRE(s1[2] == 6.f);
