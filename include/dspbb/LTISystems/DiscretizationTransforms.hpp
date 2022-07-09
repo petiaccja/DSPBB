@@ -31,7 +31,7 @@ DiscreteZeroPoleGain<T> BilinearTransform(const ContinuousZeroPoleGain<T>& conti
 	};
 
 	// Do transform
-	const size_t numRoots = std::max(continuous.zeros.NumRoots(), continuous.poles.NumRoots());
+	const size_t numRoots = std::max(continuous.zeros.num_roots(), continuous.poles.num_roots());
 	FactoredPolynomial<T> newZeros = TransformRoots(continuous.zeros, transform, numRoots, z12);
 	FactoredPolynomial<T> newPoles = TransformRoots(continuous.poles, transform, numRoots, z12);
 	const T newGain = continuous(k);

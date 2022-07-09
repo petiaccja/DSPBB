@@ -59,7 +59,7 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Elliptic(size_t order, T passbandRi
 	poles.resize(order % 2, order / 2, -T(1));
 
 	size_t index = 0;
-	for (auto& root : zeros.ComplexPairs()) {
+	for (auto& root : zeros.complex_pairs()) {
 		size_t i = 2 * index + 1 + order % 2;
 		root = i_v<T> / (k * EllipticSN(T(i) * K / T(order), k));
 		++index;
@@ -67,14 +67,14 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Elliptic(size_t order, T passbandRi
 
 	index = 0;
 	const auto jv0 = EllipticArcSN(i_v<T> / epsilon, k1) * (K / T(order) / K1);
-	for (auto& root : poles.RealRoots()) {
+	for (auto& root : poles.real_roots()) {
 		size_t i = 2 * index + 1 - order % 2;
 		const auto croot = i_v<T> * EllipticSN(K * T(i) / T(order) + jv0, k);
 		assert(std::abs(imag(croot)) < 0.001 * std::abs(real(croot)));
 		root = real(croot);
 		++index;
 	}
-	for (auto& root : poles.ComplexPairs()) {
+	for (auto& root : poles.complex_pairs()) {
 		size_t i = 2 * index + 1 - order % 2;
 		root = i_v<T> * EllipticSN(K * T(i) / T(order) + jv0, k);
 		++index;

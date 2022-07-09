@@ -467,7 +467,7 @@ namespace impl {
 
 	template <class T, class System>
 	auto FrequencyResponse(const System& sys, size_t gridSizeHint = 0) -> std::pair<Spectrum<T>, Spectrum<T>> {
-		const size_t order = sys.Order();
+		const size_t order = sys.order();
 		const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : (1 + order) * 20;
 
 		Spectrum<T> amplitude(gridSize);

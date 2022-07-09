@@ -125,14 +125,14 @@ std::optional<char> Detect(SignalView<const float> signal) {
 	CascadedForm<float> state{ filterOrder };
 
 	for (int i = 0; i < 4; ++i) {
-		state.Reset(); // The state is reset not to carry over garbage from the previous filtering.
+		state.reset(); // The state is reset not to carry over garbage from the previous filtering.
 		Filter(filtered, signal, filterBank1[i], state);
 		const float passed = RootMeanSquare(filtered);
 		containedTones1[i] = passed > threshold;
 	}
 
 	for (int i = 0; i < 4; ++i) {
-		state.Reset();
+		state.reset();
 		Filter(filtered, signal, filterBank2[i], state);
 		const float passed = RootMeanSquare(filtered);
 		containedTones2[i] = passed > threshold;

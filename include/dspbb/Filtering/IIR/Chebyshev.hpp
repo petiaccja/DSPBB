@@ -40,11 +40,11 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Chebyshev1(size_t order, T ripple) 
 	poles.resize(order % 2, order / 2);
 
 	size_t index = 0;
-	for (auto& root : poles.ComplexPairs()) {
+	for (auto& root : poles.complex_pairs()) {
 		root = impl::Chebyshev1Pole(index, order, epsilon);
 		++index;
 	}
-	for (auto& root : poles.RealRoots()) {
+	for (auto& root : poles.real_roots()) {
 		root = std::real(impl::Chebyshev1Pole(index, order, epsilon));
 	}
 
@@ -66,18 +66,18 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Chebyshev2(size_t order, T ripple) 
 	std::vector<std::complex<T>> z;
 
 	size_t index = 0;
-	for (auto& root : poles.ComplexPairs()) {
+	for (auto& root : poles.complex_pairs()) {
 		root = impl::Chebyshev2Pole(index, order, epsilon);
 		p.push_back(root);
 		++index;
 	}
-	for (auto& root : poles.RealRoots()) {
+	for (auto& root : poles.real_roots()) {
 		root = std::real(impl::Chebyshev2Pole(index, order, epsilon));
 		p.push_back(root);
 	}
 
 	index = 0;
-	for (auto& root : zeros.ComplexPairs()) {
+	for (auto& root : zeros.complex_pairs()) {
 		root = impl::Chebyshev2Zero<T>(index, order);
 		z.push_back(root);
 		++index;

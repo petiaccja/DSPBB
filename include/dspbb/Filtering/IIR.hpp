@@ -193,12 +193,12 @@ template <class T, class ResponseDesc>
 void DesignFilter(DiscreteZeroPoleGain<T>& out, const ResponseDesc& desc) {
 	// TODO:
 	// This is kinda useless. I should maybe add view-like analogs to LTI systems.
-	assert(out.zeros.NumRoots() == out.poles.NumRoots());
-	const size_t order = out.poles.NumRoots();
+	assert(out.zeros.num_roots() == out.poles.num_roots());
+	const size_t order = out.poles.num_roots();
 	const auto filter = DesignFilter(order, desc);
-	out.Regroup(filter.NumRealRoots());
-	std::copy(filter.RealRoots().begin(), filter.RealRoots.end(), out.RealRoots.begin());
-	std::copy(filter.ComplexPairs().begin(), filter.ComplexPairs.end(), out.ComplexPairs.begin());
+	out.regroup(filter.num_real_roots());
+	std::copy(filter.real_roots().begin(), filter.real_roots.end(), out.real_roots.begin());
+	std::copy(filter.complex_pairs().begin(), filter.complex_pairs.end(), out.complex_pairs.begin());
 }
 
 } // namespace dspbb
