@@ -49,10 +49,10 @@ void PlayMono(uint64_t sampleRate, const PlayMonoCallback& callback) {
 void PlayStereo(uint64_t sampleRate, SignalView<float> samplesLeft, SignalView<float> samplesRight) {
 	size_t currentSample = 0;
 	PlayStereo(sampleRate, [&samplesLeft, &samplesRight, &currentSample](SignalView<float> leftOut, SignalView<float> rightOut) -> size_t {
-		assert(leftOut.Size() == rightOut.Size());
-		const size_t validSize = std::min(samplesLeft.Size() - currentSample, leftOut.Size());
-		const auto leftChunk = samplesLeft.SubSignal(currentSample, validSize);
-		const auto rightChunk = samplesRight.SubSignal(currentSample, validSize);
+		assert(leftOut.size() == rightOut.size());
+		const size_t validSize = std::min(samplesLeft.size() - currentSample, leftOut.size());
+		const auto leftChunk = samplesLeft.subsignal(currentSample, validSize);
+		const auto rightChunk = samplesRight.subsignal(currentSample, validSize);
 		std::copy(leftChunk.begin(), leftChunk.end(), leftOut.begin());
 		std::copy(rightChunk.begin(), rightChunk.end(), rightOut.begin());
 		currentSample += validSize;
@@ -63,8 +63,8 @@ void PlayStereo(uint64_t sampleRate, SignalView<float> samplesLeft, SignalView<f
 void PlayMono(uint64_t sampleRate, SignalView<float> samples) {
 	size_t currentSample = 0;
 	PlayMono(sampleRate, [&samples, &currentSample](SignalView<float> out) -> size_t {
-		const size_t validSize = std::min(samples.Size() - currentSample, out.Size());
-		const auto chunk = samples.SubSignal(currentSample, validSize);
+		const size_t validSize = std::min(samples.size() - currentSample, out.size());
+		const auto chunk = samples.subsignal(currentSample, validSize);
 		std::copy(chunk.begin(), chunk.end(), out.begin());
 		currentSample += validSize;
 		return validSize;

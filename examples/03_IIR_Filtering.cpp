@@ -119,7 +119,7 @@ std::optional<char> Detect(SignalView<const float> signal) {
 	std::array<bool, 4> containedTones2;
 
 	// Even though we will run 8 separate filters, we can reuse the same memory for output.
-	Signal<float> filtered(signal.Size());
+	Signal<float> filtered(signal.size());
 
 	// Due to the recursive nature of the IIR filters, they need a structure to store state.
 	CascadedForm<float> state{ filterOrder };

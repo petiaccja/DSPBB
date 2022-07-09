@@ -58,29 +58,28 @@ public:
 
 	reference operator[](size_t index);
 	const_reference operator[](size_t index) const;
-	pointer Data();
-	const_pointer Data() const;
+	pointer data();
+	const_pointer data() const;
 
-	size_type Size() const;
-	size_type Length() const;
-	bool Empty() const;
-	size_type Capacity() const;
-	void Reserve(size_type capacity);
-	void Resize(size_type count);
-	void Resize(size_type count, const T& value);
+	size_type size() const;
+	bool empty() const;
+	size_type capacity() const;
+	void reserve(size_type capacity);
+	void resize(size_type count);
+	void resize(size_type count, const T& value);
 
-	void Clear();
-	void Append(const BasicSignal& signal);
-	void Prepend(const BasicSignal& signal);
-	void PushBack(const T& value);
-	BasicSignal ExtractFront(size_t count);
-	BasicSignal ExtractBack(size_t count);
-	void Insert(size_type where, const BasicSignal& signal);
-	void Insert(const_iterator where, const BasicSignal& signal);
+	void clear();
+	void append(const BasicSignal& signal);
+	void prepend(const BasicSignal& signal);
+	void push_back(const T& value);
+	BasicSignal extract_front(size_t count);
+	BasicSignal extract_back(size_t count);
+	void insert(size_type where, const BasicSignal& signal);
+	void insert(const_iterator where, const BasicSignal& signal);
 	template <class Iter>
-	void Insert(const_iterator where, Iter first, Iter last);
-	void Erase(const_iterator where);
-	void Erase(const_iterator first, const_iterator last);
+	void insert(const_iterator where, Iter first, Iter last);
+	void erase(const_iterator where);
+	void erase(const_iterator first, const_iterator last);
 
 	iterator begin();
 	const_iterator begin() const;
@@ -137,109 +136,104 @@ typename BasicSignal<T, Domain>::const_reference BasicSignal<T, Domain>::operato
 }
 
 template <class T, eSignalDomain Domain>
-typename BasicSignal<T, Domain>::pointer BasicSignal<T, Domain>::Data() {
+typename BasicSignal<T, Domain>::pointer BasicSignal<T, Domain>::data() {
 	return m_samples.data();
 }
 
 template <class T, eSignalDomain Domain>
-typename BasicSignal<T, Domain>::const_pointer BasicSignal<T, Domain>::Data() const {
+typename BasicSignal<T, Domain>::const_pointer BasicSignal<T, Domain>::data() const {
 	return m_samples.data();
 }
 
 template <class T, eSignalDomain Domain>
-typename BasicSignal<T, Domain>::size_type BasicSignal<T, Domain>::Size() const {
+typename BasicSignal<T, Domain>::size_type BasicSignal<T, Domain>::size() const {
 	return m_samples.size();
 }
 
 template <class T, eSignalDomain Domain>
-typename BasicSignal<T, Domain>::size_type BasicSignal<T, Domain>::Length() const {
-	return Size();
-}
-
-template <class T, eSignalDomain Domain>
-bool BasicSignal<T, Domain>::Empty() const {
+bool BasicSignal<T, Domain>::empty() const {
 	return m_samples.empty();
 }
 
 template <class T, eSignalDomain Domain>
-typename BasicSignal<T, Domain>::size_type BasicSignal<T, Domain>::Capacity() const {
+typename BasicSignal<T, Domain>::size_type BasicSignal<T, Domain>::capacity() const {
 	return m_samples.capacity();
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Reserve(size_type capacity) {
+void BasicSignal<T, Domain>::reserve(size_type capacity) {
 	m_samples.reserve(capacity);
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Resize(size_type count) {
+void BasicSignal<T, Domain>::resize(size_type count) {
 	m_samples.resize(count);
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Resize(size_type count, const T& value) {
+void BasicSignal<T, Domain>::resize(size_type count, const T& value) {
 	m_samples.resize(count, value);
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Clear() {
+void BasicSignal<T, Domain>::clear() {
 	m_samples.clear();
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Append(const BasicSignal& signal) {
+void BasicSignal<T, Domain>::append(const BasicSignal& signal) {
 	m_samples.insert(m_samples.end(), signal.begin(), signal.end());
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Prepend(const BasicSignal& signal) {
+void BasicSignal<T, Domain>::prepend(const BasicSignal& signal) {
 	m_samples.insert(m_samples.begin(), signal.begin(), signal.end());
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::PushBack(const T& value) {
+void BasicSignal<T, Domain>::push_back(const T& value) {
 	m_samples.push_back(value);
 }
 
 template <class T, eSignalDomain Domain>
-BasicSignal<T, Domain> BasicSignal<T, Domain>::ExtractFront(size_t count) {
-	assert(count <= Length());
-	BasicSignal part{ count, Data() };
-	Erase(begin(), begin() + count);
+BasicSignal<T, Domain> BasicSignal<T, Domain>::extract_front(size_t count) {
+	assert(count <= size());
+	BasicSignal part{ count, data() };
+	erase(begin(), begin() + count);
 	return part;
 }
 
 template <class T, eSignalDomain Domain>
-BasicSignal<T, Domain> BasicSignal<T, Domain>::ExtractBack(size_t count) {
-	assert(count <= Length());
-	BasicSignal part{ count, Data() - count + Length() };
-	Erase(end() - count, end());
+BasicSignal<T, Domain> BasicSignal<T, Domain>::extract_back(size_t count) {
+	assert(count <= size());
+	BasicSignal part{ count, data() - count + size() };
+	erase(end() - count, end());
 	return part;
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Insert(size_type where, const BasicSignal& signal) {
+void BasicSignal<T, Domain>::insert(size_type where, const BasicSignal& signal) {
 	m_samples.insert(m_samples.begin() + where, signal.begin(), signal.end());
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Insert(const_iterator where, const BasicSignal& signal) {
+void BasicSignal<T, Domain>::insert(const_iterator where, const BasicSignal& signal) {
 	m_samples.insert(where, signal.begin(), signal.end());
 }
 
 template <class T, eSignalDomain Domain>
 template <class Iter>
-void BasicSignal<T, Domain>::Insert(const_iterator where, Iter first, Iter last) {
+void BasicSignal<T, Domain>::insert(const_iterator where, Iter first, Iter last) {
 	m_samples.insert(where, first, last);
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Erase(const_iterator where) {
+void BasicSignal<T, Domain>::erase(const_iterator where) {
 	m_samples.erase(where);
 }
 
 template <class T, eSignalDomain Domain>
-void BasicSignal<T, Domain>::Erase(const_iterator first, const_iterator last) {
+void BasicSignal<T, Domain>::erase(const_iterator first, const_iterator last) {
 	m_samples.erase(first, last);
 }
 

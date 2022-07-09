@@ -46,8 +46,8 @@ TEST_CASE("Real central", "[Convolution]") {
 
 	auto result = Convolution(u, v, CONV_CENTRAL);
 
-	REQUIRE(result.Length() == expected.Length());
-	for (size_t i = 0; i < expected.Length(); ++i) {
+	REQUIRE(result.size() == expected.size());
+	for (size_t i = 0; i < expected.size(); ++i) {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
@@ -59,8 +59,8 @@ TEST_CASE("Real full", "[Convolution]") {
 
 	auto result = Convolution(u, v, CONV_FULL);
 
-	REQUIRE(result.Length() == expected.Length());
-	for (size_t i = 0; i < expected.Length(); ++i) {
+	REQUIRE(result.size() == expected.size());
+	for (size_t i = 0; i < expected.size(); ++i) {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
@@ -73,8 +73,8 @@ TEST_CASE("Real-complex central BR", "[Convolution]") {
 
 	auto result = Convolution(u, v, CONV_CENTRAL);
 
-	REQUIRE(result.Length() == expected.Length());
-	for (size_t i = 0; i < expected.Length(); ++i) {
+	REQUIRE(result.size() == expected.size());
+	for (size_t i = 0; i < expected.size(); ++i) {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
@@ -86,8 +86,8 @@ TEST_CASE("Complex-real central RB", "[Convolution]") {
 
 	auto result = Convolution(u, v, CONV_CENTRAL);
 
-	REQUIRE(result.Length() == expected.Length());
-	for (size_t i = 0; i < expected.Length(); ++i) {
+	REQUIRE(result.size() == expected.size());
+	for (size_t i = 0; i < expected.size(); ++i) {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
@@ -99,8 +99,8 @@ TEST_CASE("Complex-complex central", "[Convolution]") {
 
 	auto result = Convolution(u, v, CONV_CENTRAL);
 
-	REQUIRE(result.Length() == expected.Length());
-	for (size_t i = 0; i < expected.Length(); ++i) {
+	REQUIRE(result.size() == expected.size());
+	for (size_t i = 0; i < expected.size(); ++i) {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
@@ -109,18 +109,18 @@ TEST_CASE("Real-world signal", "[Convolution]") {
 	Signal<float> u;
 	Signal<float> v;
 
-	u.Resize(1000, 0.0f);
+	u.resize(1000, 0.0f);
 	for (int i = 0; i < 20; ++i) {
 		u[200 + i] = float(i);
 	}
 
-	v.Resize(51, 0.0f);
+	v.resize(51, 0.0f);
 	v[0] = 1;
 	v[50] = 1;
 
 	auto result = Convolution(u, v, CONV_CENTRAL);
 
-	REQUIRE(result.Length() == 950);
+	REQUIRE(result.size() == 950);
 	REQUIRE(result[145] == 0);
 	REQUIRE(result[151] == 1);
 	REQUIRE(result[169] == 19);
@@ -139,8 +139,8 @@ TEST_CASE("Arbitrary offset middle", "[Convolution]") {
 
 	const auto result = Convolution(u, v, 4, 6);
 
-	REQUIRE(result.Length() == 6);
-	for (size_t i = 0; i < result.Length(); ++i) {
+	REQUIRE(result.size() == 6);
+	for (size_t i = 0; i < result.size(); ++i) {
 		REQUIRE(result[i] == expected[i + 4]);
 	}
 }
@@ -152,8 +152,8 @@ TEST_CASE("Arbitrary offset start", "[Convolution]") {
 
 	const auto result = Convolution(u, v, 0, 6);
 
-	REQUIRE(result.Length() == 6);
-	for (size_t i = 0; i < result.Length(); ++i) {
+	REQUIRE(result.size() == 6);
+	for (size_t i = 0; i < result.size(); ++i) {
 		REQUIRE(result[i] == expected[i]);
 	}
 }
@@ -165,8 +165,8 @@ TEST_CASE("Arbitrary offset end", "[Convolution]") {
 
 	const auto result = Convolution(u, v, 25, 6);
 
-	REQUIRE(result.Length() == 6);
-	for (size_t i = 0; i < result.Length(); ++i) {
+	REQUIRE(result.size() == 6);
+	for (size_t i = 0; i < result.size(); ++i) {
 		REQUIRE(result[i] == expected[i + 25]);
 	}
 }
@@ -176,16 +176,16 @@ TEST_CASE("3-operand full & central", "[Convolution]") {
 	Signal<float> v{ vr.begin(), vr.end() };
 	Signal<float> fullExpected = { urvr_full.begin(), urvr_full.end() };
 	Signal<float> centralExpected = { urvr_central.begin(), urvr_central.end() };
-	Signal<float> fullOut(fullExpected.Size());
-	Signal<float> centralOut(centralExpected.Size());
+	Signal<float> fullOut(fullExpected.size());
+	Signal<float> centralOut(centralExpected.size());
 
 	Convolution(fullOut, u, v, CONV_FULL);
 	Convolution(centralOut, u, v, CONV_CENTRAL);
 
-	for (size_t i = 0; i < fullOut.Length(); ++i) {
+	for (size_t i = 0; i < fullOut.size(); ++i) {
 		REQUIRE(fullOut[i] == fullExpected[i]);
 	}
-	for (size_t i = 0; i < centralOut.Length(); ++i) {
+	for (size_t i = 0; i < centralOut.size(); ++i) {
 		REQUIRE(centralOut[i] == centralExpected[i]);
 	}
 }

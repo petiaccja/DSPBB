@@ -32,36 +32,36 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 		constexpr int step = 40;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+			Filter(AsView(result).subsignal(i, step), AsView(signal).subsignal(i, step), filter, state, FILTER_CONV);
 		}
 	}
 	SECTION("OLA large") {
 		constexpr int step = 40;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA);
+			Filter(AsView(result).subsignal(i, step), AsView(signal).subsignal(i, step), filter, state, FILTER_OLA);
 		}
 	}
 	SECTION("Convolution small") {
 		constexpr int step = 4;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
+			Filter(AsView(result).subsignal(i, step), AsView(signal).subsignal(i, step), filter, state, FILTER_CONV);
 		}
 	}
 	SECTION("OLA small") {
 		constexpr int step = 4;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			Filter(AsView(result).SubSignal(i, step), AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA);
+			Filter(AsView(result).subsignal(i, step), AsView(signal).subsignal(i, step), filter, state, FILTER_OLA);
 		}
 	}
 	SECTION("Convolution copy") {
 		constexpr int step = 4;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_CONV);
-			const auto outBatch = AsView(result).SubSignal(i, step);
+			const auto batch = Filter(AsView(signal).subsignal(i, step), filter, state, FILTER_CONV);
+			const auto outBatch = AsView(result).subsignal(i, step);
 			std::copy(batch.begin(), batch.end(), outBatch.begin());
 		}
 	}
@@ -69,8 +69,8 @@ TEST_CASE("Filter state continuity", "[FIR]") {
 		constexpr int step = 4;
 		static_assert(length % step == 0);
 		for (size_t i = 0; i < length; i += step) {
-			const auto batch = Filter(AsView(signal).SubSignal(i, step), filter, state, FILTER_OLA);
-			const auto outBatch = AsView(result).SubSignal(i, step);
+			const auto batch = Filter(AsView(signal).subsignal(i, step), filter, state, FILTER_OLA);
+			const auto outBatch = AsView(result).subsignal(i, step);
 			std::copy(batch.begin(), batch.end(), outBatch.begin());
 		}
 	}
@@ -163,7 +163,7 @@ TEST_CASE("Windowed low-pass", "[FIR]") {
 	static constexpr float cutoff = 0.3f;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Lowpass.Windowed.Cutoff(cutoff).Window(windows::blackman));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -179,7 +179,7 @@ TEST_CASE("Windowed high-pass", "[FIR]") {
 	static constexpr float cutoff = 0.3f;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Highpass.Windowed.Cutoff(cutoff).Window(windows::blackman));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -196,7 +196,7 @@ TEST_CASE("Windowed band-pass", "[FIR]") {
 	static constexpr float bandHigh = 0.6f;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandpass.Windowed.Band(bandLow, bandHigh).Window(windows::blackman));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -216,7 +216,7 @@ TEST_CASE("Windowed band-stop", "[FIR]") {
 	static constexpr float bandHigh = 0.6f;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandstop.Windowed.Band(bandLow, bandHigh).Window(windows::blackman));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -234,11 +234,11 @@ TEST_CASE("Windowed arbitrary", "[FIR]") {
 	constexpr size_t numTaps = 255;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Arbitrary.Windowed.Response(TestArbitraryResponse).Window(windows::blackman));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, 1.0f, amplitude.Size(), true);
+	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, 1.0f, amplitude.size(), true);
 	std::for_each(expected.begin(), expected.end(), [](auto& v) { v = TestArbitraryResponse(v); });
 	REQUIRE(Max(Abs(amplitude - expected)) < 0.02f);
 }
@@ -295,7 +295,7 @@ TEST_CASE("Least squares low-pass", "[FIR]") {
 	constexpr float width = cutoffEnd - cutoffBegin;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Lowpass.LeastSquares.Cutoff(cutoffBegin, cutoffEnd));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -315,7 +315,7 @@ TEST_CASE("Least squares high-pass", "[FIR]") {
 	constexpr float width = cutoffEnd - cutoffBegin;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Highpass.LeastSquares.Cutoff(cutoffBegin, cutoffEnd));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -339,7 +339,7 @@ TEST_CASE("Least squares band-pass", "[FIR]") {
 	constexpr float highWidth = bandHighEnd - bandHighBegin;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandpass.LeastSquares.Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -367,7 +367,7 @@ TEST_CASE("Least squares band-stop", "[FIR]") {
 	constexpr float highWidth = bandHighEnd - bandHighBegin;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Bandstop.LeastSquares.Band(bandLowBegin, bandLowEnd, bandHighBegin, bandHighEnd).Weight(1.0f, 0.1f, 1.0f, 0.1f, 1.0f));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
@@ -389,11 +389,11 @@ TEST_CASE("Least squares arbitrary", "[FIR]") {
 	constexpr size_t numTaps = 255;
 
 	const auto impulse = DesignFilter<float, TIME_DOMAIN>(numTaps, Fir.Arbitrary.LeastSquares.Response(TestArbitraryResponse));
-	REQUIRE(impulse.Size() == numTaps);
+	REQUIRE(impulse.size() == numTaps);
 	REQUIRE(IsSymmetric(impulse));
 
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
-	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, 1.0f, amplitude.Size(), true);
+	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, 1.0f, amplitude.size(), true);
 	std::for_each(expected.begin(), expected.end(), [](auto& v) { v = TestArbitraryResponse(v); });
 	REQUIRE(Max(Abs(amplitude - expected)) < 0.02f);
 }
@@ -461,50 +461,50 @@ TEST_CASE("Least squares weights", "[FIR]") {
 
 TEST_CASE("Hilbert odd form", "[FIR]") {
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(247, Fir.Hilbert.Windowed);
-	REQUIRE(filter.Size() == 247);
+	REQUIRE(filter.size() == 247);
 	REQUIRE(IsAntiSymmetric(filter));
 	const auto nonZeroSamples = Decimate(filter, 2);
-	const auto zeroSamples = Decimate(AsView(filter).SubSignal(1), 2);
+	const auto zeroSamples = Decimate(AsView(filter).subsignal(1), 2);
 	REQUIRE(Max(zeroSamples) == 0.0f);
 	REQUIRE(Min(Abs(nonZeroSamples)) > 0.0f);
-	const auto firstHalf = AsView(nonZeroSamples).SubSignal(0, nonZeroSamples.Size() / 2);
-	const auto secondHalf = AsView(nonZeroSamples).SubSignal(nonZeroSamples.Size() / 2);
+	const auto firstHalf = AsView(nonZeroSamples).subsignal(0, nonZeroSamples.size() / 2);
+	const auto secondHalf = AsView(nonZeroSamples).subsignal(nonZeroSamples.size() / 2);
 	REQUIRE(Max(firstHalf) < 0.0f);
 	REQUIRE(Min(secondHalf) > 0.0f);
 }
 
 TEST_CASE("Hilbert even form", "[FIR]") {
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(246, Fir.Hilbert.Windowed);
-	REQUIRE(filter.Size() == 246);
+	REQUIRE(filter.size() == 246);
 	REQUIRE(IsAntiSymmetric(filter));
 	REQUIRE(Min(Abs(filter)) > 0.0f);
-	const auto firstHalf = AsView(filter).SubSignal(0, filter.Size() / 2);
-	const auto secondHalf = AsView(filter).SubSignal(filter.Size() / 2);
+	const auto firstHalf = AsView(filter).subsignal(0, filter.size() / 2);
+	const auto secondHalf = AsView(filter).subsignal(filter.size() / 2);
 	REQUIRE(Max(firstHalf) < 0.0f);
 	REQUIRE(Min(secondHalf) > 0.0f);
 }
 
 TEST_CASE("Hilbert odd small form", "[FIR]") {
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(19, Fir.Hilbert.Windowed);
-	REQUIRE(filter.Size() == 19);
+	REQUIRE(filter.size() == 19);
 	REQUIRE(IsAntiSymmetric(filter));
 	const auto nonZeroSamples = Decimate(filter, 2);
-	const auto zeroSamples = Decimate(AsView(filter).SubSignal(1), 2);
+	const auto zeroSamples = Decimate(AsView(filter).subsignal(1), 2);
 	REQUIRE(Max(zeroSamples) == 0.0f);
 	REQUIRE(Min(Abs(nonZeroSamples)) > 0.0f);
-	const auto firstHalf = AsView(nonZeroSamples).SubSignal(0, nonZeroSamples.Size() / 2);
-	const auto secondHalf = AsView(nonZeroSamples).SubSignal(nonZeroSamples.Size() / 2);
+	const auto firstHalf = AsView(nonZeroSamples).subsignal(0, nonZeroSamples.size() / 2);
+	const auto secondHalf = AsView(nonZeroSamples).subsignal(nonZeroSamples.size() / 2);
 	REQUIRE(Max(firstHalf) < 0.0f);
 	REQUIRE(Min(secondHalf) > 0.0f);
 }
 
 TEST_CASE("Hilbert even small form", "[FIR]") {
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(10, Fir.Hilbert.Windowed);
-	REQUIRE(filter.Size() == 10);
+	REQUIRE(filter.size() == 10);
 	REQUIRE(IsAntiSymmetric(filter));
 	REQUIRE(Min(Abs(filter)) > 0.0f);
-	const auto firstHalf = AsView(filter).SubSignal(0, filter.Size() / 2);
-	const auto secondHalf = AsView(filter).SubSignal(filter.Size() / 2);
+	const auto firstHalf = AsView(filter).subsignal(0, filter.size() / 2);
+	const auto secondHalf = AsView(filter).subsignal(filter.size() / 2);
 	REQUIRE(Max(firstHalf) < 0.0f);
 	REQUIRE(Min(secondHalf) > 0.0f);
 }
@@ -515,7 +515,7 @@ TEST_CASE("Hilbert odd phase shift", "[FIR]") {
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(377, Fir.Hilbert.Windowed);
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
 	const auto imaginarySignal = Convolution(filter, testSignal, CONV_CENTRAL);
-	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
+	const auto realSignal = AsConstView(testSignal).subsignal(filter.size() / 2, imaginarySignal.size());
 	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.000001f);
 	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
 }
@@ -525,7 +525,7 @@ TEST_CASE("Hilbert even phase shift", "[FIR]") {
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(376, Fir.Hilbert.Windowed);
 	const auto testSignal = SineWave<float, TIME_DOMAIN>(testSignalSize, testSignalSize, 60.0) * GaussianWindow<float, TIME_DOMAIN>(testSignalSize, 0.25);
 	const auto imaginarySignal = Convolution(filter, testSignal, CONV_CENTRAL);
-	const auto realSignal = AsConstView(testSignal).SubSignal(filter.Size() / 2, imaginarySignal.Size());
+	const auto realSignal = AsConstView(testSignal).subsignal(filter.size() / 2, imaginarySignal.size());
 	REQUIRE(std::abs(DotProduct(realSignal, imaginarySignal) / testSignalSize) < 0.01f);
 	REQUIRE(Mean(realSignal) == Approx(Mean(imaginarySignal)).margin(0.001f));
 }

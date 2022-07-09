@@ -9,7 +9,7 @@ namespace dspbb {
 namespace impl {
 	template <class SignalR, class SignalT, class System, class State, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 	auto Filter(SignalR&& out, const SignalT& signal, const System& filter, State& state) {
-		assert(out.Size() == signal.Size());
+		assert(out.size() == signal.size());
 		state.Feed(signal.begin(), signal.end(), out.begin(), filter);
 	}
 } // namespace impl
@@ -31,21 +31,21 @@ auto Filter(SignalR&& out, const SignalT& signal, const CascadedBiquad<U>& filte
 
 template <class SignalT, class T, class U>
 auto Filter(const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormI<T>& state) {
-	SignalT out(signal.Size());
+	SignalT out(signal.size());
 	Filter(out, signal, filter, state);
 	return out;
 }
 
 template <class SignalT, class T, class U>
 auto Filter(const SignalT& signal, const DiscreteTransferFunction<U>& filter, DirectFormII<T>& state) {
-	SignalT out(signal.Size());
+	SignalT out(signal.size());
 	Filter(out, signal, filter, state);
 	return out;
 }
 
 template <class SignalT, class T, class U>
 auto Filter(const SignalT& signal, const CascadedBiquad<U>& filter, CascadedForm<T>& state) {
-	SignalT out(signal.Size());
+	SignalT out(signal.size());
 	Filter(out, signal, filter, state);
 	return out;
 }

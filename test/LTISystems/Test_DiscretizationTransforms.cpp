@@ -16,10 +16,10 @@ TEST_CASE("Bilinear C->D", "[DiscreteizationTransforms]") {
 	};
 	const DiscreteZeroPoleGain<float> d = BilinearTransform(c, sampleRate);
 	// Number of poles and zeros.
-	REQUIRE(d.poles.RealRoots().Size() == 1);
-	REQUIRE(d.poles.ComplexPairs().Size() == 1);
-	REQUIRE(d.zeros.RealRoots().Size() == 1);
-	REQUIRE(d.zeros.ComplexPairs().Size() == 1);
+	REQUIRE(d.poles.RealRoots().size() == 1);
+	REQUIRE(d.poles.ComplexPairs().size() == 1);
+	REQUIRE(d.zeros.RealRoots().size() == 1);
+	REQUIRE(d.zeros.ComplexPairs().size() == 1);
 	// -INF s maps to -1 z
 	REQUIRE(std::real(d.zeros.RealRoots()[0]) == Approx(-1).margin(0.01));
 	// Points on the left plane map to points inside the unit circle.

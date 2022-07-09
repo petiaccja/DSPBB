@@ -117,9 +117,9 @@ namespace impl {
 
 	template <class T>
 	T FitLoss(const SpectrumView<const T>& y, T p, bool invertX, bool invertY, T baseY) {
-		const size_t count = y.Size();
+		const size_t count = y.size();
 		T sum = T(0);
-		for (size_t i = 0; i < y.Size(); ++i) {
+		for (size_t i = 0; i < y.size(); ++i) {
 			const T xi = !invertX ? T(i) : T(count - i - 1);
 			const T yi = !invertY ? (y[i] - baseY) / (T(1) - baseY) : (baseY - y[i]) / baseY;
 			sum += FitErrorDerivative(xi, yi, p);
@@ -129,7 +129,7 @@ namespace impl {
 
 	template <class T>
 	auto FitBand(const SpectrumView<const T>& band, bool pass, bool left, T threshold) {
-		const size_t size = band.Size();
+		const size_t size = band.size();
 
 		const bool invertX = !left;
 		const bool invertY = !pass;
@@ -152,8 +152,8 @@ namespace impl {
 		const std::optional<T> paramLeft = findLeft ? std::optional<T>{ impl::FitBand(band, passBand, true, threshold) } : std::optional<T>{};
 		const std::optional<T> paramRight = findRight ? std::optional<T>{ impl::FitBand(band, passBand, false, threshold) } : std::optional<T>{};
 
-		const std::optional<T> indexLeft = paramLeft ? std::optional<T>{ std::min(T(band.Size()), paramToIndex * paramLeft.value()) } : std::optional<T>{};
-		const std::optional<T> indexRight = paramRight ? std::optional<T>{ std::max(T(0), T(band.Size()) - paramToIndex * paramRight.value()) } : std::optional<T>{};
+		const std::optional<T> indexLeft = paramLeft ? std::optional<T>{ std::min(T(band.size()), paramToIndex * paramLeft.value()) } : std::optional<T>{};
+		const std::optional<T> indexRight = paramRight ? std::optional<T>{ std::max(T(0), T(band.size()) - paramToIndex * paramRight.value()) } : std::optional<T>{};
 
 		return { indexLeft, indexRight };
 	}
@@ -251,7 +251,7 @@ namespace impl {
 			auto next = it;
 			++next;
 			const size_t bandFirstIndex = it->first;
-			const size_t bandLastIndex = next != bands.end() ? next->first : spectrum.Size();
+			const size_t bandLastIndex = next != bands.end() ? next->first : spectrum.size();
 			const auto bandFirstIt = spectrum.begin() + bandFirstIndex;
 			const auto bandLastIt = spectrum.begin() + bandLastIndex;
 
@@ -266,8 +266,8 @@ namespace impl {
 			const auto edgeLeft = MinOptional(edgeFitLeft, edgeRippleLeft);
 			const auto edgeRight = MaxOptional(edgeFitRight, edgeRippleRight);
 
-			const T normalizedEdgeLeft = (T(bandFirstIndex) + edgeLeft.value_or(T(0))) / T(spectrum.Size());
-			const T normalizedEdgeRight = (T(bandFirstIndex) + edgeRight.value_or(T(bandSamples.Size()))) / T(spectrum.Size());
+			const T normalizedEdgeLeft = (T(bandFirstIndex) + edgeLeft.value_or(T(0))) / T(spectrum.size());
+			const T normalizedEdgeRight = (T(bandFirstIndex) + edgeRight.value_or(T(bandSamples.size()))) / T(spectrum.size());
 			parameters.push_back({ normalizedEdgeLeft, normalizedEdgeRight, ripple.value_or(T(0)) });
 		}
 		return parameters;
@@ -444,8 +444,8 @@ namespace impl {
 
 template <class T>
 auto FrequencyResponse(const BasicSignalView<const T, TIME_DOMAIN>& impulse, size_t gridSizeHint = 0) {
-	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulse.Size() * 10;
-	const size_t paddedSize = impl::FrequencyResponseFftSize(impulse.Size(), gridSize);
+	const size_t gridSize = gridSizeHint > 0 ? gridSizeHint : impulse.size() * 10;
+	const size_t paddedSize = impl::FrequencyResponseFftSize(impulse.size(), gridSize);
 
 	BasicSignal<T, TIME_DOMAIN> padded(paddedSize, T(0));
 	std::copy(impulse.begin(), impulse.end(), padded.begin());

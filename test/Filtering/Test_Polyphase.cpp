@@ -13,7 +13,7 @@ TEST_CASE("Polyphase view filter non-uniform", "[Polyphase]") {
 	REQUIRE(view.FilterCount() == 4);
 	for (size_t i = 0; i < 4; ++i) {
 		REQUIRE(std::all_of(view[i].begin(), view[i].end(), [i](float c) { return c == float(4 * i); }));
-		REQUIRE(view[i].Size() == filterSizes[i]);
+		REQUIRE(view[i].size() == filterSizes[i]);
 	}
 }
 
@@ -24,7 +24,7 @@ TEST_CASE("Polyphase view filter uniform", "[Polyphase]") {
 	REQUIRE(view.FilterCount() == 4);
 	for (size_t i = 0; i < 4; ++i) {
 		REQUIRE(std::all_of(view[i].begin(), view[i].end(), [i](float c) { return c == float(4 * i); }));
-		REQUIRE(view[i].Size() == filterSizes[i]);
+		REQUIRE(view[i].size() == filterSizes[i]);
 	}
 }
 

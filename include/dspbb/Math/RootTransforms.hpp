@@ -54,7 +54,7 @@ FactoredPolynomial<T> TransformRoots(const FactoredPolynomial<T>& poly, Transfor
 	const size_t numComplexPairs = realToPairs + Order * poly.NumComplexPairs() + numPadSets * padPairs;
 
 	FactoredPolynomial<T> r;
-	r.Resize(numReals, numComplexPairs);
+	r.resize(numReals, numComplexPairs);
 	auto realRootIt = r.RealRoots().begin();
 	auto complexRootIt = r.ComplexPairs().begin();
 

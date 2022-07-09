@@ -11,7 +11,7 @@ struct Interval {
 	Interval(T first, T last) : first(first), last(last) {}
 	T first;
 	T last;
-	T Size() const { return last - first; }
+	T size() const { return last - first; }
 };
 
 template <class T>

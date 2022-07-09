@@ -55,8 +55,8 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Elliptic(size_t order, T passbandRi
 
 	FactoredPolynomial<T> zeros;
 	FactoredPolynomial<T> poles;
-	zeros.Resize(0, order / 2);
-	poles.Resize(order % 2, order / 2, -T(1));
+	zeros.resize(0, order / 2);
+	poles.resize(order % 2, order / 2, -T(1));
 
 	size_t index = 0;
 	for (auto& root : zeros.ComplexPairs()) {

@@ -19,7 +19,7 @@ TEST_CASE("Filter direct form I", "[IIR]") {
 	DirectFormI<float> state{ order };
 	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
 	const auto filtered = Filter(signal, filter, state);
-	REQUIRE(filtered.Size() == signal.Size());
+	REQUIRE(filtered.size() == signal.size());
 }
 
 TEST_CASE("Filter direct form II", "[IIR]") {
@@ -28,7 +28,7 @@ TEST_CASE("Filter direct form II", "[IIR]") {
 	DirectFormII<float> state{ order };
 	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
 	const auto filtered = Filter(signal, filter, state);
-	REQUIRE(filtered.Size() == signal.Size());
+	REQUIRE(filtered.size() == signal.size());
 }
 
 TEST_CASE("Filter cascaded form", "[IIR]") {
@@ -37,7 +37,7 @@ TEST_CASE("Filter cascaded form", "[IIR]") {
 	CascadedForm<float> state{ order };
 	const BasicSignal<float, TIME_DOMAIN> signal(64, 1.0f);
 	const auto filtered = Filter(signal, filter, state);
-	REQUIRE(filtered.Size() == signal.Size());
+	REQUIRE(filtered.size() == signal.size());
 }
 
 TEST_CASE("Filter continuity", "[IIR]") {
@@ -53,8 +53,8 @@ TEST_CASE("Filter continuity", "[IIR]") {
 	state.Reset();
 
 	Signal<double> result(length);
-	Filter(AsView(result).SubSignal(0, length / 2), AsView(signal).SubSignal(0, length / 2), filter, state);
-	Filter(AsView(result).SubSignal(length / 2, length / 2), AsView(signal).SubSignal(length / 2, length / 2), filter, state);
+	Filter(AsView(result).subsignal(0, length / 2), AsView(signal).subsignal(0, length / 2), filter, state);
+	Filter(AsView(result).subsignal(length / 2, length / 2), AsView(signal).subsignal(length / 2, length / 2), filter, state);
 
 	REQUIRE(Max(Abs(result - expected)) < 1e-4f);
 }

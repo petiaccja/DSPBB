@@ -140,16 +140,16 @@ namespace impl {
 
 	template <class SignalT, class SignalU>
 	auto DotProductSample(const SignalT& input, const SignalU& filter, size_t inputReverseFirst) {
-		const ptrdiff_t desiredFirst = ptrdiff_t(inputReverseFirst) - filter.Size() + 1;
+		const ptrdiff_t desiredFirst = ptrdiff_t(inputReverseFirst) - filter.size() + 1;
 		const ptrdiff_t desiredLast = ptrdiff_t(inputReverseFirst) + 1;
 		const ptrdiff_t possibleFirst = std::max(ptrdiff_t(0), desiredFirst);
-		const ptrdiff_t possibleLast = std::min(ptrdiff_t(input.Size()), desiredLast);
+		const ptrdiff_t possibleLast = std::min(ptrdiff_t(input.size()), desiredLast);
 		const ptrdiff_t count = possibleLast - possibleFirst;
 		assert(count >= 0);
 		const ptrdiff_t offset = possibleFirst - desiredFirst;
 
-		const auto inputView = AsConstView(input).SubSignal(possibleFirst, count);
-		const auto filterView = AsConstView(filter).SubSignal(offset, count);
+		const auto inputView = AsConstView(input).subsignal(possibleFirst, count);
+		const auto filterView = AsConstView(filter).subsignal(offset, count);
 		return DotProduct(inputView, filterView);
 	}
 
@@ -168,7 +168,7 @@ template <class SignalR,
 void Decimate(SignalR&& output,
 			  const SignalT& input,
 			  size_t rate) {
-	assert(output.Size() == (input.Size() + rate - 1) / rate);
+	assert(output.size() == (input.size() + rate - 1) / rate);
 	size_t readIdx = 0;
 	for (auto& o : output) {
 		o = input[readIdx];
@@ -181,7 +181,7 @@ template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Decimate(const SignalT& input, size_t rate) {
 	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
 	constexpr auto domain = signal_traits<SignalT>::domain;
-	BasicSignal<T, domain> output((input.Size() + rate - 1) / rate);
+	BasicSignal<T, domain> output((input.size() + rate - 1) / rate);
 	Decimate(output, input, rate);
 	return output;
 }
@@ -193,7 +193,7 @@ template <class SignalR,
 void Expand(SignalR&& output,
 			const SignalT& input,
 			size_t rate) {
-	assert(output.Size() == input.Size() * rate);
+	assert(output.size() == input.size() * rate);
 	auto writeIt = output.begin();
 	for (auto& i : input) {
 		*writeIt = i;
@@ -209,7 +209,7 @@ template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Expand(const SignalT& input, size_t rate) {
 	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
 	constexpr auto domain = signal_traits<SignalT>::domain;
-	BasicSignal<T, domain> output(input.Size() * rate);
+	BasicSignal<T, domain> output(input.size() * rate);
 	Expand(output, input, rate);
 	return output;
 }
@@ -227,9 +227,9 @@ InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
 	const ptrdiff_t rate = polyphase.FilterCount();
 	const ptrdiff_t hrFilterSize = polyphase.OriginalSize();
 	const ptrdiff_t lrPhaseSize = polyphase.PhaseSize();
-	const ptrdiff_t hrOutputSize = hrOutput.Size();
+	const ptrdiff_t hrOutputSize = hrOutput.size();
 
-	const ptrdiff_t hrOutputMaxSize = InterpolLength(lrInput.Size(), hrFilterSize, rate, CONV_FULL);
+	const ptrdiff_t hrOutputMaxSize = InterpolLength(lrInput.size(), hrFilterSize, rate, CONV_FULL);
 	assert(ptrdiff_t(hrOffset) + hrOutputSize <= hrOutputMaxSize);
 
 	size_t hrOutputIdx = hrOffset;
@@ -240,16 +240,16 @@ InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
 
 		const auto& phase = polyphase[polyphaseIdx];
 
-		const Interval inputSpan = { ptrdiff_t(0), ptrdiff_t(lrInput.Size()) };
+		const Interval inputSpan = { ptrdiff_t(0), ptrdiff_t(lrInput.size()) };
 		const Interval lrInputInterval = { lrInputIdx, lrInputIdx + lrPhaseSize };
-		const Interval lrPhaseInterval = { lrInputInterval.last - ptrdiff_t(phase.Size()), lrInputInterval.last };
+		const Interval lrPhaseInterval = { lrInputInterval.last - ptrdiff_t(phase.size()), lrInputInterval.last };
 		const Interval lrInputProductInterval = Intersection(inputSpan, Intersection(lrInputInterval, lrPhaseInterval));
 		const Interval lrPhaseProductInterval = lrInputProductInterval - lrInputIdx;
 
-		if (lrInputProductInterval.Size() > 0) {
-			const auto lrInputView = AsView(lrInput).SubSignal(lrInputProductInterval.first,
+		if (lrInputProductInterval.size() > 0) {
+			const auto lrInputView = AsView(lrInput).subsignal(lrInputProductInterval.first,
 															   lrInputProductInterval.last - lrInputProductInterval.first);
-			const auto lrPhaseView = phase.SubSignal(lrPhaseProductInterval.first - lrPhaseSize + ptrdiff_t(phase.Size()),
+			const auto lrPhaseView = phase.subsignal(lrPhaseProductInterval.first - lrPhaseSize + ptrdiff_t(phase.size()),
 													 lrPhaseProductInterval.last - lrPhaseProductInterval.first);
 			const auto value = DotProduct(lrInputView, lrPhaseView);
 			hrOutput[hrOutputIdx - hrOffset] = value;
@@ -288,7 +288,7 @@ ResampleSuspensionPoint Resample(SignalR&& output,
 	assert(startPoint >= 0ll);
 	assert(polyphase.FilterCount() > 0);
 
-	[[maybe_unused]] const auto maxLength = ResampleLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
+	[[maybe_unused]] const auto maxLength = ResampleLength(input.size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
 	assert(startPoint + int64_t(output.Size()) <= maxLength);
 
 	auto outputIndex = startPoint;
@@ -333,10 +333,10 @@ auto Resample(const SignalT& input,
 			  Rational<int64_t> sampleRates,
 			  impl::ConvCentral) {
 	const Rational<int64_t> startPointIn = {
-		int64_t(std::min(polyphase.OriginalSize(), input.Size() * polyphase.FilterCount()) - 1),
+		int64_t(std::min(polyphase.OriginalSize(), input.size() * polyphase.FilterCount()) - 1),
 		int64_t(polyphase.FilterCount())
 	};
-	const size_t outputLength = floor(ResampleLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_CENTRAL));
+	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_CENTRAL));
 	return Resample(input, polyphase, sampleRates, startPointIn / sampleRates, outputLength);
 }
 
@@ -349,7 +349,7 @@ auto Resample(const SignalT& input,
 			  const PolyphaseView<P, Domain>& polyphase,
 			  Rational<int64_t> sampleRates,
 			  impl::ConvFull) {
-	const size_t outputLength = floor(ResampleLength(input.Size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL));
+	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL));
 	return Resample(input, polyphase, sampleRates, Rational<int64_t>{ 0 }, outputLength);
 }
 

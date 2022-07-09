@@ -31,7 +31,7 @@ namespace impl {
 	void GenericChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, double endFrequency, double phase, WaveFunc waveFunc) {
 		using R = typename signal_traits<std::decay_t<SignalR>>::type;
 		using T = remove_complex_t<R>;
-		const double length = double(output.Size()) / double(sampleRate);
+		const double length = double(output.size()) / double(sampleRate);
 		size_t idx = 0;
 		for (auto& v : output) {
 			const double time = double(idx) / double(sampleRate);

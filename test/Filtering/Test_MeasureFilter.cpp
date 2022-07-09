@@ -338,8 +338,8 @@ TEST_CASE("FIR frequency response default size", "[FilterParameters]") {
 	const BasicSignal<float, TIME_DOMAIN> impulse(impulseSize, 1);
 	const auto [amplitude, phase] = FrequencyResponse(impulse);
 
-	REQUIRE(amplitude.Size() == 10 * impulseSize);
-	REQUIRE(phase.Size() == 10 * impulseSize);
+	REQUIRE(amplitude.size() == 10 * impulseSize);
+	REQUIRE(phase.size() == 10 * impulseSize);
 }
 
 TEST_CASE("FIR frequency response custom size", "[FilterParameters]") {
@@ -349,8 +349,8 @@ TEST_CASE("FIR frequency response custom size", "[FilterParameters]") {
 	const BasicSignal<float, TIME_DOMAIN> impulse(impulseSize, 1);
 	const auto [amplitude, phase] = FrequencyResponse(impulse, responseSize);
 
-	REQUIRE(amplitude.Size() == responseSize);
-	REQUIRE(phase.Size() == responseSize);
+	REQUIRE(amplitude.size() == responseSize);
+	REQUIRE(phase.size() == responseSize);
 }
 
 TEST_CASE("FIR frequency response invalid size", "[FilterParameters]") {
@@ -360,8 +360,8 @@ TEST_CASE("FIR frequency response invalid size", "[FilterParameters]") {
 	const BasicSignal<float, TIME_DOMAIN> impulse(impulseSize, 1);
 	const auto [amplitude, phase] = FrequencyResponse(impulse, responseSize);
 
-	REQUIRE(amplitude.Size() == impulseSize / 2 + 1);
-	REQUIRE(phase.Size() == impulseSize / 2 + 1);
+	REQUIRE(amplitude.size() == impulseSize / 2 + 1);
+	REQUIRE(phase.size() == impulseSize / 2 + 1);
 }
 
 TEST_CASE("FIR frequency response size", "[FilterParameters]") {
@@ -370,7 +370,7 @@ TEST_CASE("FIR frequency response size", "[FilterParameters]") {
 	const BasicSignal<float, TIME_DOMAIN> impulse(impulseSize, 1);
 	const auto [amplitude, phase] = FrequencyResponse(impulse, 1);
 
-	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, float(amplitude.Size()) * pi_v<float>, amplitude.Size(), true);
+	auto expected = LinSpace<float, FREQUENCY_DOMAIN>(0.0f, float(amplitude.size()) * pi_v<float>, amplitude.size(), true);
 	expected = Sin(expected) / expected;
 	expected[0] = 1.0f;
 

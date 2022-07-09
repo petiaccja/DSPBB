@@ -8,14 +8,14 @@ using namespace dspbb;
 using namespace std::complex_literals;
 
 
-TEST_CASE("Empty polynomial", "[Polynomials]") {
+TEST_CASE("empty polynomial", "[Polynomials]") {
 	Polynomial<float> poly;
-	REQUIRE(poly.Size() == 0);
+	REQUIRE(poly.size() == 0);
 }
 
 TEST_CASE("Non-empty polynomial", "[Polynomials]") {
 	Polynomial<float> poly = { 1, 2, 3 };
-	REQUIRE(poly.Size() == 3);
+	REQUIRE(poly.size() == 3);
 	REQUIRE(poly.Coefficients()[0] == Approx(1));
 	REQUIRE(poly.Coefficients()[1] == Approx(2));
 	REQUIRE(poly.Coefficients()[2] == Approx(3));
@@ -23,8 +23,8 @@ TEST_CASE("Non-empty polynomial", "[Polynomials]") {
 
 TEST_CASE("Polynomial resize", "[Polynomials]") {
 	Polynomial<float> poly;
-	poly.Resize(3, 1.0f);
-	REQUIRE(poly.Coefficients().Size() == 3);
+	poly.resize(3, 1.0f);
+	REQUIRE(poly.Coefficients().size() == 3);
 	REQUIRE(std::all_of(poly.Coefficients().begin(), poly.Coefficients().end(), [](auto v) { return v == Approx(1); }));
 }
 
@@ -42,7 +42,7 @@ TEST_CASE("Polynomial complex evaluate", "[Polynomials]") {
 
 
 
-TEST_CASE("Empty factored polynomial", "[Polynomials]") {
+TEST_CASE("empty factored polynomial", "[Polynomials]") {
 	FactoredPolynomial<float> poly;
 	REQUIRE(poly.NumRoots() == 0);
 }
@@ -62,8 +62,8 @@ TEST_CASE("Non-empty factored polynomial", "[Polynomials]") {
 	REQUIRE(poly.NumComplexPairs() == 1);
 	REQUIRE(poly.NumComplexRoots() == 2);
 
-	REQUIRE(poly.RealRoots().Size() == 2);
-	REQUIRE(poly.ComplexPairs().Size() == 1);
+	REQUIRE(poly.RealRoots().size() == 2);
+	REQUIRE(poly.ComplexPairs().size() == 1);
 
 	REQUIRE(poly.RealRoots()[0] == Approx(1));
 	REQUIRE(poly.RealRoots()[1] == Approx(3));
@@ -72,9 +72,9 @@ TEST_CASE("Non-empty factored polynomial", "[Polynomials]") {
 
 TEST_CASE("Factored polynomial resize initial", "[Polynomials]") {
 	FactoredPolynomial<float> poly;
-	poly.Resize(2, 1, 1.0f, 2.f + 1.0if);
-	REQUIRE(poly.RealRoots().Size() == 2);
-	REQUIRE(poly.ComplexPairs().Size() == 1);
+	poly.resize(2, 1, 1.0f, 2.f + 1.0if);
+	REQUIRE(poly.RealRoots().size() == 2);
+	REQUIRE(poly.ComplexPairs().size() == 1);
 	REQUIRE(std::all_of(poly.RealRoots().begin(), poly.RealRoots().end(), [](auto v) { return v == 1.0f; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin(), poly.ComplexPairs().end(), [](auto v) { return v == 2.f + 1.0if; }));
 }
@@ -85,10 +85,10 @@ TEST_CASE("Factored polynomial resize shrink/grow", "[Polynomials]") {
 	const float r2 = 2.0f;
 	const std::complex<float> c1 = 10.f + 10.if;
 	const std::complex<float> c2 = 20.f + 20.if;
-	poly.Resize(6, 4, r1, c1);
-	poly.Resize(4, 6, r2, c2);
-	REQUIRE(poly.RealRoots().Size() == 4);
-	REQUIRE(poly.ComplexPairs().Size() == 6);
+	poly.resize(6, 4, r1, c1);
+	poly.resize(4, 6, r2, c2);
+	REQUIRE(poly.RealRoots().size() == 4);
+	REQUIRE(poly.ComplexPairs().size() == 6);
 	REQUIRE(std::all_of(poly.RealRoots().begin(), poly.RealRoots().end(), [&](auto v) { return v == r1; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin(), poly.ComplexPairs().begin() + 4, [&](auto v) { return v == c1; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin() + 4, poly.ComplexPairs().begin() + 6, [&](auto v) { return v == c2; }));
@@ -100,10 +100,10 @@ TEST_CASE("Factored polynomial resize grow/shrink", "[Polynomials]") {
 	const float r2 = 2.0f;
 	const std::complex<float> c1 = 10.f + 11.if;
 	const std::complex<float> c2 = 20.f + 22.if;
-	poly.Resize(4, 6, r1, c1);
-	poly.Resize(6, 4, r2, c2);
-	REQUIRE(poly.RealRoots().Size() == 6);
-	REQUIRE(poly.ComplexPairs().Size() == 4);
+	poly.resize(4, 6, r1, c1);
+	poly.resize(6, 4, r2, c2);
+	REQUIRE(poly.RealRoots().size() == 6);
+	REQUIRE(poly.ComplexPairs().size() == 4);
 	REQUIRE(std::all_of(poly.RealRoots().begin(), poly.RealRoots().begin() + 4, [&](auto v) { return v == r1; }));
 	REQUIRE(std::all_of(poly.RealRoots().begin() + 4, poly.RealRoots().begin() + 6, [&](auto v) { return v == r2; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin(), poly.ComplexPairs().end(), [&](auto v) { return v == c1; }));
@@ -116,10 +116,10 @@ TEST_CASE("Factored polynomial regroup shrink/grow", "[Polynomials]") {
 	const float r2 = 2.0f;
 	const std::complex<float> c1 = 10.f + 10.if;
 	const std::complex<float> c2 = 20.f + 20.if;
-	poly.Resize(6, 4, r1, c1);
+	poly.resize(6, 4, r1, c1);
 	poly.Regroup(4, r2, c2);
-	REQUIRE(poly.RealRoots().Size() == 4);
-	REQUIRE(poly.ComplexPairs().Size() == 5);
+	REQUIRE(poly.RealRoots().size() == 4);
+	REQUIRE(poly.ComplexPairs().size() == 5);
 	REQUIRE(std::all_of(poly.RealRoots().begin(), poly.RealRoots().end(), [&](auto v) { return v == r1; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin(), poly.ComplexPairs().begin() + 4, [&](auto v) { return v == c1; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin() + 4, poly.ComplexPairs().begin() + 5, [&](auto v) { return v == c2; }));
@@ -131,10 +131,10 @@ TEST_CASE("Factored polynomial regroup grow/shrink", "[Polynomials]") {
 	const float r2 = 2.0f;
 	const std::complex<float> c1 = 10.f + 11.if;
 	const std::complex<float> c2 = 20.f + 22.if;
-	poly.Resize(4, 6, r1, c1);
+	poly.resize(4, 6, r1, c1);
 	poly.Regroup(6, r2, c2);
-	REQUIRE(poly.RealRoots().Size() == 6);
-	REQUIRE(poly.ComplexPairs().Size() == 5);
+	REQUIRE(poly.RealRoots().size() == 6);
+	REQUIRE(poly.ComplexPairs().size() == 5);
 	REQUIRE(std::all_of(poly.RealRoots().begin(), poly.RealRoots().begin() + 4, [&](auto v) { return v == r1; }));
 	REQUIRE(std::all_of(poly.RealRoots().begin() + 4, poly.RealRoots().begin() + 6, [&](auto v) { return v == r2; }));
 	REQUIRE(std::all_of(poly.ComplexPairs().begin(), poly.ComplexPairs().end(), [&](auto v) { return v == c1; }));
@@ -142,14 +142,14 @@ TEST_CASE("Factored polynomial regroup grow/shrink", "[Polynomials]") {
 
 TEST_CASE("Factored polynomial regroup oversize", "[Polynomials]") {
 	FactoredPolynomial<float> poly;
-	poly.Resize(1, 3);
+	poly.resize(1, 3);
 	REQUIRE_NOTHROW(poly.Regroup(7));
 	REQUIRE_THROWS(poly.Regroup(9));
 }
 
 TEST_CASE("Factored polynomial regroup no pair", "[Polynomials]") {
 	FactoredPolynomial<float> poly;
-	poly.Resize(1, 3);
+	poly.resize(1, 3);
 	REQUIRE_NOTHROW(poly.Regroup(3));
 	REQUIRE_THROWS(poly.Regroup(0));
 }

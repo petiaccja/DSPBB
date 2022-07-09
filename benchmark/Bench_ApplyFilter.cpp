@@ -93,8 +93,8 @@ public:
 			index = (index + 1) % pattern.size();
 		}
 
-		filter.zeros.Resize(filterOrder, 0);
-		filter.poles.Resize(filterOrder, 0);
+		filter.zeros.resize(filterOrder, 0);
+		filter.poles.resize(filterOrder, 0);
 		filter.gain = T(1.0) + T(0.001) * pattern[0];
 		for (auto& v : filter.zeros.RealRoots()) {
 			v = T(-0.95) + T(0.001) * pattern[index];
@@ -122,7 +122,7 @@ using TfFixture = DesignFilterFixture<float, maxIirDirectOrder>;
 using CascadeFixture = DesignFilterFixture<float, maxIirCascadeOrder>;
 
 BASELINE_F(ApplyFilter, gain, BaselineFixture, 25, 1) {
-	Multiply(AsView(out).SubSignal(0, signal.Size()), signal, filter[0]);
+	Multiply(AsView(out).subsignal(0, signal.size()), signal, filter[0]);
 	celero::DoNotOptimizeAway(out[0]);
 }
 

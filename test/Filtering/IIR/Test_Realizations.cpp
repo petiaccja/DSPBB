@@ -27,9 +27,9 @@ const BasicSignal<real_t, TIME_DOMAIN> response = []() {
 	Signal<real_t> padded = input;
 	std::reverse(num.begin(), num.end());
 	std::reverse(den.begin(), den.end());
-	num.Resize(1000);
-	den.Resize(1000);
-	padded.Resize(1000);
+	num.resize(1000);
+	den.resize(1000);
+	padded.resize(1000);
 	const auto numF = Fft(num, FFT_HALF);
 	const auto denF = Fft(den, FFT_HALF);
 	const auto inputF = Fft(padded, FFT_HALF);
@@ -45,8 +45,8 @@ TEST_CASE("Direct form I feed", "[IIR realizations]") {
 
 	DirectFormI<real_t> state{ std::max(sys.zeros.NumRoots(), sys.poles.NumRoots()) };
 	for (size_t i = 0; i < 1000; ++i) {
-		const real_t u = i < input.Size() ? input[i] : 0.0f;
-		out.PushBack(state.Feed(u, tf));
+		const real_t u = i < input.size() ? input[i] : 0.0f;
+		out.push_back(state.Feed(u, tf));
 	}
 
 	const real_t similarity = DotProduct(response, out) / Norm(out) / Norm(response);
@@ -58,8 +58,8 @@ TEST_CASE("Direct form II feed", "[IIR realizations]") {
 
 	DirectFormII<real_t> state{ std::max(sys.zeros.NumRoots(), sys.poles.NumRoots()) };
 	for (size_t i = 0; i < 1000; ++i) {
-		const real_t u = i < input.Size() ? input[i] : 0.0f;
-		out.PushBack(state.Feed(u, tf));
+		const real_t u = i < input.size() ? input[i] : 0.0f;
+		out.push_back(state.Feed(u, tf));
 	}
 
 	const real_t similarity = DotProduct(response, out) / Norm(out) / Norm(response);
@@ -71,8 +71,8 @@ TEST_CASE("Cascaded biquad form feed", "[IIR realizations]") {
 
 	CascadedForm<real_t> state{ std::max(sys.zeros.NumRoots(), sys.poles.NumRoots()) };
 	for (size_t i = 0; i < 1000; ++i) {
-		const real_t u = i < input.Size() ? input[i] : 0.0f;
-		out.PushBack(state.Feed(u, cascade));
+		const real_t u = i < input.size() ? input[i] : 0.0f;
+		out.push_back(state.Feed(u, cascade));
 	}
 
 	const real_t similarity = DotProduct(response, out) / Norm(out) / Norm(response);

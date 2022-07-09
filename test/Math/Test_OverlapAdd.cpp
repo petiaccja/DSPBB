@@ -15,7 +15,7 @@ TEST_CASE("OLA real-real central", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(7);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 16);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -24,7 +24,7 @@ TEST_CASE("OLA real-real central long", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(7);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 16);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -33,7 +33,7 @@ TEST_CASE("OLA real-real central big chunk", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(9);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 25);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -42,7 +42,7 @@ TEST_CASE("OLA real-real central small chunk", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(9);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 17);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -51,7 +51,7 @@ TEST_CASE("OLA real-real full", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(7);
 	const auto ola = OverlapAdd(signal, filter, CONV_FULL, 16);
 	const auto conv = Convolution(signal, filter, CONV_FULL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -60,7 +60,7 @@ TEST_CASE("OLA real-real full long", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(7);
 	const auto ola = OverlapAdd(signal, filter, CONV_FULL, 16);
 	const auto conv = Convolution(signal, filter, CONV_FULL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	const auto diff = ola - conv;
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
@@ -70,7 +70,7 @@ TEST_CASE("OLA real-real full big chunk", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(9);
 	const auto ola = OverlapAdd(signal, filter, CONV_FULL, 25);
 	const auto conv = Convolution(signal, filter, CONV_FULL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -79,7 +79,7 @@ TEST_CASE("OLA real-real full small chunk", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(9);
 	const auto ola = OverlapAdd(signal, filter, CONV_FULL, 17);
 	const auto conv = Convolution(signal, filter, CONV_FULL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -88,7 +88,7 @@ TEST_CASE("OLA real-complex", "[OverlapAdd]") {
 	const auto filter = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 46);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -97,7 +97,7 @@ TEST_CASE("OLA complex-real", "[OverlapAdd]") {
 	const auto filter = RandomSignal<float, TIME_DOMAIN>(16);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 46);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -106,7 +106,7 @@ TEST_CASE("OLA complex-complex", "[OverlapAdd]") {
 	const auto filter = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
 	const auto ola = OverlapAdd(signal, filter, CONV_CENTRAL, 46);
 	const auto conv = Convolution(signal, filter, CONV_CENTRAL);
-	REQUIRE(ola.Length() == conv.Length());
+	REQUIRE(ola.size() == conv.size());
 	REQUIRE(Max(Abs(ola - conv)) == Approx(0).margin(0.001f));
 }
 
@@ -118,8 +118,8 @@ TEST_CASE("OLA Arbitrary offset middle", "[OverlapAdd]") {
 	const auto ola = OverlapAdd(signal, filter, 24, 7, 33);
 	const auto conv = Convolution(signal, filter, 24, 7);
 
-	REQUIRE(ola.Length() == conv.Length());
-	for (size_t i = 0; i < conv.Length(); ++i) {
+	REQUIRE(ola.size() == conv.size());
+	for (size_t i = 0; i < conv.size(); ++i) {
 		REQUIRE(ola[i] == ApproxComplex(conv[i]).margin(1e-4f));
 	}
 }
@@ -130,8 +130,8 @@ TEST_CASE("OLA Arbitrary offset start", "[OverlapAdd]") {
 	const auto ola = OverlapAdd(signal, filter, 0, 7, 31);
 	const auto conv = Convolution(signal, filter, 0, 7);
 
-	REQUIRE(ola.Length() == conv.Length());
-	for (size_t i = 0; i < conv.Length(); ++i) {
+	REQUIRE(ola.size() == conv.size());
+	for (size_t i = 0; i < conv.size(); ++i) {
 		REQUIRE(ola[i] == ApproxComplex(conv[i]).margin(1e-4f));
 	}
 }
@@ -142,8 +142,8 @@ TEST_CASE("OLA Arbitrary offset end", "[OverlapAdd]") {
 	const auto ola = OverlapAdd(signal, filter, 100, 7, 33);
 	const auto conv = Convolution(signal, filter, 100, 7);
 
-	REQUIRE(ola.Length() == conv.Length());
-	for (size_t i = 0; i < conv.Length(); ++i) {
+	REQUIRE(ola.size() == conv.size());
+	for (size_t i = 0; i < conv.size(); ++i) {
 		REQUIRE(ola[i] == ApproxComplex(conv[i]).margin(1e-4f));
 	}
 }
@@ -153,16 +153,16 @@ TEST_CASE("OLA 3-operand full & central", "[OverlapAdd]") {
 	const auto v = RandomSignal<std::complex<float>, TIME_DOMAIN>(16);
 	const auto fullExpected = Convolution(v, u, CONV_FULL);
 	const auto centralExpected = Convolution(v, u, CONV_CENTRAL);
-	std::decay_t<decltype(fullExpected)> fullOut(fullExpected.Size());
-	std::decay_t<decltype(centralExpected)> centralOut(centralExpected.Size());
+	std::decay_t<decltype(fullExpected)> fullOut(fullExpected.size());
+	std::decay_t<decltype(centralExpected)> centralOut(centralExpected.size());
 
 	OverlapAdd(fullOut, u, v, CONV_FULL, 33);
 	OverlapAdd(centralOut, u, v, CONV_CENTRAL, 33);
 
-	for (size_t i = 0; i < fullOut.Length(); ++i) {
+	for (size_t i = 0; i < fullOut.size(); ++i) {
 		REQUIRE(fullOut[i] == ApproxComplex(fullExpected[i]).margin(1e-4f));
 	}
-	for (size_t i = 0; i < centralOut.Length(); ++i) {
+	for (size_t i = 0; i < centralOut.size(); ++i) {
 		REQUIRE(centralOut[i] == ApproxComplex(centralExpected[i]).margin(1e-4f));
 	}
 }

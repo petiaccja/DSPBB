@@ -13,7 +13,7 @@ namespace dspbb {
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto DotProduct(const SignalT& a, const SignalU& b) {
-	assert(a.Size() == b.Size());
+	assert(a.size() == b.size());
 	using T = typename SignalT::value_type;
 	using U = typename SignalU::value_type;
 	using R = multiplies_result_t<T, U>;

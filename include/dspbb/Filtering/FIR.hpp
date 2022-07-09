@@ -165,8 +165,8 @@ namespace impl {
 
 	template <class SignalR, class HalfbandDesc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 	void FirFilterHilbert(SignalR&& out, const HalfbandDesc& halfbandDesc) {
-		if (out.Size() % 2 == 0) {
-			const size_t halfbandSize = out.Size() * 2 - 1;
+		if (out.size() % 2 == 0) {
+			const size_t halfbandSize = out.size() * 2 - 1;
 			std::decay_t<SignalR> halfband(halfbandSize);
 			DesignFilter(halfband, halfbandDesc);
 			fir::HalfbandToHilbertEven(out, halfband);

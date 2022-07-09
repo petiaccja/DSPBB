@@ -17,7 +17,7 @@ const float cycle = sampleRate / frequency;
 
 TEST_CASE("Linspace inclusive", "[Generators]") {
 	const auto s = LinSpace<float, TIME_DOMAIN>(6.28f, 2.718f, 23, true);
-	REQUIRE(s.Size() == 23);
+	REQUIRE(s.size() == 23);
 	REQUIRE(s[0] == Approx(6.28f));
 	REQUIRE(s[22] == Approx(2.718f));
 	REQUIRE(s[17] - s[12] == Approx(5.0f * (s[9] - s[8])));
@@ -25,7 +25,7 @@ TEST_CASE("Linspace inclusive", "[Generators]") {
 
 TEST_CASE("Linspace exclusive", "[Generators]") {
 	const auto s = LinSpace<float, TIME_DOMAIN>(6.28f, 2.718f, 23, false);
-	REQUIRE(s.Size() == 23);
+	REQUIRE(s.size() == 23);
 	REQUIRE(s[0] == Approx(6.28f));
 	REQUIRE(s[22] + (s[22] - s[21]) == Approx(2.718f));
 	REQUIRE(s[17] - s[12] == Approx(5.0f * (s[9] - s[8])));
@@ -33,7 +33,7 @@ TEST_CASE("Linspace exclusive", "[Generators]") {
 
 TEST_CASE("Logspace", "[Generators]") {
 	const auto s = LogSpace<float, TIME_DOMAIN>(2.0f, 4.0f, 23, 10.f, true);
-	REQUIRE(s.Size() == 23);
+	REQUIRE(s.size() == 23);
 	REQUIRE(s[0] == Approx(100.f));
 	REQUIRE(s[22] == Approx(10000.f));
 	const auto quot = SignalView<const float>(s.begin(), s.end() - 1) / SignalView<const float>(s.begin() + 1, s.end());

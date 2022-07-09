@@ -12,11 +12,11 @@ namespace dspbb::fir {
 
 template <class SignalR, class U, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
 void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, WindowFunc windowFunc) {
-	assert(coefficients.Size() % 2 == 1);
+	assert(coefficients.size() % 2 == 1);
 	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
-	const T offset = T(coefficients.Size() / 2);
+	const T offset = T(coefficients.size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
-	const size_t size = coefficients.Size();
+	const size_t size = coefficients.size();
 
 	windowFunc(coefficients);
 	for (size_t i = 0; i < size / 2; ++i) {
@@ -31,13 +31,13 @@ void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, WindowFunc wind
 
 template <class SignalR, class U, class SignalW, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalW>, int> = 0>
 void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, const SignalW& window) {
-	assert(coefficients.Size() % 2 == 1);
-	assert(coefficients.Size() == window.Size());
+	assert(coefficients.size() % 2 == 1);
+	assert(coefficients.size() == window.size());
 
 	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
-	const T offset = T(coefficients.Size() / 2);
+	const T offset = T(coefficients.size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
-	const size_t size = coefficients.Size();
+	const size_t size = coefficients.size();
 	for (size_t i = 0; i < size / 2; ++i) {
 		const T x = (T(i) - offset) * scale;
 		const T sinc = std::sin(x) / x;
@@ -54,36 +54,36 @@ void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, const SignalW& 
 
 template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && std::is_invocable_v<WindowFunc, BasicSignal<float, TIME_DOMAIN>>, int> = 0>
 void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, WindowFunc windowFunc) {
-	assert(out.Size() % 2 == 1);
+	assert(out.size() % 2 == 1);
 	using R = typename signal_traits<SignalR>::type;
 	using ComplexR = std::complex<remove_complex_t<R>>;
 
-	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.Size() / 2 + 1);
+	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.size() / 2 + 1);
 	LinSpace(discreteResponse, R(0), R(1), true);
 	std::for_each(discreteResponse.begin(), discreteResponse.end(), [&response](auto& arg) { arg = response(std::real(arg)); });
 
-	const auto impulse = Ifft(discreteResponse, FFT_HALF, out.Size() % 2 == 0);
+	const auto impulse = Ifft(discreteResponse, FFT_HALF, out.size() % 2 == 0);
 	windowFunc(out);
-	AsView(out).SubSignal(0, out.Size() / 2) *= AsView(impulse).SubSignal(impulse.Size() / 2 + 1);
-	AsView(out).SubSignal(out.Size() / 2) *= AsView(impulse).SubSignal(0, impulse.Size() / 2 + 1);
+	AsView(out).subsignal(0, out.size() / 2) *= AsView(impulse).subsignal(impulse.size() / 2 + 1);
+	AsView(out).subsignal(out.size() / 2) *= AsView(impulse).subsignal(0, impulse.size() / 2 + 1);
 }
 
 
 template <class SignalR, class ResponseFunc, class SignalW, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalW>, int> = 0>
 void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, const SignalW& window) {
-	assert(out.Size() % 2 == 1);
-	assert(out.Size() == window.Size());
+	assert(out.size() % 2 == 1);
+	assert(out.size() == window.size());
 
 	using R = typename signal_traits<SignalR>::type;
 	using ComplexR = std::complex<remove_complex_t<R>>;
 
-	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.Size() / 2 + 1);
+	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.size() / 2 + 1);
 	LinSpace(discreteResponse, R(0), R(1), true);
 	std::for_each(discreteResponse.begin(), discreteResponse.end(), [&response](auto& arg) { arg = response(std::real(arg)); });
 
-	const auto impulse = Ifft(discreteResponse, FFT_HALF, out.Size() % 2 == 0);
-	Multiply(AsView(out).SubSignal(0, out.Size() / 2), AsView(impulse).SubSignal(impulse.Size() / 2 + 1), AsView(window).SubSignal(0, window.Size() / 2));
-	Multiply(AsView(out).SubSignal(out.Size() / 2), AsView(impulse).SubSignal(0, impulse.Size() / 2 + 1), AsView(window).SubSignal(window.Size() / 2));
+	const auto impulse = Ifft(discreteResponse, FFT_HALF, out.size() % 2 == 0);
+	Multiply(AsView(out).subsignal(0, out.size() / 2), AsView(impulse).subsignal(impulse.size() / 2 + 1), AsView(window).subsignal(0, window.size() / 2));
+	Multiply(AsView(out).subsignal(out.size() / 2), AsView(impulse).subsignal(0, impulse.size() / 2 + 1), AsView(window).subsignal(window.size() / 2));
 }
 
 } // namespace dspbb::fir

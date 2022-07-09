@@ -18,7 +18,7 @@ namespace dspbb {
 //------------------------------------------------------------------------------
 template <class T, eSignalDomain Domain>
 T CoherentGain(BasicSignalView<T, Domain> window) {
-	return Sum(window) / remove_complex_t<T>(window.Size());
+	return Sum(window) / remove_complex_t<T>(window.size());
 }
 
 template <class T, eSignalDomain Domain>
@@ -28,7 +28,7 @@ T CoherentGain(const BasicSignal<T, Domain>& window) {
 
 template <class T, eSignalDomain Domain>
 T EnergyGain(BasicSignalView<T, Domain> window) {
-	return SumSquare(window) / T(window.Size());
+	return SumSquare(window) / T(window.size());
 }
 
 template <class T, eSignalDomain Domain>
@@ -62,13 +62,13 @@ void FlatTopWindow(SignalR&& out) {
 	U c3 = U(-0.083578947);
 	U c4 = U(0.006947368);
 
-	const U N = U(out.Length());
+	const U N = U(out.size());
 	U preSize1 = U(2) * pi_v<U> / (N - U(1));
 	U preSize2 = U(4) * pi_v<U> / (N - U(1));
 	U preSize3 = U(6) * pi_v<U> / (N - U(1));
 	U preSize4 = U(8) * pi_v<U> / (N - U(1));
 
-	LinSpace(out, U(0), U(out.Size() - 1), true);
+	LinSpace(out, U(0), U(out.size() - 1), true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
 		const U kreal = std::real(k);
 		k = c0
@@ -123,7 +123,7 @@ template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>,
 void GaussianWindow(SignalR&& out, V sigma = 1.f) {
 	using R = typename signal_traits<std::decay_t<SignalR>>::type;
 	using U = remove_complex_t<R>;
-	const auto N = U(out.Size());
+	const auto N = U(out.size());
 	const auto M = (N - U(1)) / U(2);
 	LinSpace(out, -M, M, true);
 	out *= U(1) / (U(sigma) * M);
@@ -175,10 +175,10 @@ template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR> 
 void DolphChebyshevWindow(SignalR&& out, V attenuation) {
 	using T = typename std::decay_t<SignalR>::value_type;
 
-	const size_t M = out.Size() - 1;
+	const size_t M = out.size() - 1;
 	const T beta = std::cosh(T(1) / M * std::acosh(T(1) / T(attenuation)));
-	Spectrum<std::complex<T>> spectrum(out.Size() / 2 + 1);
-	LinSpace(spectrum, T(0), pi_v<T> * (T(spectrum.Size() - 1) / T(out.Size())), true);
+	Spectrum<std::complex<T>> spectrum(out.size() / 2 + 1);
+	LinSpace(spectrum, T(0), pi_v<T> * (T(spectrum.size() - 1) / T(out.size())), true);
 	std::for_each(spectrum.begin(), spectrum.end(), [M, beta](auto& k) {
 		const auto i = std::complex<T>(0, 1);
 		const auto phase = std::exp(i * k * T(M % 2));
@@ -201,7 +201,7 @@ void DolphChebyshevWindow(SignalR&& out, V attenuation) {
 	using T = remove_complex_t<R>;
 	constexpr auto domain = signal_traits<std::decay_t<SignalR>>::domain;
 
-	BasicSignal<T, domain> outReal(out.Size());
+	BasicSignal<T, domain> outReal(out.size());
 	DolphChebyshevWindow(outReal, attenuation);
 	std::transform(outReal.begin(), outReal.end(), out.begin(), [](auto& v) { return R{ v, T(0) }; });
 }
