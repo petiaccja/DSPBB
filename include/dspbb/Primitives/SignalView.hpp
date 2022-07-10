@@ -123,13 +123,13 @@ bool BasicSignalView<T, Domain>::Empty() const { return first == last; }
 
 template <class T, eSignalDomain Domain>
 BasicSignalView<T, Domain> BasicSignalView<T, Domain>::First(size_type n) {
-	assert(n < Size());
+	assert(n <= Size());
 	return { first, first + n };
 }
 
 template <class T, eSignalDomain Domain>
 BasicSignalView<T, Domain> BasicSignalView<T, Domain>::Last(size_type n) {
-	assert(n < Size());
+	assert(n <= Size());
 	return { last - n, last };
 }
 
