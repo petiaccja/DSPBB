@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
+  gh-releases:
     name: Create tagged release
     runs-on: ubuntu-latest
     steps:
