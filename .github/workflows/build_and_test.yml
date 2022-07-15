@@ -10,7 +10,7 @@ on:
       - master
 
 jobs:
-  exec:
+  build-test:
     strategy:
       fail-fast: false
       matrix:
@@ -36,7 +36,7 @@ jobs:
           - os: ubuntu-latest
             c_compiler: cl
 
-    name: Build & test (${{ matrix.cxx_compiler }} / ${{ matrix.build_type }} / ${{ matrix.os }})
+    name: ${{ matrix.cxx_compiler }} - ${{ matrix.build_type }} - ${{ matrix.os }}
         
     runs-on: ${{matrix.os}}
     
