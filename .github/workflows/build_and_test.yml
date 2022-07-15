@@ -36,7 +36,7 @@ jobs:
           - os: ubuntu-latest
             c_compiler: cl
 
-    name: ${{ matrix.cxx_compiler }} - ${{ matrix.build_type }} - ${{ matrix.os }}
+    name: ${{ matrix.c_compiler }} - ${{ matrix.build_type }} - ${{ matrix.os }}
         
     runs-on: ${{matrix.os}}
     
