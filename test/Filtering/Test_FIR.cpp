@@ -399,9 +399,10 @@ TEST_CASE("Least squares arbitrary", "[FIR]") {
 }
 
 TEST_CASE("Least squares hilbert magnitude", "[FIR]") {
-	const float transition = 0.03f;
-	const auto odd = DesignFilter<float, TIME_DOMAIN>(155, Fir.Hilbert.LeastSquares.TransitionWidth(transition));
-	const auto even = DesignFilter<float, TIME_DOMAIN>(154, Fir.Hilbert.LeastSquares.TransitionWidth(transition));
+	const float transition = 0.02f;
+	const auto responseDesc = Fir.Hilbert.LeastSquares.TransitionWidth(transition).TransitionWeight(0.05f);
+	const auto odd = DesignFilter<float, TIME_DOMAIN>(155, responseDesc);
+	const auto even = DesignFilter<float, TIME_DOMAIN>(154, responseDesc);
 
 	const auto [amplitudeOdd, phaseOdd] = FrequencyResponse(odd);
 	const auto paramsOdd = MeasureBandpassFilter(amplitudeOdd);

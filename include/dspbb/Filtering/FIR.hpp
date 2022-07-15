@@ -188,7 +188,7 @@ auto DesignFilter(SignalR&& out, const impl::windowed::HilbertDesc<WindowType>& 
 template <class SignalR, class ParamType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 auto DesignFilter(SignalR&& out, const impl::least_squares::HilbertDesc<ParamType>& desc) {
 	const ParamType transitionBand = desc.transitionWidth;
-	const auto halfband = Fir.Lowpass.LeastSquares.Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand);
+	const auto halfband = Fir.Lowpass.LeastSquares.Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand).Weight(1, desc.transitionWeight, 1);
 	impl::FirFilterHilbert(out, halfband);
 }
 
