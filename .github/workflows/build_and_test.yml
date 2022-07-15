@@ -1,4 +1,4 @@
-name: Build
+name: Build & test
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
       - master
 
 jobs:
-  build:
+  exec:
     strategy:
       fail-fast: false
       matrix:
@@ -35,6 +35,8 @@ jobs:
             c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
+
+    name: Build & test (${{ matrix.cxx_compiler }} / ${{ matrix.build_type }} / ${{ matrix.os }})
         
     runs-on: ${{matrix.os}}
     
