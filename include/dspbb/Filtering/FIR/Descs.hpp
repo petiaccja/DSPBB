@@ -190,13 +190,17 @@ namespace impl {
 		template <class ParamType>
 		struct HilbertDesc {
 			ParamType transitionWidth = ParamType(1.0);
+			ParamType transitionWeight = ParamType(1.0);
 			size_t grid = 0;
 
 			[[nodiscard]] auto TransitionWidth(ParamType newTransitionWidth) const {
-				return HilbertDesc<ParamType>{ newTransitionWidth, grid };
+				return HilbertDesc<ParamType>{ newTransitionWidth, transitionWeight, grid };
+			}
+			[[nodiscard]] auto TransitionWeight(ParamType newTransitionWeight) const {
+				return HilbertDesc<ParamType>{ transitionWidth, newTransitionWeight, grid };
 			}
 			[[nodiscard]] auto Grid(size_t gridNew) const {
-				return HilbertDesc<ParamType>{ transitionWidth, gridNew };
+				return HilbertDesc<ParamType>{ transitionWidth, transitionWeight, gridNew };
 			}
 		};
 
@@ -267,6 +271,10 @@ namespace impl {
 			template <class ParamType>
 			[[nodiscard]] auto TransitionWidth(ParamType newTransitionWidth) const {
 				return HilbertDesc<ParamType>{}.TransitionWidth(newTransitionWidth);
+			}
+			template <class ParamType>
+			[[nodiscard]] auto TransitionWeight(ParamType newTransitionWeight) const {
+				return HilbertDesc<ParamType>{}.TransitionWeight(newTransitionWeight);
 			}
 		};
 

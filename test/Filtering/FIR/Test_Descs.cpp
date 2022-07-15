@@ -208,7 +208,8 @@ TEST_CASE("Arbitrary least squares", "[FIR Descs]") {
 }
 
 TEST_CASE("Hilbert least squares", "[FIR Descs]") {
-	const auto desc = Fir.Hilbert.LeastSquares.TransitionWidth(0.95f).Grid(lsGrid);
+	const auto desc = Fir.Hilbert.LeastSquares.TransitionWidth(0.95f).TransitionWeight(0.3f).Grid(lsGrid);
 	REQUIRE(desc.transitionWidth == Approx(0.95f));
+	REQUIRE(desc.transitionWeight == Approx(0.3f));
 	REQUIRE(desc.grid == lsGrid);
 }
