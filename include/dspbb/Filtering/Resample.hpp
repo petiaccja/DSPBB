@@ -289,7 +289,7 @@ ResampleSuspensionPoint Resample(SignalR&& output,
 	assert(polyphase.num_phases() > 0);
 
 	[[maybe_unused]] const auto maxLength = ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, CONV_FULL);
-	assert(startPoint + int64_t(output.Size()) <= maxLength);
+	assert(startPoint + int64_t(output.size()) <= maxLength);
 
 	auto outputIndex = startPoint;
 	for (auto outputIt = output.begin(); outputIt != output.end(); ++outputIt, outputIndex += 1) {
