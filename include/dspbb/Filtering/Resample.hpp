@@ -224,9 +224,9 @@ InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
 									const SignalT& lrInput,
 									const PolyphaseView<P, D>& polyphase,
 									size_t hrOffset) {
-	const ptrdiff_t rate = polyphase.FilterCount();
-	const ptrdiff_t hrFilterSize = polyphase.OriginalSize();
-	const ptrdiff_t lrPhaseSize = polyphase.PhaseSize();
+	const ptrdiff_t rate = polyphase.num_phases();
+	const ptrdiff_t hrFilterSize = polyphase.size_original();
+	const ptrdiff_t lrPhaseSize = polyphase.size_per_phase();
 	const ptrdiff_t hrOutputSize = hrOutput.size();
 
 	const ptrdiff_t hrOutputMaxSize = InterpolLength(lrInput.size(), hrFilterSize, rate, CONV_FULL);
@@ -256,7 +256,7 @@ InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
 		}
 	}
 
-	return impl::FindInterpolSuspensionPoint(hrOutputIdx, polyphase.OriginalSize(), polyphase.FilterCount());
+	return impl::FindInterpolSuspensionPoint(hrOutputIdx, polyphase.size_original(), polyphase.num_phases());
 }
 
 
@@ -286,15 +286,15 @@ ResampleSuspensionPoint Resample(SignalR&& output,
 								 Rational<int64_t> startPoint = { 0, 1 }) {
 	assert(sampleRates >= 0ll);
 	assert(startPoint >= 0ll);
-	assert(polyphase.FilterCount() > 0);
+	assert(polyphase.num_phases() > 0);
 
-	[[maybe_unused]] const auto maxLength = ResampleLength(input.size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL);
+	[[maybe_unused]] const auto maxLength = ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, CONV_FULL);
 	assert(startPoint + int64_t(output.Size()) <= maxLength);
 
 	auto outputIndex = startPoint;
 	for (auto outputIt = output.begin(); outputIt != output.end(); ++outputIt, outputIndex += 1) {
 		const auto inputIndex = impl::ChangeSampleRate(sampleRates.Denominator(), sampleRates.Numerator(), outputIndex);
-		const auto [firstSampleLoc, secondSampleLoc] = impl::InputIndex2Sample(inputIndex, polyphase.FilterCount());
+		const auto [firstSampleLoc, secondSampleLoc] = impl::InputIndex2Sample(inputIndex, polyphase.num_phases());
 		const auto firstSampleVal = impl::DotProductSample(input, polyphase[firstSampleLoc.phaseIndex], firstSampleLoc.inputIndex);
 		const auto secondSampleVal = impl::DotProductSample(input, polyphase[secondSampleLoc.phaseIndex], secondSampleLoc.inputIndex);
 		using CommonType = decltype(firstSampleVal);
@@ -302,7 +302,7 @@ ResampleSuspensionPoint Resample(SignalR&& output,
 					/ (CommonType(firstSampleLoc.weight) + CommonType(secondSampleLoc.weight));
 	}
 
-	return impl::FindResampleSuspensionPoint(outputIndex, polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates);
+	return impl::FindResampleSuspensionPoint(outputIndex, polyphase.size_original(), polyphase.num_phases(), sampleRates);
 }
 
 
@@ -333,10 +333,10 @@ auto Resample(const SignalT& input,
 			  Rational<int64_t> sampleRates,
 			  impl::ConvCentral) {
 	const Rational<int64_t> startPointIn = {
-		int64_t(std::min(polyphase.OriginalSize(), input.size() * polyphase.FilterCount()) - 1),
-		int64_t(polyphase.FilterCount())
+		int64_t(std::min(polyphase.size_original(), input.size() * polyphase.num_phases()) - 1),
+		int64_t(polyphase.num_phases())
 	};
-	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_CENTRAL));
+	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, CONV_CENTRAL));
 	return Resample(input, polyphase, sampleRates, startPointIn / sampleRates, outputLength);
 }
 
@@ -349,7 +349,7 @@ auto Resample(const SignalT& input,
 			  const PolyphaseView<P, Domain>& polyphase,
 			  Rational<int64_t> sampleRates,
 			  impl::ConvFull) {
-	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.OriginalSize(), polyphase.FilterCount(), sampleRates, CONV_FULL));
+	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, CONV_FULL));
 	return Resample(input, polyphase, sampleRates, Rational<int64_t>{ 0 }, outputLength);
 }
 

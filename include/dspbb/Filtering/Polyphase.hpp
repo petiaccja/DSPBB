@@ -17,25 +17,25 @@ public:
 		: m_bufferView(data), m_filterCount(numFilters) {}
 
 	BasicSignalView<T, Domain> operator[](size_t index) {
-		auto loc = SubSignalLocation(index);
+		auto loc = subsignal_location(index);
 		return m_bufferView.subsignal(loc.first, loc.second);
 	}
 	BasicSignalView<const T, Domain> operator[](size_t index) const {
-		auto loc = SubSignalLocation(index);
+		auto loc = subsignal_location(index);
 		return m_bufferView.subsignal(loc.first, loc.second);
 	}
-	size_t PhaseSize() const noexcept {
+	size_t size_per_phase() const noexcept {
 		return (m_bufferView.size() + m_filterCount - 1) / m_filterCount;
 	}
-	size_t OriginalSize() const noexcept {
+	size_t size_original() const noexcept {
 		return m_bufferView.size();
 	}
-	size_t FilterCount() const noexcept {
+	size_t num_phases() const noexcept {
 		return m_filterCount;
 	}
 
 private:
-	std::pair<size_t, size_t> SubSignalLocation(size_t index) const {
+	std::pair<size_t, size_t> subsignal_location(size_t index) const {
 		assert(index < m_filterCount);
 		const size_t numExtended = m_bufferView.size() % m_filterCount;
 		const size_t baseFilterSize = m_bufferView.size() / m_filterCount;
@@ -57,7 +57,7 @@ public:
 		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), numPhases });
 	}
 	PolyphaseFilter(const PolyphaseFilter& rhs) : m_buffer(rhs.m_buffer) {
-		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.FilterCount() });
+		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.num_phases() });
 	}
 	PolyphaseFilter(PolyphaseFilter&& rhs) noexcept : m_buffer(std::move(rhs.m_buffer)) {
 		PolyphaseView<T, Domain>::operator=(rhs);
@@ -65,7 +65,7 @@ public:
 	}
 	PolyphaseFilter& operator=(const PolyphaseFilter& rhs) {
 		m_buffer = rhs.m_buffer;
-		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.FilterCount() });
+		PolyphaseView<T, Domain>::operator=({ AsView(m_buffer), rhs.num_phases() });
 		return *this;
 	}
 	PolyphaseFilter& operator=(PolyphaseFilter&& rhs) noexcept {
@@ -89,7 +89,7 @@ private:
 
 template <class T, eSignalDomain Domain>
 void PolyphaseNormalize(PolyphaseView<T, Domain>& polyphase) {
-	for (size_t i = 0; i < polyphase.FilterCount(); ++i) {
+	for (size_t i = 0; i < polyphase.num_phases(); ++i) {
 		polyphase[i] *= T(1) / Sum(polyphase[i]);
 	}
 }

@@ -10,7 +10,7 @@ TEST_CASE("Polyphase view filter non-uniform", "[Polyphase]") {
 	const Signal<float> filter = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2 };
 	const std::array<size_t, 4> filterSizes = { 3, 3, 3, 2 };
 	const auto view = PolyphaseDecompose(filter, 4);
-	REQUIRE(view.FilterCount() == 4);
+	REQUIRE(view.num_phases() == 4);
 	for (size_t i = 0; i < 4; ++i) {
 		REQUIRE(std::all_of(view[i].begin(), view[i].end(), [i](float c) { return c == float(4 * i); }));
 		REQUIRE(view[i].size() == filterSizes[i]);
@@ -21,7 +21,7 @@ TEST_CASE("Polyphase view filter uniform", "[Polyphase]") {
 	const Signal<float> filter = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 };
 	const std::array<size_t, 4> filterSizes = { 3, 3, 3, 3 };
 	const auto view = PolyphaseDecompose(filter, 4);
-	REQUIRE(view.FilterCount() == 4);
+	REQUIRE(view.num_phases() == 4);
 	for (size_t i = 0; i < 4; ++i) {
 		REQUIRE(std::all_of(view[i].begin(), view[i].end(), [i](float c) { return c == float(4 * i); }));
 		REQUIRE(view[i].size() == filterSizes[i]);
