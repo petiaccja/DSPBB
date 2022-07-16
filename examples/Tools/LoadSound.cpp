@@ -19,10 +19,10 @@ StereoSound LoadStereoSound(const std::filesystem::path& file) {
 	}
 
 	Signal<float> interleaved(numFrames * numChannels);
-	soundFile.read(interleaved.Data(), interleaved.Size());
+	soundFile.read(interleaved.data(), interleaved.size());
 
 	Signal<float> leftChannel = Decimate(interleaved, 2);
-	Signal<float> rightChannel = Decimate(AsView(interleaved).SubSignal(1), 2);
+	Signal<float> rightChannel = Decimate(AsView(interleaved).subsignal(1), 2);
 
 	return { std::move(leftChannel), std::move(rightChannel), sampleRate };
 }

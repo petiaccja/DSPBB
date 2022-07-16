@@ -18,7 +18,7 @@ SignalT InterpolateRefImpl(const SignalT& signal, const SignalT& filter, size_t 
 TEST_CASE("Decimate", "[Interpolation]") {
 	const Signal<float> s = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 	const Signal<float> d = Decimate(s, 3);
-	REQUIRE(d.Size() == 4);
+	REQUIRE(d.size() == 4);
 	REQUIRE(d[0] == 1);
 	REQUIRE(d[1] == 4);
 	REQUIRE(d[2] == 7);
@@ -31,7 +31,7 @@ TEST_CASE("Expand", "[Interpolation]") {
 	const Signal<float> e = Expand(s, 3);
 	const Signal<float> exp = { 1, 0, 0, 2, 0, 0, 3, 0, 0 };
 
-	REQUIRE(e.Size() == 9);
+	REQUIRE(e.size() == 9);
 	REQUIRE(Max(Abs(e - exp)) == Approx(0.0f));
 }
 
@@ -44,12 +44,12 @@ TEST_CASE("Interpolation full", "[Interpolation]") {
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / interpRate));
 		const auto polyphase = PolyphaseDecompose(filter, interpRate);
 
-		const auto length = ConvolutionLength(signal.Size() * interpRate, filter.Size(), CONV_FULL);
+		const auto length = ConvolutionLength(signal.size() * interpRate, filter.size(), CONV_FULL);
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, 0, length);
 		const auto answer = Interpolate(signal, polyphase, 0, length);
 
 		INFO("filterSize=" << filterSize)
-		REQUIRE(reference.Size() == answer.Size());
+		REQUIRE(reference.size() == answer.size());
 		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
 	}
 }
@@ -63,12 +63,12 @@ TEST_CASE("Interpolation central", "[Interpolation]") {
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / interpRate));
 		const auto polyphase = PolyphaseDecompose(filter, interpRate);
 
-		const auto length = ConvolutionLength(signal.Size() * interpRate, filter.Size(), CONV_CENTRAL);
+		const auto length = ConvolutionLength(signal.size() * interpRate, filter.size(), CONV_CENTRAL);
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, filterSize - 1, length);
 		const auto answer = Interpolate(signal, polyphase, filterSize - 1, length);
 
 		INFO("filterSize=" << filterSize)
-		REQUIRE(reference.Size() == answer.Size());
+		REQUIRE(reference.size() == answer.size());
 		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
 	}
 }
@@ -226,16 +226,16 @@ TEST_CASE("Resampling filter cutoff", "[Interpolation]") {
 
 template <class SignalT, class SignalU>
 auto ResampledSimilarity(std::pair<uint64_t, uint64_t> sampleRates, SignalT original, SignalU resampled) {
-	const size_t rescale = std::max(original.Size() / sampleRates.first, resampled.Size() / sampleRates.second) + 1;
-	original.Resize(rescale * sampleRates.first);
-	resampled.Resize(rescale * sampleRates.second);
+	const size_t rescale = std::max(original.size() / sampleRates.first, resampled.size() / sampleRates.second) + 1;
+	original.resize(rescale * sampleRates.first);
+	resampled.resize(rescale * sampleRates.second);
 
 	const auto fftSignal = Abs(Fft(original, FFT_HALF));
 	const auto fftResampled = Abs(Fft(resampled, FFT_HALF));
 
-	const size_t fftCompareSize = std::min(fftSignal.Size(), fftResampled.Size());
-	const auto fftSignalCompare = AsView(fftSignal).SubSignal(0, fftCompareSize);
-	const auto fftResampledCompare = AsView(fftResampled).SubSignal(0, fftCompareSize);
+	const size_t fftCompareSize = std::min(fftSignal.size(), fftResampled.size());
+	const auto fftSignalCompare = AsView(fftSignal).subsignal(0, fftCompareSize);
+	const auto fftResampledCompare = AsView(fftResampled).subsignal(0, fftCompareSize);
 
 	const auto similarity = DotProduct(fftSignalCompare, fftResampledCompare) / Norm(fftSignalCompare) / Norm(fftResampledCompare);
 
@@ -460,7 +460,7 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 	// This creates a linearly increasing ramp-like function
 	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
 
-	const size_t maxLength = InterpolLength(signal.Size(), filterSize, numPhases, CONV_FULL);
+	const size_t maxLength = InterpolLength(signal.size(), filterSize, numPhases, CONV_FULL);
 
 	auto output = Signal<float>(maxLength, 0.0f);
 
@@ -468,9 +468,9 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 	size_t outputWritten = 0;
 	size_t firstInputSample = 0;
 	size_t startPoint{ 0 };
-	while (outputWritten < output.Size() / 2) {
-		const auto [newFirstInputSample, newStartPoint] = Interpolate(AsView(output).SubSignal(outputWritten, chunkSize),
-																	  AsView(signal).SubSignal(firstInputSample),
+	while (outputWritten < output.size() / 2) {
+		const auto [newFirstInputSample, newStartPoint] = Interpolate(AsView(output).subsignal(outputWritten, chunkSize),
+																	  AsView(signal).subsignal(firstInputSample),
 																	  polyphase,
 																	  startPoint);
 
@@ -487,8 +487,8 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 	REQUIRE(first != last);
 	REQUIRE(first != output.end());
 	REQUIRE(last != output.end());
-	REQUIRE(first - output.begin() < ptrdiff_t(output.Size()) / 30 + filterSize - 1);
-	REQUIRE(last - output.begin() >= ptrdiff_t(output.Size()) / 2);
+	REQUIRE(first - output.begin() < ptrdiff_t(output.size()) / 30 + filterSize - 1);
+	REQUIRE(last - output.begin() >= ptrdiff_t(output.size()) / 2);
 
 	// Check if increments between adjacent elements of the output ramp are roughly equal
 	SignalView<float> left{ first, last - 1 };
@@ -510,7 +510,7 @@ TEST_CASE("Resampling continuation output", "[Interpolation]") {
 	// This creates a linearly increasing ramp-like function
 	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
 
-	const Rational maxLength = ResampleLength(signal.Size(), filterSize, numPhases, sampleRates, CONV_FULL);
+	const Rational maxLength = ResampleLength(signal.size(), filterSize, numPhases, sampleRates, CONV_FULL);
 
 	auto output = Signal<float>(floor(maxLength), 0.0f);
 
@@ -518,9 +518,9 @@ TEST_CASE("Resampling continuation output", "[Interpolation]") {
 	size_t outputWritten = 0;
 	size_t firstInputSample = 0;
 	Rational<int64_t> startPoint{ 0 };
-	while (outputWritten < output.Size() / 2) {
-		const auto [newFirstInputSample, newStartPoint] = Resample(AsView(output).SubSignal(outputWritten, chunkSize),
-																   AsView(signal).SubSignal(firstInputSample),
+	while (outputWritten < output.size() / 2) {
+		const auto [newFirstInputSample, newStartPoint] = Resample(AsView(output).subsignal(outputWritten, chunkSize),
+																   AsView(signal).subsignal(firstInputSample),
 																   polyphase,
 																   sampleRates,
 																   startPoint);
@@ -538,8 +538,8 @@ TEST_CASE("Resampling continuation output", "[Interpolation]") {
 	REQUIRE(first != last);
 	REQUIRE(first != output.end());
 	REQUIRE(last != output.end());
-	REQUIRE(first - output.begin() < ptrdiff_t(output.Size()) / 30 + ceil(ResampleDelay(filterSize, numPhases, sampleRates)));
-	REQUIRE(last - output.begin() >= ptrdiff_t(output.Size()) / 2);
+	REQUIRE(first - output.begin() < ptrdiff_t(output.size()) / 30 + ceil(ResampleDelay(filterSize, numPhases, sampleRates)));
+	REQUIRE(last - output.begin() >= ptrdiff_t(output.size()) / 2);
 
 	// Check if increments between adjacent elements of the output ramp are roughly equal
 	SignalView<float> left{ first, last - 1 };

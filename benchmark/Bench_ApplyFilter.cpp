@@ -93,14 +93,14 @@ public:
 			index = (index + 1) % pattern.size();
 		}
 
-		filter.zeros.Resize(filterOrder, 0);
-		filter.poles.Resize(filterOrder, 0);
+		filter.zeros.resize(filterOrder, 0);
+		filter.poles.resize(filterOrder, 0);
 		filter.gain = T(1.0) + T(0.001) * pattern[0];
-		for (auto& v : filter.zeros.RealRoots()) {
+		for (auto& v : filter.zeros.real_roots()) {
 			v = T(-0.95) + T(0.001) * pattern[index];
 			index = (index + 1) % pattern.size();
 		}
-		for (auto& v : filter.poles.RealRoots()) {
+		for (auto& v : filter.poles.real_roots()) {
 			v = T(-0.90) + T(0.001) * pattern[index];
 			index = (index + 1) % pattern.size();
 		}
@@ -122,7 +122,7 @@ using TfFixture = DesignFilterFixture<float, maxIirDirectOrder>;
 using CascadeFixture = DesignFilterFixture<float, maxIirCascadeOrder>;
 
 BASELINE_F(ApplyFilter, gain, BaselineFixture, 25, 1) {
-	Multiply(AsView(out).SubSignal(0, signal.Size()), signal, filter[0]);
+	Multiply(AsView(out).subsignal(0, signal.size()), signal, filter[0]);
 	celero::DoNotOptimizeAway(out[0]);
 }
 
@@ -138,21 +138,21 @@ BENCHMARK_F(ApplyFilter, fir_ola, OlaFixture, 25, 1) {
 
 BENCHMARK_F(ApplyFilter, iir_df_i, TfFixture, 25, 1) {
 	const auto realization = TransferFunction{ filter };
-	DirectFormI<float> state{ realization.Order() };
+	DirectFormI<float> state{ realization.order() };
 	Filter(out, signal, realization, state);
 	celero::DoNotOptimizeAway(out[0]);
 }
 
 BENCHMARK_F(ApplyFilter, iir_df_ii, TfFixture, 25, 1) {
 	const auto realization = TransferFunction{ filter };
-	DirectFormII<float> state{ realization.Order() };
+	DirectFormII<float> state{ realization.order() };
 	Filter(out, signal, realization, state);
 	celero::DoNotOptimizeAway(out[0]);
 }
 
 BENCHMARK_F(ApplyFilter, iir_cascade, CascadeFixture, 25, 1) {
 	const auto realization = CascadedBiquad{ filter };
-	CascadedForm<float> state{ realization.Order() };
+	CascadedForm<float> state{ realization.order() };
 	Filter(out, signal, realization, state);
 	celero::DoNotOptimizeAway(out[0]);
 }

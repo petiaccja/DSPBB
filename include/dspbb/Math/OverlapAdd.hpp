@@ -119,15 +119,15 @@ namespace impl {
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, size_t chunkSize = 0, bool clearOut = true) {
-	if (u.Size() < v.Size()) {
+	if (u.size() < v.size()) {
 		return OverlapAdd(out, v, u, offset, chunkSize, clearOut);
 	}
 	if (chunkSize == 0) {
-		chunkSize = impl::ola::OptimalPracticalSize(u.Size(), v.Size());
+		chunkSize = impl::ola::OptimalPracticalSize(u.size(), v.size());
 	}
-	assert(chunkSize >= 2 * v.Size() - 1);
-	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
-	assert(offset + out.Size() <= fullLength && "Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
+	assert(chunkSize >= 2 * v.size() - 1);
+	const size_t fullLength = ConvolutionLength(u.size(), v.size(), CONV_FULL);
+	assert(offset + out.size() <= fullLength && "Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	if (clearOut) {
 		using R = typename signal_traits<std::decay_t<SignalR>>::type;
 		std::fill(out.begin(), out.end(), R(remove_complex_t<R>(0)));
@@ -143,14 +143,14 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	std::copy(v.begin(), v.end(), filter.begin());
 	const auto filterFd = impl::ola::FftFilter(filter, is_complex_t, is_complex_u);
 
-	const Interval outExtent{ intptr_t(offset), intptr_t(offset + out.Size()) };
-	const Interval uExtent{ intptr_t(0), intptr_t(u.Size()) };
-	const Interval loopInterval = Intersection(uExtent, EncompassingUnion(outExtent, outExtent + intptr_t(1) - intptr_t(v.Size())));
+	const Interval outExtent{ intptr_t(offset), intptr_t(offset + out.size()) };
+	const Interval uExtent{ intptr_t(0), intptr_t(u.size()) };
+	const Interval loopInterval = Intersection(uExtent, EncompassingUnion(outExtent, outExtent + intptr_t(1) - intptr_t(v.size())));
 
 	BasicSignal<T, Domain> workingChunk(chunkSize, T(0));
-	Interval uInterval = { loopInterval.first, loopInterval.first + intptr_t(v.Size()) };
+	Interval uInterval = { loopInterval.first, loopInterval.first + intptr_t(v.size()) };
 	Interval outInterval = { loopInterval.first, loopInterval.first + intptr_t(chunkSize) };
-	for (; !IsDisjoint(outInterval, outExtent); uInterval += intptr_t(v.Size()), outInterval += intptr_t(v.Size())) {
+	for (; !IsDisjoint(outInterval, outExtent); uInterval += intptr_t(v.size()), outInterval += intptr_t(v.size())) {
 		Interval uValidInterval = Intersection(uInterval, uExtent);
 		const auto fillFirst = std::copy(u.begin() + uValidInterval.first, u.begin() + uValidInterval.last, workingChunk.begin());
 		std::fill(fillFirst, workingChunk.end(), T(0));
@@ -162,23 +162,23 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 		Interval outValidInterval = Intersection(outInterval, outExtent) - intptr_t(offset);
 		Interval chunkValidInterval = Intersection(outInterval, outExtent) - uInterval.first;
 
-		AsView(out).SubSignal(outValidInterval.first, outValidInterval.Size()) += AsView(filteredChunk).SubSignal(chunkValidInterval.first, chunkValidInterval.Size());
+		AsView(out).subsignal(outValidInterval.first, outValidInterval.size()) += AsView(filteredChunk).subsignal(chunkValidInterval.first, chunkValidInterval.size());
 	}
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize = 0, bool clearOut = true) {
-	const size_t fullLength = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
-	assert(out.Size() == fullLength && "Use ConvolutionLength to calculate output size properly.");
+	const size_t fullLength = ConvolutionLength(u.size(), v.size(), CONV_FULL);
+	assert(out.size() == fullLength && "Use ConvolutionLength to calculate output size properly.");
 	size_t offset = 0;
 	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }
 
 template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize = 0, bool clearOut = true) {
-	const size_t centralLength = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
-	assert(out.Size() == centralLength && "Use ConvolutionLength to calculate output size properly.");
-	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
+	const size_t centralLength = ConvolutionLength(u.size(), v.size(), CONV_CENTRAL);
+	assert(out.size() == centralLength && "Use ConvolutionLength to calculate output size properly.");
+	size_t offset = std::min(u.size() - 1, v.size() - 1);
 	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }
 
@@ -197,15 +197,15 @@ auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto OverlapAdd(const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize = 0) {
-	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_FULL);
+	const size_t length = ConvolutionLength(u.size(), v.size(), CONV_FULL);
 	size_t offset = 0;
 	return OverlapAdd(u, v, offset, length, chunkSize);
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto OverlapAdd(const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize = 0) {
-	const size_t length = ConvolutionLength(u.Length(), v.Length(), CONV_CENTRAL);
-	size_t offset = std::min(u.Size() - 1, v.Size() - 1);
+	const size_t length = ConvolutionLength(u.size(), v.size(), CONV_CENTRAL);
+	size_t offset = std::min(u.size() - 1, v.size() - 1);
 	return OverlapAdd(u, v, offset, length, chunkSize);
 }
 

@@ -16,7 +16,7 @@ auto LinSpace(SignalR&& output,
 			  remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type> end,
 			  bool inclusive = true) {
 	using R = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
-	const auto count = output.Size();
+	const auto count = output.size();
 	for (size_t i = 0; i < count; ++i) {
 		output[i] = R(i);
 	}

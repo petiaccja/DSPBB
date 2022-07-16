@@ -35,7 +35,7 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 #define TEST_SIGNAL_BINARY_OPERATOR(NAME, OPERATOR)                                                              \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal binary " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_COMPLEX) { \
 		for (auto size : sizes) {                                                                                \
-			SECTION(std::string("Size ") + std::to_string(size)) {                                               \
+			SECTION(std::string("size ") + std::to_string(size)) {                                               \
 				using TestType0 = std::tuple_element_t<0, TestType>;                                             \
 				using TestType1 = std::tuple_element_t<1, TestType>;                                             \
                                                                                                                  \
@@ -68,7 +68,7 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 #define TEST_SIGNAL_COMPOUND_OPERATOR(NAME, OPERATOR, VERIFY_OPERATOR)                                          \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal compound " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_REAL) { \
 		for (auto size : sizes) {                                                                               \
-			SECTION(std::string("Size ") + std::to_string(size)) {                                              \
+			SECTION(std::string("size ") + std::to_string(size)) {                                              \
 				using TestType0 = std::tuple_element_t<0, TestType>;                                            \
 				using TestType1 = std::tuple_element_t<1, TestType>;                                            \
                                                                                                                 \
@@ -106,7 +106,7 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 #define TEST_SIGNAL_BINARY_SCALAR_OPERATOR(NAME, OPERATOR)                                                              \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal binary scalar " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_COMPLEX) { \
 		for (auto size : sizes) {                                                                                       \
-			SECTION(std::string("Size ") + std::to_string(size)) {                                                      \
+			SECTION(std::string("size ") + std::to_string(size)) {                                                      \
 				using TestType0 = std::tuple_element_t<0, TestType>;                                                    \
 				using TestType1 = std::tuple_element_t<1, TestType>;                                                    \
                                                                                                                         \
@@ -141,7 +141,7 @@ constexpr std::array<size_t, 2> sizes = { 1, 137 };
 #define TEST_SIGNAL_COMPOUND_SCALAR_OPERATOR(NAME, OPERATOR, VERIFY_OPERATOR)                                          \
 	TEMPLATE_PRODUCT_TEST_CASE("Signal compound scalar " NAME, "[Signal Arithmetic]", std::tuple, TYPES_BINARY_REAL) { \
 		for (auto size : sizes) {                                                                                      \
-			SECTION(std::string("Size ") + std::to_string(size)) {                                                     \
+			SECTION(std::string("size ") + std::to_string(size)) {                                                     \
 				using TestType0 = std::tuple_element_t<0, TestType>;                                                   \
 				using TestType1 = std::tuple_element_t<1, TestType>;                                                   \
                                                                                                                        \

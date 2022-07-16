@@ -9,22 +9,22 @@ using namespace std::complex_literals;
 TEST_CASE("Signal - Default construct", "[Signal]") {
 	Signal<float> s;
 	Signal<std::complex<float>> c;
-	REQUIRE(s.Empty());
-	REQUIRE(c.Empty());
+	REQUIRE(s.empty());
+	REQUIRE(c.empty());
 }
 
 
 TEST_CASE("Signal - Ilist construct", "[Signal]") {
 	Signal<float> s = { 1, 2, 3 };
 	Signal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
-	REQUIRE(s.Length() == 3);
-	REQUIRE(c.Length() == 3);
-	REQUIRE(!s.Empty());
-	REQUIRE(!c.Empty());
+	REQUIRE(s.size() == 3);
+	REQUIRE(c.size() == 3);
+	REQUIRE(!s.empty());
+	REQUIRE(!c.empty());
 	for (int i = 0; i < 3; ++i) {
-		REQUIRE(s.Data()[i] == i + 1);
-		REQUIRE(c.Data()[i].real() == i + 1);
-		REQUIRE(c.Data()[i].imag() == i + 4);
+		REQUIRE(s.data()[i] == i + 1);
+		REQUIRE(c.data()[i].real() == i + 1);
+		REQUIRE(c.data()[i].imag() == i + 4);
 	}
 }
 
@@ -70,57 +70,57 @@ TEST_CASE("Signal - Conversion operator=", "[Signal]") {
 }
 
 
-TEST_CASE("Signal - Reserve", "[Signal]") {
+TEST_CASE("Signal - reserve", "[Signal]") {
 	Signal<float> s = { 1, 2, 3 };
 	Signal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
-	s.Reserve(1024);
-	c.Reserve(1024);
-	REQUIRE(s.Capacity() >= 1024);
-	REQUIRE(s.Size() == 3);
-	REQUIRE(c.Capacity() >= 1024);
-	REQUIRE(c.Size() == 3);
+	s.reserve(1024);
+	c.reserve(1024);
+	REQUIRE(s.capacity() >= 1024);
+	REQUIRE(s.size() == 3);
+	REQUIRE(c.capacity() >= 1024);
+	REQUIRE(c.size() == 3);
 }
 
 
-TEST_CASE("Signal - Resize", "[Signal]") {
+TEST_CASE("Signal - resize", "[Signal]") {
 	Signal<float> s = { 1, 2, 3 };
 	Signal<std::complex<float>> c = { 1.f + 4.if, 2.f + 5.if, 3.f + 6.if };
-	s.Resize(1024);
-	c.Resize(1024);
-	REQUIRE(s.Capacity() >= 1024);
-	REQUIRE(s.Size() == 1024);
-	REQUIRE(c.Capacity() >= 1024);
-	REQUIRE(c.Size() == 1024);
+	s.resize(1024);
+	c.resize(1024);
+	REQUIRE(s.capacity() >= 1024);
+	REQUIRE(s.size() == 1024);
+	REQUIRE(c.capacity() >= 1024);
+	REQUIRE(c.size() == 1024);
 }
 
 
-TEST_CASE("Signal - Append", "[Signal]") {
+TEST_CASE("Signal - append", "[Signal]") {
 	Signal<float> s1 = { 1, 2, 3 };
 	Signal<float> s2 = { 4, 5, 6 };
-	s1.Append(s2);
-	REQUIRE(s2.Size() == 3);
-	REQUIRE(s1.Size() == 6);
+	s1.append(s2);
+	REQUIRE(s2.size() == 3);
+	REQUIRE(s1.size() == 6);
 	REQUIRE(s1[2] == 3);
 	REQUIRE(s1[3] == 4);
 }
 
 
-TEST_CASE("Signal - Prepend", "[Signal]") {
+TEST_CASE("Signal - prepend", "[Signal]") {
 	Signal<float> s1 = { 1, 2, 3 };
 	Signal<float> s2 = { 4, 5, 6 };
-	s1.Prepend(s2);
-	REQUIRE(s2.Size() == 3);
-	REQUIRE(s1.Size() == 6);
+	s1.prepend(s2);
+	REQUIRE(s2.size() == 3);
+	REQUIRE(s1.size() == 6);
 	REQUIRE(s1[2] == 6);
 	REQUIRE(s1[3] == 1);
 }
 
 
-TEST_CASE("Signal - ExtractFront", "[Signal]") {
+TEST_CASE("Signal - extract_front", "[Signal]") {
 	Signal<float> s = { 1, 2, 3, 4, 5, 6 };
-	Signal<float> part = s.ExtractFront(2);
-	REQUIRE(s.Size() == 4);
-	REQUIRE(part.Size() == 2);
+	Signal<float> part = s.extract_front(2);
+	REQUIRE(s.size() == 4);
+	REQUIRE(part.size() == 2);
 	REQUIRE(part[0] == 1);
 	REQUIRE(part[1] == 2);
 	REQUIRE(s[0] == 3);
@@ -130,11 +130,11 @@ TEST_CASE("Signal - ExtractFront", "[Signal]") {
 }
 
 
-TEST_CASE("Signal - ExtractBack", "[Signal]") {
+TEST_CASE("Signal - extract_back", "[Signal]") {
 	Signal<float> s = { 1, 2, 3, 4, 5, 6 };
-	Signal<float> part = s.ExtractBack(4);
-	REQUIRE(s.Size() == 2);
-	REQUIRE(part.Size() == 4);
+	Signal<float> part = s.extract_back(4);
+	REQUIRE(s.size() == 2);
+	REQUIRE(part.size() == 4);
 	REQUIRE(s[0] == 1);
 	REQUIRE(s[1] == 2);
 	REQUIRE(part[0] == 3);
@@ -144,50 +144,50 @@ TEST_CASE("Signal - ExtractBack", "[Signal]") {
 }
 
 
-TEST_CASE("Signal - Erase", "[Signal]") {
+TEST_CASE("Signal - erase", "[Signal]") {
 	Signal<float> s = { 1, 2, 3, 4, 5, 6 };
-	s.Erase(s.begin() + 3);
-	REQUIRE(s.Size() == 5);
+	s.erase(s.begin() + 3);
+	REQUIRE(s.size() == 5);
 	REQUIRE(s[2] == 3);
 	REQUIRE(s[3] == 5);
 }
 
-TEST_CASE("Signal - Erase range", "[Signal]") {
+TEST_CASE("Signal - erase range", "[Signal]") {
 	Signal<float> s = { 1, 2, 3, 4, 5, 6 };
-	s.Erase(s.begin() + 1, s.begin() + 5);
-	REQUIRE(s.Size() == 2);
+	s.erase(s.begin() + 1, s.begin() + 5);
+	REQUIRE(s.size() == 2);
 	REQUIRE(s[0] == 1);
 	REQUIRE(s[1] == 6);
 }
 
 
-TEST_CASE("Signal - Append (complex)", "[Signal]") {
+TEST_CASE("Signal - append (complex)", "[Signal]") {
 	Signal<std::complex<float>> s1 = { 1, 2, 3 };
 	Signal<std::complex<float>> s2 = { 4, 5, 6 };
-	s1.Append(s2);
-	REQUIRE(s2.Size() == 3);
-	REQUIRE(s1.Size() == 6);
+	s1.append(s2);
+	REQUIRE(s2.size() == 3);
+	REQUIRE(s1.size() == 6);
 	REQUIRE(s1[2] == 3.f);
 	REQUIRE(s1[3] == 4.f);
 }
 
 
-TEST_CASE("Signal - Prepend (complex)", "[Signal]") {
+TEST_CASE("Signal - prepend (complex)", "[Signal]") {
 	Signal<std::complex<float>> s1 = { 1, 2, 3 };
 	Signal<std::complex<float>> s2 = { 4, 5, 6 };
-	s1.Prepend(s2);
-	REQUIRE(s2.Size() == 3);
-	REQUIRE(s1.Size() == 6);
+	s1.prepend(s2);
+	REQUIRE(s2.size() == 3);
+	REQUIRE(s1.size() == 6);
 	REQUIRE(s1[2] == 6.f);
 	REQUIRE(s1[3] == 1.f);
 }
 
 
-TEST_CASE("Signal - ExtractFront (complex)", "[Signal]") {
+TEST_CASE("Signal - extract_front (complex)", "[Signal]") {
 	Signal<std::complex<float>> s = { 1.f * (1.f + 1.if), 2.f * (1.f + 1.if), 3.f * (1.f + 1.if), 4.f * (1.f + 1.if), 5.f * (1.f + 1.if), 6.f * (1.f + 1.if) };
-	Signal<std::complex<float>> part = s.ExtractFront(2);
-	REQUIRE(s.Size() == 4);
-	REQUIRE(part.Size() == 2);
+	Signal<std::complex<float>> part = s.extract_front(2);
+	REQUIRE(s.size() == 4);
+	REQUIRE(part.size() == 2);
 	REQUIRE(part[0] == 1.f * (1.f + 1.if));
 	REQUIRE(part[1] == 2.f * (1.f + 1.if));
 	REQUIRE(s[0] == 3.f * (1.f + 1.if));
@@ -197,11 +197,11 @@ TEST_CASE("Signal - ExtractFront (complex)", "[Signal]") {
 }
 
 
-TEST_CASE("Signal - ExtractBack (complex)", "[Signal]") {
+TEST_CASE("Signal - extract_back (complex)", "[Signal]") {
 	Signal<std::complex<float>> s = { 1.f * (1.f + 1.if), 2.f * (1.f + 1.if), 3.f * (1.f + 1.if), 4.f * (1.f + 1.if), 5.f * (1.f + 1.if), 6.f * (1.f + 1.if) };
-	Signal<std::complex<float>> part = s.ExtractBack(4);
-	REQUIRE(s.Size() == 2);
-	REQUIRE(part.Size() == 4);
+	Signal<std::complex<float>> part = s.extract_back(4);
+	REQUIRE(s.size() == 2);
+	REQUIRE(part.size() == 4);
 	REQUIRE(s[0] == 1.f * (1.f + 1.if));
 	REQUIRE(s[1] == 2.f * (1.f + 1.if));
 	REQUIRE(part[0] == 3.f * (1.f + 1.if));
@@ -211,19 +211,19 @@ TEST_CASE("Signal - ExtractBack (complex)", "[Signal]") {
 }
 
 
-TEST_CASE("Signal - Erase (complex)", "[Signal]") {
+TEST_CASE("Signal - erase (complex)", "[Signal]") {
 	Signal<std::complex<float>> s = { 1, 2, 3, 4, 5, 6 };
-	s.Erase(s.begin() + 3);
-	REQUIRE(s.Size() == 5);
+	s.erase(s.begin() + 3);
+	REQUIRE(s.size() == 5);
 	REQUIRE(s[2] == 3.f);
 	REQUIRE(s[3] == 5.f);
 }
 
 
-TEST_CASE("Signal - Erase range (complex)", "[Signal]") {
+TEST_CASE("Signal - erase range (complex)", "[Signal]") {
 	Signal<std::complex<float>> s = { 1, 2, 3, 4, 5, 6 };
-	s.Erase(s.begin() + 1, s.begin() + 5);
-	REQUIRE(s.Size() == 2);
+	s.erase(s.begin() + 1, s.begin() + 5);
+	REQUIRE(s.size() == 2);
 	REQUIRE(s[0] == 1.f);
 	REQUIRE(s[1] == 6.f);
 }

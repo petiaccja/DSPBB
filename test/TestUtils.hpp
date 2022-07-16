@@ -113,7 +113,7 @@ dspbb::Signal<T> RandomPositiveSignal(size_t size) {
 	thread_local std::uniform_real_distribution<float> rng(1, 2);
 	dspbb::Signal<T> s;
 	for (size_t i = 0; i < size; ++i) {
-		s.PushBack(rng(rne));
+		s.push_back(rng(rne));
 	}
 	return s;
 }

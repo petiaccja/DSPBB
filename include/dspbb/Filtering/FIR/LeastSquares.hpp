@@ -72,7 +72,7 @@ void KernelLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, Weigh
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = remove_complex_t<R>;
 
-	const size_t filterLength = (coefficients.Size() + 1) / 2;
+	const size_t filterLength = (coefficients.size() + 1) / 2;
 	gridSize = gridSize == 0 ? 4 * filterLength : std::min(filterLength, gridSize);
 
 	const auto coefficientMatrix = impl::CoefficientMatrix<T>(filterLength, gridSize);

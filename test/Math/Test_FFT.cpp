@@ -24,9 +24,9 @@ TEST_CASE("FFT - Real spectral peak", "[FFT]") {
 	Spectrum<std::complex<float>> complexSpectrum = Fft(signal, FFT_FULL);
 	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
 
-	REQUIRE(complexSpectrum.Length() == fftSize);
+	REQUIRE(complexSpectrum.size() == fftSize);
 
-	auto maxPos = std::max_element(powerSpectrum.begin(), powerSpectrum.begin() + powerSpectrum.Size() / 2) - powerSpectrum.begin();
+	auto maxPos = std::max_element(powerSpectrum.begin(), powerSpectrum.begin() + powerSpectrum.size() / 2) - powerSpectrum.begin();
 	auto maxPosExpected = FourierFrequency2Bin(frequency, fftSize, sampleRate);
 	REQUIRE(std::abs(intptr_t(maxPos) - intptr_t(maxPosExpected)) <= 1);
 }
@@ -38,9 +38,9 @@ TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 	Spectrum<std::complex<float>> complexSpectrum = Fft(signal);
 	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
 
-	REQUIRE(complexSpectrum.Length() == fftSize);
+	REQUIRE(complexSpectrum.size() == fftSize);
 
-	auto maxPos = std::max_element(powerSpectrum.begin(), powerSpectrum.begin() + powerSpectrum.Size() / 2) - powerSpectrum.begin();
+	auto maxPos = std::max_element(powerSpectrum.begin(), powerSpectrum.begin() + powerSpectrum.size() / 2) - powerSpectrum.begin();
 	auto maxPosExpected = FourierFrequency2Bin(frequency, fftSize, sampleRate);
 	REQUIRE(std::abs(intptr_t(maxPos) - intptr_t(maxPosExpected)) <= 1);
 }
@@ -49,7 +49,7 @@ TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 TEST_CASE("IFFT - Real identity", "[FFT]") {
 	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
 	Spectrum<std::complex<float>> spectrum = Fft(signal, FFT_HALF);
-	const auto repro = Ifft(spectrum, FFT_HALF, signal.Size() % 2 == 0);
+	const auto repro = Ifft(spectrum, FFT_HALF, signal.size() % 2 == 0);
 
 	REQUIRE(Max(Abs(signal - repro)) < 1e-4f);
 }
@@ -80,8 +80,8 @@ TEST_CASE("FFT - Full real even", "[FFT]") {
 	even[30] = 1.0f;
 	const Spectrum<std::complex<float>> evenHalf = Fft(even, FFT_HALF);
 	const Spectrum<std::complex<float>> evenFull = Fft(even, FFT_FULL);
-	REQUIRE(evenHalf.Length() == 33);
-	REQUIRE(evenFull.Length() == 64);
+	REQUIRE(evenHalf.size() == 33);
+	REQUIRE(evenFull.size() == 64);
 	REQUIRE(std::all_of(evenHalf.begin(), evenHalf.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 	REQUIRE(std::all_of(evenFull.begin(), evenFull.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 	const auto normal = Spectrum<std::complex<float>>(evenFull.begin() + 1, evenFull.begin() + 32);
@@ -94,8 +94,8 @@ TEST_CASE("FFT - Full real odd", "[FFT]") {
 	odd[30] = 1.0f;
 	Spectrum<std::complex<float>> evenHalf = Fft(odd, FFT_HALF);
 	Spectrum<std::complex<float>> evenFull = Fft(odd, FFT_FULL);
-	REQUIRE(evenHalf.Length() == 32);
-	REQUIRE(evenFull.Length() == 63);
+	REQUIRE(evenHalf.size() == 32);
+	REQUIRE(evenFull.size() == 63);
 	REQUIRE(std::all_of(evenHalf.begin(), evenHalf.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 	REQUIRE(std::all_of(evenFull.begin(), evenFull.end(), [](const auto& v) { return std::abs(v) == Approx(1.0f); }));
 	const auto normal = Spectrum<std::complex<float>>(evenFull.begin() + 1, evenFull.begin() + 32);
@@ -111,7 +111,7 @@ TEST_CASE("FFT - Full real identity", "[FFT]") {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(s);
 		const Spectrum<std::complex<float>> spectrum = Fft(signal, FFT_FULL);
 		const Signal<float> repro = Ifft(spectrum, FFT_FULL);
-		REQUIRE(signal.Size() == repro.Size());
+		REQUIRE(signal.size() == repro.size());
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}
 }
@@ -122,8 +122,8 @@ TEST_CASE("FFT - Half real identity", "[FFT]") {
 	for (auto s : sizes) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(s);
 		const Spectrum<std::complex<float>> spectrum = Fft(signal, FFT_HALF);
-		const Signal<float> repro = Ifft(spectrum, FFT_HALF, signal.Size() % 2 == 0);
-		REQUIRE(signal.Size() == repro.Size());
+		const Signal<float> repro = Ifft(spectrum, FFT_HALF, signal.size() % 2 == 0);
+		REQUIRE(signal.size() == repro.size());
 		REQUIRE(Max(Abs(signal - repro)) < 0.001f);
 	}
 }
@@ -151,7 +151,7 @@ TEST_CASE("FFT shift 1", "[FFT]") {
 TEST_CASE("FFT shift empty", "[FFT]") {
 	const Spectrum<float> s = {};
 	const auto r = FftShift(s);
-	REQUIRE(r.Size() == 0);
+	REQUIRE(r.size() == 0);
 }
 
 TEST_CASE("FFT inverse shift even", "[FFT]") {

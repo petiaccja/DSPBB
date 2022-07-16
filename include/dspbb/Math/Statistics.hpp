@@ -23,7 +23,7 @@ auto Sum(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Mean(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return !signal.Empty() ? Sum(signal) / T(signal.Size()) : T(0);
+	return !signal.empty() ? Sum(signal) / T(signal.size()) : T(0);
 }
 
 
@@ -42,7 +42,7 @@ auto SumSquare(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto MeanSquare(const SignalT& signal) {
 	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	return !signal.Empty() ? SumSquare(signal) / T(signal.Size()) : T(0);
+	return !signal.empty() ? SumSquare(signal) / T(signal.size()) : T(0);
 }
 
 
@@ -59,14 +59,14 @@ auto Norm(const SignalT& signal) {
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Max(const SignalT& signal) {
-	assert(!signal.Empty());
+	assert(!signal.empty());
 	return kernels::Reduce(signal.begin(), signal.end(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::max(a, b); });
 }
 
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Min(const SignalT& signal) {
-	assert(!signal.Empty());
+	assert(!signal.empty());
 	return kernels::Reduce(signal.begin(), signal.end(), signal[0], [](const auto& a, const auto& b) { return kernels::math_functions::min(a, b); });
 }
 
@@ -88,7 +88,7 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 		return d * kernels::math_functions::pow(kernels::math_functions::abs(d), V(T(k) - T(1)));
 	};
 
-	const T den = T(signal.Size());
+	const T den = T(signal.size());
 
 	switch (k) {
 		case 0: return T(0);
@@ -167,7 +167,7 @@ auto Kurtosis(const SignalT& signal, U mean) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto CorrectedStandardDeviation(const SignalT& signal) {
 	using T = typename SignalT::value_type;
-	const auto n = T(signal.Size());
+	const auto n = T(signal.size());
 	assert(n >= 2);
 	return std::sqrt(CentralMoment(signal, 2) * n / (n - 1));
 }
@@ -175,7 +175,7 @@ auto CorrectedStandardDeviation(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto CorrectedVariance(const SignalT& signal) {
 	using T = typename SignalT::value_type;
-	const auto n = T(signal.Size());
+	const auto n = T(signal.size());
 	assert(n >= 2);
 	return CentralMoment(signal, 2) * n / (n - 1);
 }
@@ -183,7 +183,7 @@ auto CorrectedVariance(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto CorrectedSkewness(const SignalT& signal) {
 	using T = typename SignalT::value_type;
-	const auto n = T(signal.Size());
+	const auto n = T(signal.size());
 	assert(n >= 3);
 
 	const auto smean = Mean(signal);
@@ -199,7 +199,7 @@ auto CorrectedSkewness(const SignalT& signal) {
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto CorrectedKurtosis(const SignalT& signal) {
 	using T = typename SignalT::value_type;
-	const auto n = T(signal.Size());
+	const auto n = T(signal.size());
 	assert(n >= 4);
 
 	const auto smean = Mean(signal);
@@ -224,8 +224,8 @@ auto CorrectedKurtosis(const SignalT& signal) {
 
 template <class SignalT, class U, class SignalU, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto Covariance(const SignalT& a, const SignalU& b, U amean, U bmean) {
-	assert(a.Size() == b.Size());
-	const auto size = a.Size();
+	assert(a.size() == b.size());
+	const auto size = a.size();
 	using R = decltype(std::declval<typename SignalT::value_type>() * std::declval<typename SignalU::value_type>());
 	return kernels::InnerProduct(
 			   a.begin(),
@@ -244,16 +244,16 @@ auto Covariance(const SignalT& a, const SignalU& b) {
 
 template <class SignalT, class SignalU, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto CorrectedCovariance(const SignalT& a, const SignalU& b) {
-	assert(a.Size() == b.Size());
+	assert(a.size() == b.size());
 	using T = typename SignalT::value_type;
-	const auto n = T(a.Size());
+	const auto n = T(a.size());
 	assert(n >= 2);
 	return n / (n - 1) * Covariance(a, b);
 }
 
 template <class SignalT, class SignalU, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto Correlation(const SignalT& a, const SignalU& b) {
-	assert(a.Size() == b.Size());
+	assert(a.size() == b.size());
 	return Covariance(a, b) / (StandardDeviation(a) * StandardDeviation(b));
 }
 

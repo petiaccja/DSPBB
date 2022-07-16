@@ -114,12 +114,12 @@ int main() {
 
 			size_t currentSample = 0;
 			PlayStereo(sampleRate, [left = AsView(left), right = AsView(right), &currentSample, &equalizer](SignalView<float> leftOut, SignalView<float> rightOut) -> size_t {
-				assert(leftOut.Size() == rightOut.Size());
-				const size_t validSize = std::min(left.Size() - currentSample, leftOut.Size());
-				equalizer.Filter(left.SubSignal(currentSample, validSize),
-								 right.SubSignal(currentSample, validSize),
-								 leftOut.SubSignal(0, validSize),
-								 rightOut.SubSignal(0, validSize));
+				assert(leftOut.size() == rightOut.size());
+				const size_t validSize = std::min(left.size() - currentSample, leftOut.size());
+				equalizer.Filter(left.subsignal(currentSample, validSize),
+								 right.subsignal(currentSample, validSize),
+								 leftOut.subsignal(0, validSize),
+								 rightOut.subsignal(0, validSize));
 				currentSample += validSize;
 				return validSize;
 			});

@@ -39,9 +39,9 @@ auto Crossfeed(SignalView<const float> left, SignalView<const float> right)
     const auto filter = CascadedBiquad{ zpk };
 
     // Apply filter.
-    CascadedForm<float> state{ filter.Order() };
+    CascadedForm<float> state{ filter.order() };
     const auto lpLeft = Filter(left, filter, state);
-    state.Reset();
+    state.reset();
     const auto lpRight = Filter(left, filter, state);
 
     // Combine results.

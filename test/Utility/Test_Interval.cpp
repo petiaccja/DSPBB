@@ -33,9 +33,9 @@ TEST_CASE("Interval intersection", "[Interval]") {
 	Interval i1{ 1, 2 };
 	Interval i2{ 3, 6 };
 	Interval i3{ 5, 7 };
-	REQUIRE(Intersection(i1, i2).Size() == 0);
+	REQUIRE(Intersection(i1, i2).size() == 0);
 	REQUIRE(Intersection(i2, i3) == Interval{ 5, 6 });
-	REQUIRE(Intersection(i1, i3).Size() == 0);
+	REQUIRE(Intersection(i1, i3).size() == 0);
 }
 
 TEST_CASE("Interval encompassing union", "[Interval]") {

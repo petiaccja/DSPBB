@@ -12,7 +12,8 @@ enum class eDiscretization {
 
 
 template <class T, eDiscretization Discretization>
-struct ZeroPoleGain {
+class ZeroPoleGain {
+public:
 	T gain;
 	FactoredPolynomial<T> zeros;
 	FactoredPolynomial<T> poles;
@@ -20,12 +21,13 @@ struct ZeroPoleGain {
 	std::complex<T> operator()(const std::complex<T>& x) const { return gain * zeros(x) / poles(x); }
 	T operator()(const T& x) const { return gain * zeros(x) / poles(x); }
 
-	size_t Order() const { return std::max(zeros.Order(), poles.Order()); }
+	size_t order() const { return std::max(zeros.order(), poles.order()); }
 };
 
 
 template <class T, eDiscretization Discretization>
-struct TransferFunction {
+class TransferFunction {
+public:
 	TransferFunction() = default;
 	TransferFunction(Polynomial<T> numerator, Polynomial<T> denominator)
 		: numerator(std::move(numerator)), denominator(std::move(denominator)) {}
@@ -37,12 +39,13 @@ struct TransferFunction {
 	std::complex<T> operator()(const std::complex<T>& x) const { return numerator(x) / denominator(x); }
 	T operator()(const T& x) const { return numerator(x) / denominator(x); }
 
-	size_t Order() const { return std::max(numerator.Order(), denominator.Order()); }
+	size_t order() const { return std::max(numerator.order(), denominator.order()); }
 };
 
 
 template <class T>
-struct CascadedBiquad {
+class CascadedBiquad {
+public:
 	CascadedBiquad() = default;
 	explicit CascadedBiquad(const ZeroPoleGain<T, eDiscretization::DISCRETE>& zpk);
 
@@ -57,7 +60,7 @@ struct CascadedBiquad {
 	std::complex<T> operator()(const std::complex<T>& x) const;
 	T operator()(const T& x) const;
 
-	size_t Order() const;
+	size_t order() const;
 
 private:
 	template <class Iter>
@@ -73,15 +76,15 @@ template <class T, eDiscretization Discretization>
 TransferFunction<T, Discretization>::TransferFunction(const ZeroPoleGain<T, Discretization>& zpk)
 	: numerator{ ExpandPolynomial(zpk.zeros) },
 	  denominator{ ExpandPolynomial(zpk.poles) } {
-	numerator.Coefficients() *= zpk.gain;
+	numerator.coefficients() *= zpk.gain;
 }
 
 template <class T>
 CascadedBiquad<T>::CascadedBiquad(const ZeroPoleGain<T, eDiscretization::DISCRETE>& zpk) {
-	const auto realZeroPolys = RealRootPolynomials(zpk.zeros.RealRoots().begin(), zpk.zeros.RealRoots().end());
-	const auto complexZeroPolys = ComplexPairPolynomials(zpk.zeros.ComplexPairs().begin(), zpk.zeros.ComplexPairs().end());
-	const auto realPolePolys = RealRootPolynomials(zpk.poles.RealRoots().begin(), zpk.poles.RealRoots().end());
-	const auto complexPolePolys = ComplexPairPolynomials(zpk.poles.ComplexPairs().begin(), zpk.poles.ComplexPairs().end());
+	const auto realZeroPolys = RealRootPolynomials(zpk.zeros.real_roots().begin(), zpk.zeros.real_roots().end());
+	const auto complexZeroPolys = ComplexPairPolynomials(zpk.zeros.complex_pairs().begin(), zpk.zeros.complex_pairs().end());
+	const auto realPolePolys = RealRootPolynomials(zpk.poles.real_roots().begin(), zpk.poles.real_roots().end());
+	const auto complexPolePolys = ComplexPairPolynomials(zpk.poles.complex_pairs().begin(), zpk.poles.complex_pairs().end());
 
 	auto zeroPolys = realZeroPolys;
 	zeroPolys.insert(zeroPolys.end(), complexZeroPolys.begin(), complexZeroPolys.end());
@@ -126,7 +129,7 @@ T CascadedBiquad<T>::operator()(const T& x) const {
 }
 
 template <class T>
-size_t CascadedBiquad<T>::Order() const {
+size_t CascadedBiquad<T>::order() const {
 	size_t numOrder = 1;
 	size_t denOrder = 1;
 	for (auto& section : sections) {

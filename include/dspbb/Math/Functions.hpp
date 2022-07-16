@@ -22,7 +22,7 @@ namespace dspbb {
 	auto NAME(const SignalT& signal) {                                                           \
 		using R = decltype(std::FUNC(std::declval<typename signal_traits<SignalT>::type>()));    \
 		constexpr auto domain = signal_traits<SignalT>::domain;                                  \
-		BasicSignal<R, domain> r(signal.Size());                                                 \
+		BasicSignal<R, domain> r(signal.size());                                                 \
 		NAME(r, signal);                                                                         \
 		return r;                                                                                \
 	}
@@ -62,7 +62,7 @@ auto Pow(SignalT&& out, const SignalU& in, typename signal_traits<std::decay_t<S
 }
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Pow(const SignalT& signal, typename signal_traits<std::decay_t<SignalT>>::type power) {
-	SignalT r(signal.Size());
+	SignalT r(signal.size());
 	Pow(r, signal, power);
 	return r;
 }

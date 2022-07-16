@@ -39,7 +39,7 @@ int main() {
 	// 1) set an existing memory region, "signal", to contain a square wave,
 	SquareWave(signal, 1024, 10.0);
 	// 2) return the requested signal in a brand-new memory region.
-	const auto window = BlackmanHarrisWindow<float, TIME_DOMAIN>(signal.Size());
+	const auto window = BlackmanHarrisWindow<float, TIME_DOMAIN>(signal.size());
 	// Use the first method when you want to avoid allocation for safety or performance
 	// reasons. Otherwise, the second one is often cleaner due to immutability.
 

@@ -39,11 +39,11 @@ namespace impl {
 		const auto rgain = [s, a1, a0](const T& p) {
 			return a1 * s - p * a0;
 		};
-		const size_t normGainExponent = system.poles.NumRoots() - system.zeros.NumRoots();
+		const size_t normGainExponent = system.poles.num_roots() - system.zeros.num_roots();
 		const T normGain = normGainExponent != 0 ? T(std::pow(a0, T(normGainExponent))) : T(1);
 
 		// Do transform
-		const size_t numRoots = std::max(system.zeros.NumRoots(), system.poles.NumRoots());
+		const size_t numRoots = std::max(system.zeros.num_roots(), system.poles.num_roots());
 		FactoredPolynomial<T> newZeros = TransformRoots(system.zeros, transform, numRoots, z12);
 		FactoredPolynomial<T> newPoles = TransformRoots(system.poles, transform, numRoots, z12);
 		const T newGain = normGain * system.gain * TransformGain(system.zeros, rgain, cgain) / TransformGain(system.poles, rgain, cgain);
@@ -74,11 +74,11 @@ namespace impl {
 		const auto rgain = [s, a2, a0](const T& p) {
 			return a2 * s - p * a0;
 		};
-		const size_t normGainExponent = system.poles.NumRoots() - system.zeros.NumRoots();
+		const size_t normGainExponent = system.poles.num_roots() - system.zeros.num_roots();
 		const T normGain = normGainExponent != 0 ? T(std::pow(a0, T(normGainExponent))) : T(1);
 
 		// Do transform
-		const size_t numRoots = std::max(system.zeros.NumRoots(), system.poles.NumRoots());
+		const size_t numRoots = std::max(system.zeros.num_roots(), system.poles.num_roots());
 		FactoredPolynomial<T> newZeros = TransformRoots(system.zeros, transform, numRoots, z12);
 		FactoredPolynomial<T> newPoles = TransformRoots(system.poles, transform, numRoots, z12);
 		const T newGain = normGain * system.gain * TransformGain(system.zeros, rgain, cgain) / TransformGain(system.poles, rgain, cgain);

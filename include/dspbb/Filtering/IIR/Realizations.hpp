@@ -19,15 +19,15 @@ public:
 	DirectFormI() = default;
 	explicit DirectFormI(size_t order);
 
-	void Order(size_t order);
-	void Reset();
-	size_t Order() const;
+	void order(size_t order);
+	void reset();
+	size_t order() const;
 
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
-	T Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
+	T feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
 	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
-	void Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
+	void feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
 
 private:
 	BasicSignal<T, eSignalDomain::DOMAINLESS> recursiveState;
@@ -36,47 +36,47 @@ private:
 
 template <class T>
 DirectFormI<T>::DirectFormI(size_t order) {
-	Order(order);
+	this->order(order);
 }
 
 template <class T>
-void DirectFormI<T>::Order(size_t order) {
-	recursiveState.Resize(order, T(0));
-	forwardState.Resize(order + 1, T(0));
+void DirectFormI<T>::order(size_t order) {
+	recursiveState.resize(order, T(0));
+	forwardState.resize(order + 1, T(0));
 }
 
 template <class T>
-void DirectFormI<T>::Reset() {
+void DirectFormI<T>::reset() {
 	std::fill(recursiveState.begin(), recursiveState.end(), T(0));
 	std::fill(forwardState.begin(), forwardState.end(), T(0));
 }
 
 template <class T>
-size_t DirectFormI<T>::Order() const {
-	return recursiveState.Size();
+size_t DirectFormI<T>::order() const {
+	return recursiveState.size();
 }
 
 template <class T>
 template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
-T DirectFormI<T>::Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
-	assert(!forwardState.Empty() && Order() >= sys.Order());
+T DirectFormI<T>::feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!forwardState.empty() && order() >= sys.order());
 
 	T output;
-	Feed(&input, &input + 1, &output, sys);
+	feed(&input, &input + 1, &output, sys);
 	return output;
 }
 
 template <class T>
 template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int>>
-void DirectFormI<T>::Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys) {
-	assert(!forwardState.Empty() && Order() >= sys.Order());
+void DirectFormI<T>::feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!forwardState.empty() && order() >= sys.order());
 
-	const auto fwFull = AsConstView(sys.numerator.Coefficients());
-	const auto recFull = AsConstView(sys.denominator.Coefficients());
-	const auto recSec = recFull.SubSignal(0, recFull.Size() - 1);
+	const auto fwFull = AsConstView(sys.numerator.coefficients());
+	const auto recFull = AsConstView(sys.denominator.coefficients());
+	const auto recSec = recFull.subsignal(0, recFull.size() - 1);
 
-	const auto fwStateView = AsView(forwardState).SubSignal(forwardState.Size() - fwFull.Size());
-	const auto recStateView = AsView(recursiveState).SubSignal(recursiveState.Size() - recSec.Size());
+	const auto fwStateView = AsView(forwardState).subsignal(forwardState.size() - fwFull.size());
+	const auto recStateView = AsView(recursiveState).subsignal(recursiveState.size() - recSec.size());
 
 	const auto normalization = T(1) / static_cast<T>(*recFull.rbegin());
 
@@ -90,7 +90,7 @@ void DirectFormI<T>::Feed(InIter first, InIter last, OutIter outFirst, const Dis
 		const auto recSum = std::inner_product(recStateView.begin(), recStateView.end(), recSec.begin(), T(0));
 		const auto out = (fwSum - recSum) * normalization;
 
-		if (recursiveState.Size() > 0) {
+		if (recursiveState.size() > 0) {
 			std::move(++recursiveState.begin(), recursiveState.end(), recursiveState.begin());
 			*recursiveState.rbegin() = static_cast<T>(out);
 		}
@@ -108,15 +108,15 @@ public:
 	DirectFormII() = default;
 	explicit DirectFormII(size_t order);
 
-	void Order(size_t order);
-	void Reset();
-	size_t Order() const;
+	void order(size_t order);
+	void reset();
+	size_t order() const;
 
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
-	T Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
+	T feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
 	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
-	void Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
+	void feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
 
 private:
 	BasicSignal<T, eSignalDomain::DOMAINLESS> m_state;
@@ -124,45 +124,45 @@ private:
 
 template <class T>
 DirectFormII<T>::DirectFormII(size_t order) {
-	m_state.Resize(order + 1, T(0));
+	m_state.resize(order + 1, T(0));
 }
 
 template <class T>
-void DirectFormII<T>::Order(size_t order) {
-	m_state.Resize(order + 1, T(0));
+void DirectFormII<T>::order(size_t order) {
+	m_state.resize(order + 1, T(0));
 }
 
 template <class T>
-void DirectFormII<T>::Reset() {
+void DirectFormII<T>::reset() {
 	std::fill(m_state.begin(), m_state.end(), T(0));
 }
 
 template <class T>
-size_t DirectFormII<T>::Order() const {
-	return !m_state.Empty() ? m_state.Size() - 1 : 0;
+size_t DirectFormII<T>::order() const {
+	return !m_state.empty() ? m_state.size() - 1 : 0;
 }
 
 template <class T>
 template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
-T DirectFormII<T>::Feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
-	assert(!m_state.Empty() && Order() >= sys.Order());
+T DirectFormII<T>::feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!m_state.empty() && order() >= sys.order());
 
 	T output;
-	Feed(&input, &input + 1, &output, sys);
+	feed(&input, &input + 1, &output, sys);
 	return output;
 }
 
 template <class T>
 template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int>>
-void DirectFormII<T>::Feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys) {
-	assert(!m_state.Empty() && Order() >= sys.Order());
+void DirectFormII<T>::feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys) {
+	assert(!m_state.empty() && order() >= sys.order());
 
-	const auto fwFull = AsConstView(sys.numerator.Coefficients());
-	const auto recFull = AsConstView(sys.denominator.Coefficients());
-	const auto recSec = recFull.SubSignal(0, recFull.Size() - 1);
+	const auto fwFull = AsConstView(sys.numerator.coefficients());
+	const auto recFull = AsConstView(sys.denominator.coefficients());
+	const auto recSec = recFull.subsignal(0, recFull.size() - 1);
 
-	const auto stateFwView = AsView(m_state).SubSignal(m_state.Size() - fwFull.Size());
-	const auto stateRecView = AsView(m_state).SubSignal(m_state.Size() - recSec.Size());
+	const auto stateFwView = AsView(m_state).subsignal(m_state.size() - fwFull.size());
+	const auto stateRecView = AsView(m_state).subsignal(m_state.size() - recSec.size());
 	const auto normalization = T(1) / static_cast<T>(*recFull.rbegin());
 
 	while (first != last) {
@@ -185,15 +185,15 @@ public:
 	CascadedForm() = default;
 	explicit CascadedForm(size_t order);
 
-	void Order(size_t order);
-	void Reset();
-	size_t Order() const;
+	void order(size_t order);
+	void reset();
+	size_t order() const;
 
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
-	T Feed(const InputT& input, const CascadedBiquad<SystemT>& sys);
+	T feed(const InputT& input, const CascadedBiquad<SystemT>& sys);
 
 	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
-	void Feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys);
+	void feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys);
 
 private:
 	using Section = std::array<T, 3>;
@@ -208,26 +208,26 @@ CascadedForm<T>::CascadedForm(size_t order) {
 }
 
 template <class T>
-void CascadedForm<T>::Order(size_t order) {
+void CascadedForm<T>::order(size_t order) {
 	const size_t numSections = 1 + (order + 1) / 2;
 	m_sections.resize(numSections, { T(0), T(0), T(0) });
 }
 
 template <class T>
-void CascadedForm<T>::Reset() {
+void CascadedForm<T>::reset() {
 	for (auto& section : m_sections) {
 		section = { T(0), T(0), T(0) };
 	}
 }
 
 template <class T>
-size_t CascadedForm<T>::Order() const {
+size_t CascadedForm<T>::order() const {
 	return (std::max(size_t(1), m_sections.size()) - 1) * 2;
 }
 
 template <class T>
 template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int>>
-T CascadedForm<T>::Feed(const InputT& input, const CascadedBiquad<SystemT>& sys) {
+T CascadedForm<T>::feed(const InputT& input, const CascadedBiquad<SystemT>& sys) {
 	assert(sys.sections.size() + 1 <= m_sections.size());
 
 	auto output = static_cast<T>(input);
@@ -255,9 +255,9 @@ T CascadedForm<T>::Feed(const InputT& input, const CascadedBiquad<SystemT>& sys)
 
 template <class T>
 template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int>>
-void CascadedForm<T>::Feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys) {
+void CascadedForm<T>::feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys) {
 	while (first != last) {
-		*outFirst++ = Feed(*first++, sys);
+		*outFirst++ = feed(*first++, sys);
 	}
 }
 

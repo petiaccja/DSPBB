@@ -24,7 +24,7 @@ Signal<float> LoadSunspotHistory() {
 	while (file.good()) {
 		float numSunspots = 0.0;
 		file >> numSunspots;
-		sunspotHistory.PushBack(numSunspots);
+		sunspotHistory.push_back(numSunspots);
 	}
 	return sunspotHistory;
 }
@@ -38,17 +38,17 @@ int main() {
 	const Signal<float> sunspotHistory = LoadSunspotHistory();
 
 	// Apply the fourier transform to the time-domain data to reveal periodicity.
-	const Signal<float> window = BlackmanHarrisWindow<float, TIME_DOMAIN>(sunspotHistory.Size());
+	const Signal<float> window = BlackmanHarrisWindow<float, TIME_DOMAIN>(sunspotHistory.size());
 	const Spectrum<std::complex<float>> spectrum = Fft(sunspotHistory * window, FFT_HALF);
 	const Spectrum<float> amplitude = Abs(spectrum);
 
 	// Find the FFT bin with the highest amplitude. That will correspond to the frequency of the solar cycle.
 	// Since we know the solar cycle's period is less than 100 years, we can exclude frequencies below
 	// 0.01/year, thus also excluding the expected spike at DC.
-	const size_t firstBin = FourierFrequency2Bin(1.0 / 100, sunspotHistory.Size(), sampleRate);
+	const size_t firstBin = FourierFrequency2Bin(1.0 / 100, sunspotHistory.size(), sampleRate);
 	const auto maxBinIt = std::max_element(amplitude.begin() + firstBin, amplitude.end());
 	const size_t maxBin = maxBinIt - amplitude.begin();
-	const float solarCycleFrequency = (float)FourierBin2Frequency(maxBin, sunspotHistory.Size(), sampleRate);
+	const float solarCycleFrequency = (float)FourierBin2Frequency(maxBin, sunspotHistory.size(), sampleRate);
 	const float solarCyclePeriod = 1.0f / solarCycleFrequency;
 
 	// Should be about 11 years.
