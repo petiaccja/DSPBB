@@ -1,4 +1,4 @@
-## Mathter CMake
+## DSPBB CMake
 project(DSPBB)
 
 cmake_minimum_required(VERSION 3.15.0)
@@ -8,7 +8,6 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 # Cpp flags
 enable_language(CXX)
-set(CMAKE_CXX_STANDARD 17)
 
 option(ENABLE_LLVM_COV "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(ENABLE_LLVM_ADDRESS_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)

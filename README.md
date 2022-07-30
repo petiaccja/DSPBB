@@ -3,7 +3,7 @@
 
 ![Language](https://img.shields.io/badge/Language-C++17-blue)
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
-![Build](https://github.com/petiaccja/DSPBB/workflows/Build/badge.svg)
+[![Build & test](https://github.com/petiaccja/DSPBB/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/petiaccja/DSPBB/actions/workflows/build_and_test.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=petiaccja_DSPBB&metric=alert_status)](https://sonarcloud.io/dashboard?id=petiaccja_DSPBB)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=petiaccja_DSPBB&metric=coverage)](https://sonarcloud.io/dashboard?id=petiaccja_DSPBB)
 

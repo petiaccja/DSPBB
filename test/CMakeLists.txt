@@ -1,4 +1,3 @@
-# Enumerate sources
 add_executable(UnitTest)
 
 target_sources(UnitTest PRIVATE main.cpp)
