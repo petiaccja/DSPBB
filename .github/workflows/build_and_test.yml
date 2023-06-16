@@ -46,6 +46,9 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@v3
     - uses: seanmiddleditch/gha-setup-vsdevenv@master
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
     - name: Install conan
       shell: bash
       env:
