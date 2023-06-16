@@ -4,12 +4,14 @@
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 
 using namespace dspbb;
 using namespace std::complex_literals;
 using real_t = double;
+using Catch::Approx;
 
 
 const DiscreteZeroPoleGain<real_t> sys = {

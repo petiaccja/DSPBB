@@ -1,9 +1,12 @@
 #include "dspbb/Generators/Waveforms.hpp"
 #include <dspbb/Filtering/Polyphase.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+
 
 using namespace dspbb;
+using Catch::Approx;
 
 
 TEST_CASE("Polyphase view filter non-uniform", "[Polyphase]") {

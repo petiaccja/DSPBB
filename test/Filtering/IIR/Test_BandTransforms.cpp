@@ -1,10 +1,13 @@
 #include <dspbb/Filtering/IIR/BandTransforms.hpp>
 #include <dspbb/Filtering/MeasureFilter.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;
+using Catch::Approx;
+
 
 const DiscreteZeroPoleGain<float> prototype = {
 	0.166666672f,

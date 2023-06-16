@@ -1,9 +1,12 @@
 #include <dspbb/Kernels/Convolution.hpp>
 
 #include <array>
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+
 
 using namespace dspbb;
+using Catch::Approx;
 
 
 constexpr std::array<float, 20> ur = { 1, 3, 7, 2, 9, 2, 5, 3, 7, 2, 4, 7, 3, 6, 3, 9, 3, 5, 3, 5 };

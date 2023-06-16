@@ -1,10 +1,13 @@
 #include <dspbb/LTISystems/DiscretizationTransforms.hpp>
 #include <dspbb/Utility/Numbers.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+
 
 using namespace dspbb;
 using namespace std::complex_literals;
+using Catch::Approx;
 
 
 TEST_CASE("Bilinear C->D", "[DiscreteizationTransforms]") {

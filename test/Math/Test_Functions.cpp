@@ -1,12 +1,16 @@
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 #include <cmath>
 #include <complex>
 
+
 using namespace dspbb;
 using namespace std::complex_literals;
+using Catch::Approx;
+
 
 template <class T>
 auto iden(T arg) {

@@ -8,9 +8,13 @@
 #include <dspbb/Primitives/Signal.hpp>
 
 #include <algorithm>
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+
 
 using namespace dspbb;
+using Catch::Approx;
+
 
 constexpr uint64_t sampleRate = 16000;
 constexpr float frequency = 2000;

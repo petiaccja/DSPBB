@@ -3,11 +3,15 @@
 #include <dspbb/Math/RootTransforms.hpp>
 
 #include <array>
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 #include <complex>
+
 
 using namespace dspbb;
 using namespace std::complex_literals;
+using Catch::Approx;
+
 
 const FactoredPolynomial<float> rootsDouble = {
 	1.0f, 2.0f, 3.0f + 2.0if, 3.0f - 2.0if

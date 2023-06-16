@@ -1,11 +1,13 @@
 #include <dspbb/Math/Convolution.hpp>
 
 #include <array>
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <complex>
+
 
 using namespace dspbb;
 using namespace std::complex_literals;
+
 
 constexpr std::array<float, 20> ur = { 1, 3, 7, 2, 9, 2, 5, 3, 7, 2, 4, 7, 3, 6, 3, 9, 3, 5, 3, 5 };
 constexpr std::array<float, 12> vr = { 4, 3, 5, 2, 6, 3, 2, 7, 8, 5, 3, 3 };

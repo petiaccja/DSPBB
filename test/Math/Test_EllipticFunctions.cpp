@@ -3,11 +3,14 @@
 #include <dspbb/Math/EllipticFunctions.hpp>
 #include <dspbb/Utility/Numbers.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 
 using namespace dspbb;
 using namespace std::complex_literals;
+using Catch::Approx;
+
 
 //------------------------------------------------------------------------------
 // Carlson symmetric forms
@@ -137,7 +140,7 @@ TEST_CASE("Elliptic SNCNDN special values", "[Elliptic functions]") {
 
 	for (auto& value : values) {
 		INFO("z=" << value.z << "|"
-				  << "k=" << value.k)
+				  << "k=" << value.k);
 		auto [ysn, ycn, ydn] = EllipticSNCNDN(value.z, value.k);
 		ysn = abs(ysn) > 1e+8 ? inf : ysn;
 		ycn = abs(ysn) > 1e+8 ? inf : ycn;
@@ -199,7 +202,7 @@ TEST_CASE("Elliptic SNCNDN degeneration at k=1 - tiny", "[Elliptic functions]") 
 TEST_CASE("Elliptic SNCNDN half argument identity", "[Elliptic functions]") {
 	const double k = 0.17;
 	for (auto& z : zs) {
-		INFO("z=" << z)
+		INFO("z=" << z);
 		const auto [halfsn, halfcn, halfdn] = EllipticSNCNDN(z / 2.0, k);
 		const auto [fullsn, fullcn, fulldn] = EllipticSNCNDN(z, k);
 		REQUIRE(halfsn * halfsn == ApproxComplex((1.0 - fullcn) / (1.0 + fulldn)).margin(1e-15));
@@ -211,7 +214,7 @@ TEST_CASE("Elliptic SNCNDN half argument identity", "[Elliptic functions]") {
 TEST_CASE("Elliptic SNCNDN imaginary transformations identity", "[Elliptic functions]") {
 	const double k = 0.17;
 	for (auto& z : zs) {
-		INFO("z=" << z)
+		INFO("z=" << z);
 		const auto [rotsn, rotcn, rotdn] = EllipticSNCNDN(1.0i * z, k);
 		const auto [ysn, ycn, ydn] = EllipticSNCNDN(z, std::sqrt(1.0 - k * k));
 		REQUIRE(rotsn == ApproxComplex(1.0i * ysn / ycn).margin(1e-15));
@@ -225,7 +228,7 @@ TEST_CASE("Elliptic SNCNDN descending Landen transformations identity", "[Ellipt
 	const double kp = std::sqrt(1.0 - k * k);
 	const double k1 = (1.0 - kp) / (1.0 + kp);
 	for (auto& z : zs) {
-		INFO("z=" << z)
+		INFO("z=" << z);
 		const auto [ysn, ycn, ydn] = EllipticSNCNDN(z, k);
 		const auto [ysn1, ycn1, ydn1] = EllipticSNCNDN(z / (1.0 + k1), k1);
 		REQUIRE(ysn == ApproxComplex((1.0 + k1) * ysn1 / (1.0 + k1 * ysn1 * ysn1)).margin(1e-15));
@@ -239,7 +242,7 @@ TEST_CASE("Elliptic SNCNDN ascending Landen transformations identity", "[Ellipti
 	const double k2 = 2.0 * std::sqrt(k) / (1.0 + k);
 	const double k2p = (1.0 - k) / (1.0 + k);
 	for (auto& z : zs) {
-		INFO("z=" << z)
+		INFO("z=" << z);
 		const auto [ysn, ycn, ydn] = EllipticSNCNDN(z, k);
 		const auto [ysn2, ycn2, ydn2] = EllipticSNCNDN(z / (1.0 + k2p), k2);
 		REQUIRE(ysn == ApproxComplex((1.0 + k2p) * ysn2 * ycn2 / ydn2).margin(1e-15f));

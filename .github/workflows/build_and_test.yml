@@ -48,8 +48,15 @@ jobs:
 
     - name: Install conan
       shell: bash
+      env:
+        CC: ${{matrix.c_compiler}}
+        CXX: ${{matrix.cxx_compiler}}
       run: |
         pip install conan
+        conan profile detect --name ci --force
+        sed -i 's/build_type=.*/build_type=${{ matrix.build_type }}/g' $(conan profile path ci)
+        echo '[conf]'' >> $(conan profile path ci)
+        echo 'tools.build:compiler_executables={"cpp": "${{ matrix.cxx_compiler }}", "c": "${{ matrix.c_compiler }}"}' >> $(conan profile path ci)
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -60,7 +67,9 @@ jobs:
       env:
         CC: ${{matrix.c_compiler}}
         CXX: ${{matrix.cxx_compiler}}
-      run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }}
+      run: |
+        conan install .. --output-folder=. --build=missing -pr ci -pr:b ci -s build_type=${{ matrix.build_type }}
+        cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
