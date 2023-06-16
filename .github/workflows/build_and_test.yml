@@ -49,8 +49,8 @@ jobs:
     - name: Install conan
       shell: bash
       env:
-        CC: "${{ matrix.c_compiler != 'cl' && 'matrix.c_compiler' || '' }}"
-        CXX: "${{ matrix.cxx_compiler != 'cl' && 'matrix.cxx_compiler' || '' }}"
+        CC: "${{ matrix.c_compiler != 'cl' && matrix.c_compiler || '' }}"
+        CXX: "${{ matrix.cxx_compiler != 'cl' && matrix.cxx_compiler || '' }}"
       run: |
         pip install conan
         conan profile detect --name ci --force
