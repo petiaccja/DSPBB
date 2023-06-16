@@ -54,10 +54,7 @@ jobs:
       run: |
         pip install conan
         conan profile detect --name ci --force
-        sed -i 's/build_type=.*/build_type=${{ matrix.build_type }}/g' $(conan profile path ci)
-        sed -i 's/compiler.cppstd=.*/compiler.cppstd=${{ matrix.cxx_standard }}/g' $(conan profile path ci)
-        echo '[conf]' >> $(conan profile path ci)
-        echo 'tools.build:compiler_executables={"cpp": "${{ matrix.cxx_compiler }}", "c": "${{ matrix.c_compiler }}"}' >> $(conan profile path ci)
+        python $GITHUB_WORKSPACE/support/update-conan-profile $(conan profile path ci) ${{matrix.build_type}} ${{matrix.c_compiler}} ${{matrix.cxx_compiler}} ${{matrix.cxx_standard}}
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
