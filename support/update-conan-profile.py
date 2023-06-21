@@ -13,5 +13,6 @@ text = re.sub("build_type=.*", f"build_type={build_type}", text)
 text = re.sub("compiler.cppstd=.*", f"compiler.cppstd={cxx_standard}", text)
 text = text + "\n[conf]"
 text = text + f"\ntools.build:compiler_executables={{\"cpp\": \"{cxx_compiler}\", \"c\": \"{ c_compiler }\"}}"
+text = text + "\ntools.cmake.cmaketoolchain:generator=Ninja"
 path.unlink()
 path.write_text(text)
