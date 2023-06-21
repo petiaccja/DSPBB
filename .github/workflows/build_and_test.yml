@@ -29,6 +29,10 @@ jobs:
             test_name: .\Bin\UnitTest.exe
           - os: ubuntu-latest
             test_name: ./Bin/UnitTest
+          - build_type: Debug
+            conan_preset: "conan-debug"
+          - build_type: Release
+            conan_preset: "conan-release"
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -67,7 +71,7 @@ jobs:
         CXX: ${{matrix.cxx_compiler}}
       run: |
         conan install $GITHUB_WORKSPACE --output-folder=. --build=missing -pr ci -pr:b ci -s build_type=${{ matrix.build_type }}
-        cmake $GITHUB_WORKSPACE --preset conan-${{ matrix.build_type.toLowerCase() }}
+        cmake $GITHUB_WORKSPACE --preset ${{ matrix.conan_preset }}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
