@@ -30,8 +30,13 @@ jobs:
           java-version: 11
       - name: Install conan
         shell: bash
+        env:
+          CC: clang
+          CXX: clang++
         run: |
           pip install conan
+          conan profile detect --name ci --force
+          python $GITHUB_WORKSPACE/support/update-conan-profile.py $(conan profile path ci) Debug $CC $CXX 17
 
       - name: Download and set up sonar-scanner
         env:
@@ -59,7 +64,9 @@ jobs:
         env:
           CC: clang
           CXX: clang++
-        run: cmake $GITHUB_WORKSPACE -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_LLVM_COV=ON
+        run: |
+          conan install $GITHUB_WORKSPACE --output-folder=. --build=missing -pr ci -pr:b ci -s build_type=Debug
+          cmake $GITHUB_WORKSPACE --preset conan-debug
 
       - name: Run build-wrapper
         run: |
