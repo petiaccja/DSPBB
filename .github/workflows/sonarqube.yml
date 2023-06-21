@@ -66,7 +66,7 @@ jobs:
           CXX: clang++
         run: |
           conan install $GITHUB_WORKSPACE --output-folder=. --build=missing -pr ci -pr:b ci -s build_type=Debug
-          cmake $GITHUB_WORKSPACE --preset conan-debug
+          cmake $GITHUB_WORKSPACE --preset conan-debug -DENABLE_LLVM_COV:BOOL=ON
 
       - name: Run build-wrapper
         run: |
