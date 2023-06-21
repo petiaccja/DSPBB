@@ -1,8 +1,8 @@
 #include <dspbb/Filtering/IIR/BandTransforms.hpp>
 #include <dspbb/Filtering/MeasureFilter.hpp>
 
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace dspbb;
 using namespace std::complex_literals;

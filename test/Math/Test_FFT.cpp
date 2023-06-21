@@ -8,8 +8,8 @@
 #include <dspbb/Primitives/Signal.hpp>
 
 #include <algorithm>
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 
 using namespace dspbb;

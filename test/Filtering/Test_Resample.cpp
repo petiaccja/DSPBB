@@ -3,8 +3,8 @@
 #include <dspbb/Filtering/Resample.hpp>
 #include <dspbb/Math/Convolution.hpp>
 
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 
 
