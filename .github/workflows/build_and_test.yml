@@ -64,7 +64,7 @@ jobs:
       id: cache-conan
       uses: actions/cache@v3
       with:
-        path: ~/.conan/p
+        path: ~/.conan2/p
         key: conan-cache-packages-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.cxx_standard }}
 
     - name: Create Build Environment
