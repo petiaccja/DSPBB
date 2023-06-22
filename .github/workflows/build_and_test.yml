@@ -60,6 +60,13 @@ jobs:
         conan profile detect --name ci --force
         python $GITHUB_WORKSPACE/support/update-conan-profile.py $(conan profile path ci) ${{matrix.build_type}} ${{matrix.c_compiler}} ${{matrix.cxx_compiler}} ${{matrix.cxx_standard}}
 
+    - name: Cache conan packages
+      id: cache-conan
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan/p
+        key: conan-cache-packages-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.cxx_standard }}
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
@@ -71,6 +78,7 @@ jobs:
         CXX: ${{matrix.cxx_compiler}}
       run: |
         conan install $GITHUB_WORKSPACE --output-folder=. --build=missing -pr ci -pr:b ci -s build_type=${{ matrix.build_type }}
+        conan cache clean
         cmake $GITHUB_WORKSPACE --preset ${{ matrix.conan_preset }}
 
     - name: Build

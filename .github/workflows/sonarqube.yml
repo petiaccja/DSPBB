@@ -38,6 +38,13 @@ jobs:
           conan profile detect --name ci --force
           python $GITHUB_WORKSPACE/support/update-conan-profile.py $(conan profile path ci) Debug $CC $CXX 17
 
+      - name: Cache conan packages
+        id: cache-conan
+        uses: actions/cache@v3
+        with:
+          path: ~/.conan/p
+          key: conan-cache-packages-sonarqube
+
       - name: Download and set up sonar-scanner
         env:
           SONAR_SCANNER_DOWNLOAD_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
@@ -66,6 +73,7 @@ jobs:
           CXX: clang++
         run: |
           conan install $GITHUB_WORKSPACE --output-folder=. --build=missing -pr ci -pr:b ci -s build_type=Debug
+          conan cache clean
           cmake $GITHUB_WORKSPACE --preset conan-debug -DENABLE_LLVM_COV:BOOL=ON
 
       - name: Run build-wrapper
