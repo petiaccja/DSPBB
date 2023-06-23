@@ -1,9 +1,13 @@
 #include "dspbb/Utility/Numbers.hpp"
 #include <dspbb/Math/Solvers.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+
 
 using namespace dspbb;
+using Catch::Approx;
+
 
 TEST_CASE("Bisect exponential", "[Solvers]") {
 	const auto f = [](auto x) { return std::exp(x) - 2; };

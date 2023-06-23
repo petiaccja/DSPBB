@@ -36,6 +36,16 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifdef _MSC_VER
+#pragma system_header
+#endif
+#ifdef __GCC__
+#pragma GCC system_header
+#endif
+#ifdef __clang__
+#pragma clang system_header
+#endif
+
 #ifndef POCKETFFT_HDRONLY_H
 #define POCKETFFT_HDRONLY_H
 

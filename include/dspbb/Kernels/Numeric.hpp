@@ -172,12 +172,12 @@ Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, ReduceOp reduceO
 
 template <class T, class U, class Arch, class Init>
 Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, plus_compensated<U>) {
-	return init + xsimd::hadd(batch);
+	return init + xsimd::reduce_add(batch);
 }
 
 template <class T, class U, class Arch, class Init>
 Init ReduceBatch(const xsimd::batch<T, Arch>& batch, Init init, std::plus<U>) {
-	return init + xsimd::hadd(batch);
+	return init + xsimd::reduce_add(batch);
 }
 
 template <class T, class Init, class ReduceOp>

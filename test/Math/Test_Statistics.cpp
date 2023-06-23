@@ -1,11 +1,16 @@
 #include <dspbb/Math/Statistics.hpp>
 #include <dspbb/Primitives/Signal.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <complex>
+#include <random>
+
 
 using namespace dspbb;
 using namespace std::complex_literals;
+using Catch::Approx;
+
 
 TEST_CASE("CentralMoment #0 and #1", "[Statistics]") {
 	Signal<float> s = { 2, 4, 4, 4, 5, 5, 7, 9 };

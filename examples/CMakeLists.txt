@@ -6,13 +6,6 @@ add_executable(04_FIR_Filtering "04_FIR_Filtering.cpp" "RtAudio/RtAudio.cpp" "To
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/examples)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/examples)
 
-conan_cmake_configure(
-	REQUIRES
-		libsndfile/1.0.31
-	GENERATORS cmake_find_package
-)
-conan_cmake_install(PATH_OR_REFERENCE . BUILD missing SETTINGS ${conan_settings} OUTPUT_QUIET)
-
 if (${CMAKE_CXX_COMPILER} MATCHES "MSVC")
 	target_compile_options(01_Basics PRIVATE "/bigobj")
 	target_compile_options(02_FFT PRIVATE "/bigobj")
@@ -25,7 +18,7 @@ find_package(SndFile REQUIRED)
 target_link_libraries(01_Basics DSPBB)
 target_link_libraries(02_FFT DSPBB)
 target_link_libraries(03_IIR_Filtering DSPBB)
-target_link_libraries(04_FIR_Filtering DSPBB SndFile::SndFile)
+target_link_libraries(04_FIR_Filtering DSPBB SndFile::sndfile)
 
 set(DSPBB_EXAMPLES_DATA "\"${CMAKE_CURRENT_SOURCE_DIR}/data/\"")
 target_compile_definitions(02_FFT PRIVATE "-DDSPBB_EXAMPLES_DATA=${DSPBB_EXAMPLES_DATA}")

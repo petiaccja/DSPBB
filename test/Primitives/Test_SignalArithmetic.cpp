@@ -5,9 +5,13 @@
 #include <dspbb/Primitives/SignalView.hpp>
 
 #include <array>
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
+
 
 using namespace dspbb;
+
 
 static_assert(is_mutable_signal_v<BasicSignal<float, TIME_DOMAIN>>, "");
 static_assert(is_mutable_signal_v<BasicSignal<float, TIME_DOMAIN>&>, "");

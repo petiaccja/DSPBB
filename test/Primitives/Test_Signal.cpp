@@ -1,10 +1,12 @@
 #include <dspbb/Primitives/Signal.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <complex>
+
 
 using namespace dspbb;
 using namespace std::complex_literals;
+
 
 TEST_CASE("Signal - Default construct", "[Signal]") {
 	Signal<float> s;

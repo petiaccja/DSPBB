@@ -1,10 +1,13 @@
 #include <dspbb/Math/Rational.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <random>
 
 
 using namespace dspbb;
+using Catch::Approx;
+
 
 TEST_CASE("Rational create whole", "[Rational]") {
 	constexpr Rational r{ 6 };

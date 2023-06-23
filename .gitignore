@@ -252,3 +252,7 @@ _Pvt_Extensions
 ParameterExtraction/training/saved_networks/
 
 *.asv
+
+build/
+
+CMakeUserPresets.json

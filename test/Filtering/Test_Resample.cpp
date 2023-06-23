@@ -3,10 +3,13 @@
 #include <dspbb/Filtering/Resample.hpp>
 #include <dspbb/Math/Convolution.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 
+
 using namespace dspbb;
+using Catch::Approx;
 
 
 template <class SignalT>
@@ -48,7 +51,7 @@ TEST_CASE("Interpolation full", "[Interpolation]") {
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, 0, length);
 		const auto answer = Interpolate(signal, polyphase, 0, length);
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(reference.size() == answer.size());
 		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
 	}
@@ -67,7 +70,7 @@ TEST_CASE("Interpolation central", "[Interpolation]") {
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, filterSize - 1, length);
 		const auto answer = Interpolate(signal, polyphase, filterSize - 1, length);
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(reference.size() == answer.size());
 		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
 	}
@@ -259,7 +262,7 @@ TEST_CASE("Resampling spectrum invariance - upsample mild", "[Interpolation]") {
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(similarity > 0.98f);
 	}
 }
@@ -280,7 +283,7 @@ TEST_CASE("Resampling spectrum invariance - upsample strong", "[Interpolation]")
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(similarity > 0.98f);
 	}
 }
@@ -301,7 +304,7 @@ TEST_CASE("Resampling spectrum invariance - downsample mild", "[Interpolation]")
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(similarity > 0.98f);
 	}
 }
@@ -322,7 +325,7 @@ TEST_CASE("Resampling spectrum invariance - downsample strong", "[Interpolation]
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
 		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(similarity > 0.98f);
 	}
 }
@@ -368,7 +371,7 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 		const auto resamplingDelay = ResampleDelay(filterSize, supersamplingRate, { inputRate, outputRate });
 		const double crossingExpected = double(resamplingDelay) + crossingSignal * outputRate / inputRate;
 
-		INFO("filterSize=" << filterSize)
+		INFO("filterSize=" << filterSize);
 		REQUIRE(crossingExpected == Approx(crossingResampled));
 	}
 }
