@@ -1,10 +1,9 @@
 #pragma once
 
 #include "../Math/Functions.hpp"
+#include "../PocketFFT/pocketfft_hdronly.h"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
-
-#include "../PocketFFT/pocketfft_hdronly.h"
 
 #include <algorithm>
 
