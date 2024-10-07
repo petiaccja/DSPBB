@@ -11,8 +11,8 @@ enable_language(CXX)
 option(ENABLE_LLVM_COV "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(ENABLE_LLVM_ADDRESS_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 option(ENABLE_LLVM_MEMORY_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
-option(BUILD_EXAMPLES "Include or exclude examples in the project." ON)
-option(BUILD_BENCHMARKS "Include or exclude benchmarks in the project." ON)
+option(DSPBB_BUILD_EXAMPLES "Include or exclude examples in the project." ON)
+option(DSPBB_BUILD_BENCHMARKS "Include or exclude benchmarks in the project." ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (ENABLE_LLVM_COV)
@@ -52,17 +52,17 @@ find_package(Threads REQUIRED)
 link_libraries(Threads::Threads)
 
 # Output directories
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Subdirectories
 add_subdirectory(include/dspbb)
 add_subdirectory(test)
-if (${BUILD_EXAMPLES})
+if (${DSPBB_BUILD_EXAMPLES})
 	add_subdirectory(examples)
 endif()
-if (${BUILD_BENCHMARKS})
+if (${DSPBB_BUILD_BENCHMARKS})
 	add_subdirectory(benchmark)
 endif()
 
