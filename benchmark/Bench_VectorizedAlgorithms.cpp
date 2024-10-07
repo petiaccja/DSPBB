@@ -55,16 +55,16 @@ static std::uniform_real_distribution<float> randomFloat(-1, 1);
 template <class T>
 class RandomArrayFixture : public celero::TestFixture {
 public:
-	std::vector<ExperimentValue> getExperimentValues() const override {
-		std::vector<ExperimentValue> experimentValues;
+	std::vector<std::shared_ptr<ExperimentValue>> getExperimentValues() const override {
+		std::vector<std::shared_ptr<ExperimentValue>> experimentValues;
 		std::transform(reductionSizes.begin(), reductionSizes.end(), std::back_inserter(experimentValues), [](size_t size) {
-			return ExperimentValue{ int64_t(size), std::max(int64_t(1), int64_t(5 * 1048576 / size)) };
+			return std::make_shared<ExperimentValue>(int64_t(size), std::max(int64_t(1), int64_t(5 * 1048576 / size)));
 		});
 		return experimentValues;
 	}
 
-	void setUp(const ExperimentValue& experimentValue) override {
-		size_t arraySize = experimentValue.Value;
+	void setUp(const ExperimentValue* experimentValue) override {
+		size_t arraySize = experimentValue->Value;
 		array = std::vector<T>(arraySize);
 		std::array<T, 16> pattern;
 		for (auto& v : pattern) {
@@ -83,16 +83,16 @@ public:
 template <class T>
 class RandomArray2Fixture : public celero::TestFixture {
 public:
-	std::vector<ExperimentValue> getExperimentValues() const override {
-		std::vector<ExperimentValue> experimentValues;
+	std::vector<std::shared_ptr<ExperimentValue>> getExperimentValues() const override {
+		std::vector<std::shared_ptr<ExperimentValue>> experimentValues;
 		std::transform(reductionSizes.begin(), reductionSizes.end(), std::back_inserter(experimentValues), [](size_t size) {
-			return ExperimentValue{ int64_t(size), std::max(int64_t(1), int64_t(5 * 1048576 / size)) };
+			return std::make_shared<ExperimentValue>(int64_t(size), std::max(int64_t(1), int64_t(5 * 1048576 / size)));
 		});
 		return experimentValues;
 	}
 
-	void setUp(const ExperimentValue& experimentValue) override {
-		size_t arraySize = experimentValue.Value;
+	void setUp(const ExperimentValue* experimentValue) override {
+		size_t arraySize = experimentValue->Value;
 		array1 = std::vector<T>(arraySize);
 		array2 = std::vector<T>(arraySize);
 		std::array<T, 16> pattern;
@@ -117,16 +117,16 @@ public:
 template <class T>
 class RandomArray3Fixture : public celero::TestFixture {
 public:
-	std::vector<ExperimentValue> getExperimentValues() const override {
-		std::vector<ExperimentValue> experimentValues;
+	std::vector<std::shared_ptr<ExperimentValue>> getExperimentValues() const override {
+		std::vector<std::shared_ptr<ExperimentValue>> experimentValues;
 		std::transform(reductionSizes.begin(), reductionSizes.end(), std::back_inserter(experimentValues), [](size_t size) {
-			return ExperimentValue{ int64_t(size), std::max(int64_t(1), int64_t(5 * 1048576 / size)) };
+			return std::make_shared<ExperimentValue>(int64_t(size), std::max(int64_t(1), int64_t(5 * 1048576 / size)));
 		});
 		return experimentValues;
 	}
 
-	void setUp(const ExperimentValue& experimentValue) override {
-		size_t arraySize = experimentValue.Value;
+	void setUp(const ExperimentValue* experimentValue) override {
+		size_t arraySize = experimentValue->Value;
 		array1 = std::vector<T>(arraySize);
 		array2 = std::vector<T>(arraySize);
 		array3 = std::vector<T>(arraySize, T(0));

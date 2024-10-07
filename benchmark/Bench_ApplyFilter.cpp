@@ -32,17 +32,17 @@ static std::uniform_real_distribution<float> randomFloat(-1, 1);
 template <class T, int64_t MinOrder = 1, int64_t MaxOrder = maxFirOrder, int64_t MaxIter = 16384>
 class FirFilterFixture : public celero::TestFixture {
 public:
-	std::vector<ExperimentValue> getExperimentValues() const override {
-		std::vector<ExperimentValue> experimentValues;
+	std::vector<std::shared_ptr<ExperimentValue>> getExperimentValues() const override {
+		std::vector<std::shared_ptr<ExperimentValue>> experimentValues;
 		for (size_t filterOrder = MinOrder; filterOrder <= MaxOrder; filterOrder *= 2) {
 			size_t iterations = std::clamp(int64_t(complexityLimit / (filterOrder * signalSize)), int64_t(1), MaxIter);
-			experimentValues.emplace_back(int64_t(filterOrder), iterations);
+			experimentValues.emplace_back(std::make_shared<ExperimentValue>(int64_t(filterOrder), iterations));
 		};
 		return experimentValues;
 	}
 
-	void setUp(const ExperimentValue& experimentValue) override {
-		size_t filterOrder = experimentValue.Value;
+	void setUp(const ExperimentValue* experimentValue) override {
+		size_t filterOrder = experimentValue->Value;
 		out = Signal<T>(ConvolutionLength(signalSize, filterOrder + 1, CONV_FULL));
 		signal = Signal<T>(signalSize);
 		filter = Signal<T>(filterOrder + 1);
@@ -70,17 +70,17 @@ public:
 template <class T, int64_t MaxOrder>
 class DesignFilterFixture : public celero::TestFixture {
 public:
-	std::vector<ExperimentValue> getExperimentValues() const override {
-		std::vector<ExperimentValue> experimentValues;
+	std::vector<std::shared_ptr<ExperimentValue>> getExperimentValues() const override {
+		std::vector<std::shared_ptr<ExperimentValue>> experimentValues;
 		for (size_t filterOrder = 1; filterOrder <= MaxOrder; filterOrder += 1) {
 			size_t iterations = 50 / filterOrder;
-			experimentValues.emplace_back(int64_t(filterOrder), iterations);
+			experimentValues.emplace_back(std::make_shared<ExperimentValue>(int64_t(filterOrder), iterations));
 		};
 		return experimentValues;
 	}
 
-	void setUp(const ExperimentValue& experimentValue) override {
-		size_t filterOrder = experimentValue.Value;
+	void setUp(const ExperimentValue* experimentValue) override {
+		size_t filterOrder = experimentValue->Value;
 		out = Signal<T>(signalSize);
 		signal = Signal<T>(signalSize);
 		std::array<T, 16> pattern;

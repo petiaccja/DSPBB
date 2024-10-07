@@ -4,7 +4,6 @@
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
 
-#pragma warning
 #include "../PocketFFT/pocketfft_hdronly.h"
 
 #include <algorithm>

@@ -49,20 +49,20 @@ static std::uniform_real_distribution<float> randomFloat(-1, 1);
 template <class T, size_t SignalSize>
 class ConvolutionFixture : public celero::TestFixture {
 public:
-	std::vector<ExperimentValue> getExperimentValues() const override {
-		std::vector<ExperimentValue> experimentValues;
+	std::vector<std::shared_ptr<ExperimentValue>> getExperimentValues() const override {
+		std::vector<std::shared_ptr<ExperimentValue>> experimentValues;
 		for (auto& filterSize : filterSizes) {
 			const auto complexity = filterSize * SignalSize;
 			const auto iterations = complexityLimit / complexity;
 			if (iterations > 0) {
-				experimentValues.emplace_back(int64_t(filterSize), std::max(int64_t(1), int64_t(iterations)));
+				experimentValues.emplace_back(std::make_shared<ExperimentValue>(int64_t(filterSize), std::max(int64_t(1), int64_t(iterations))));
 			}
 		};
 		return experimentValues;
 	}
 
-	void setUp(const ExperimentValue& experimentValue) override {
-		size_t filterSize = experimentValue.Value;
+	void setUp(const ExperimentValue* experimentValue) override {
+		size_t filterSize = experimentValue->Value;
 		out = std::vector<T>(ConvolutionLength(SignalSize, filterSize, CONV_FULL));
 		signal = std::vector<T>(SignalSize);
 		filter = std::vector<T>(filterSize);

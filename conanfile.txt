@@ -1,10 +1,12 @@
 [requires]
-xsimd/11.1.0
+xsimd/13.0.0
 eigen/3.4.0
-catch2/3.3.2
-celero/2.8.2
-libsndfile/1.2.0
+catch2/3.7.0
+celero/2.9.0
 
 [generators]
 CMakeDeps
 CMakeToolchain
+
+[layout]
+cmake_layout
