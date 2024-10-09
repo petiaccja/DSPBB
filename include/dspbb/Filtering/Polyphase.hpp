@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../Math/Statistics.hpp"
-#include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalView.hpp"
+#include "../Signal/Signal.hpp"
+#include "../Signal/SignalView.hpp"
 #include "FIR.hpp"
 
 

@@ -34,9 +34,9 @@ target_sources(UnitTest
 		"Math/Test_RootTransforms.cpp"
 		"Math/Test_Solvers.cpp"
 		"Math/Test_Statistics.cpp"
-		"Primitives/Test_Signal.cpp"
-		"Primitives/Test_SignalArithmetic.cpp"
-		"Primitives/Test_SignalView.cpp"
+		"Signal/Test_Signal.cpp"
+		"Signal/Test_Arithmetic.cpp"
+		"Signal/Test_SignalView.cpp"
 		"Utility/Test_Interval.cpp"
 )
 

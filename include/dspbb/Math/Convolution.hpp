@@ -3,8 +3,8 @@
 #include "../Kernels/Convolution.hpp"
 #include "../Math/Convolution.hpp"
 #include "../Math/DotProduct.hpp"
-#include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalView.hpp"
+#include "../Signal/Signal.hpp"
+#include "../Signal/SignalView.hpp"
 #include "../Utility/TypeTraits.hpp"
 
 #include <complex>

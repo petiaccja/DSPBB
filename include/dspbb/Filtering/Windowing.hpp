@@ -3,8 +3,8 @@
 #include "../Generators/Spaces.hpp"
 #include "../Math/FFT.hpp"
 #include "../Math/Statistics.hpp"
-#include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalView.hpp"
+#include "../Signal/Signal.hpp"
+#include "../Signal/SignalView.hpp"
 #include "../Utility/Numbers.hpp"
 #include "../Utility/TypeTraits.hpp"
 

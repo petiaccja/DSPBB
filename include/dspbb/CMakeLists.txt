@@ -58,7 +58,7 @@ target_sources(DSPBB
         # Primitives
         "Signal.hpp"
         "SignalArithmetic.hpp"
-        "SignalTraits.hpp"
+        "Traits.hpp"
         "SignalView.hpp"
         
         # Utility

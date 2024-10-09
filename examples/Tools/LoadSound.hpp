@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Signal/Signal.hpp>
 
 #include <filesystem>
 

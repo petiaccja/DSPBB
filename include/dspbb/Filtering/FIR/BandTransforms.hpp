@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Primitives/SignalTraits.hpp"
+#include "../../Signal/Traits.hpp"
 #include "../../Utility/Numbers.hpp"
 
 #include <array>

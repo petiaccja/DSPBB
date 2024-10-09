@@ -3,9 +3,9 @@
 #include "../Generators/Spaces.hpp"
 #include "../Math/DotProduct.hpp"
 #include "../Math/Rational.hpp"
-#include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalTraits.hpp"
-#include "../Primitives/SignalView.hpp"
+#include "../Signal/Signal.hpp"
+#include "../Signal/SignalView.hpp"
+#include "../Signal/Traits.hpp"
 #include "Polyphase.hpp"
 
 namespace dspbb {

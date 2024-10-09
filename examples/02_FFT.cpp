@@ -10,7 +10,7 @@
 
 #include <dspbb/Filtering/Windowing.hpp>
 #include <dspbb/Math/FFT.hpp>
-#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Signal/Signal.hpp>
 
 #include <fstream>
 #include <iostream>

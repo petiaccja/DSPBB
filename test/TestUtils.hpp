@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Signal/Signal.hpp>
 #include <dspbb/Utility/TypeTraits.hpp>
 
 #include <catch2/catch_approx.hpp>

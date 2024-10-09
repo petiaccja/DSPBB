@@ -1,8 +1,8 @@
 #include "../TestUtils.hpp"
 
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalArithmetic.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
+#include <dspbb/Signal/Arithmetic.hpp>
+#include <dspbb/Signal/Signal.hpp>
+#include <dspbb/Signal/SignalView.hpp>
 
 #include <array>
 #include <catch2/catch_approx.hpp>

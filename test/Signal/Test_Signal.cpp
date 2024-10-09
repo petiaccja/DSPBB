@@ -1,4 +1,4 @@
-#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Signal/Signal.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <complex>

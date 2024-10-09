@@ -5,7 +5,7 @@
 #include <dspbb/Math/FFT.hpp>
 #include <dspbb/Math/Functions.hpp>
 #include <dspbb/Math/Statistics.hpp>
-#include <dspbb/Primitives/Signal.hpp>
+#include <dspbb/Signal/Signal.hpp>
 
 #include <algorithm>
 #include <catch2/catch_approx.hpp>

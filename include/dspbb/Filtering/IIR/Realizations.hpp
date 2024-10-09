@@ -2,7 +2,7 @@
 
 #include "../../LTISystems/Systems.hpp"
 #include "../../Math/DotProduct.hpp"
-#include "../../Primitives/Signal.hpp"
+#include "../../Signal/Signal.hpp"
 
 #include <algorithm>
 

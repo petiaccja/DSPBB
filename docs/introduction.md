@@ -23,8 +23,8 @@ What DSPBB brings to the table:
 
 Let's look at a simplified crossfeed implementation:
 ```c++
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
+#include <dspbb/Signal/Signal.hpp>
+#include <dspbb/Signal/SignalView.hpp>
 #include <dspbb/Filtering/IIR.hpp>
 
 using namespace dspbb;

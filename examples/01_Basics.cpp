@@ -10,8 +10,8 @@
 // will see the most, and some other functionality.
 #include <dspbb/Filtering/Windowing.hpp>
 #include <dspbb/Generators/Waveforms.hpp>
-#include <dspbb/Primitives/Signal.hpp>
-#include <dspbb/Primitives/SignalView.hpp>
+#include <dspbb/Signal/Signal.hpp>
+#include <dspbb/Signal/SignalView.hpp>
 
 #include <iostream>
 

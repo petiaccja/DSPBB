@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Primitives/Signal.hpp"
+#include "../../Signal/Signal.hpp"
 #include "../FilterUtility.hpp"
 #include "../Windowing.hpp"
 

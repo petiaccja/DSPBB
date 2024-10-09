@@ -2,7 +2,7 @@
 
 #include "../../Math/Convolution.hpp"
 #include "../../Math/OverlapAdd.hpp"
-#include "../../Primitives/SignalTraits.hpp"
+#include "../../Signal/Traits.hpp"
 #include "../../Utility/TypeTraits.hpp"
 
 #include <cassert>

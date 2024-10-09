@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../Math/Functions.hpp"
-#include "../Primitives/Signal.hpp"
-#include "../Primitives/SignalTraits.hpp"
+#include "../Signal/Signal.hpp"
+#include "../Signal/Traits.hpp"
 #include "../Utility/TypeTraits.hpp"
 
 #include <numeric>

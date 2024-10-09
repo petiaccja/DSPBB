@@ -2,7 +2,7 @@
 
 #include "../Kernels/Functors.hpp"
 #include "../Kernels/Numeric.hpp"
-#include "SignalTraits.hpp"
+#include "Traits.hpp"
 
 #include <functional>
 

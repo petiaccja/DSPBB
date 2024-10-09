@@ -1,4 +1,5 @@
-#include <dspbb/Primitives/SignalView.hpp>
+#include <dspbb/Signal/Signal.hpp>
+#include <dspbb/Signal/SignalView.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <complex>
@@ -61,7 +62,7 @@ TEST_CASE("Default construct", "[SignalView]") {
 
 
 TEST_CASE("Whole span", "[SignalView]") {
-	SignalF signal = { 1, 2, 3, 4, 5, 6 };
+	Signal<float> signal = { 1, 2, 3, 4, 5, 6 };
 
 	BasicSignalView<float, TIME_DOMAIN> span{ signal };
 	REQUIRE(span.size() == signal.size());
@@ -71,7 +72,7 @@ TEST_CASE("Whole span", "[SignalView]") {
 
 
 TEST_CASE("Partial span size", "[SignalView]") {
-	SignalF signal = { 1, 2, 3, 4, 5, 6 };
+	Signal<float> signal = { 1, 2, 3, 4, 5, 6 };
 
 	BasicSignalView<float, TIME_DOMAIN> span{ signal.begin() + 3, 2 };
 	REQUIRE(span.size() == 2);
@@ -81,7 +82,7 @@ TEST_CASE("Partial span size", "[SignalView]") {
 
 
 TEST_CASE("Partial span iterators", "[SignalView]") {
-	SignalF signal = { 1, 2, 3, 4, 5, 6 };
+	Signal<float> signal = { 1, 2, 3, 4, 5, 6 };
 
 	BasicSignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(span.size() == 2);
@@ -91,7 +92,7 @@ TEST_CASE("Partial span iterators", "[SignalView]") {
 
 
 TEST_CASE("data pointer", "[SignalView]") {
-	SignalF signal = { 1, 2, 3, 4, 5, 6 };
+	Signal<float> signal = { 1, 2, 3, 4, 5, 6 };
 
 	BasicSignalView<float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(*span.data() == 3);
@@ -100,12 +101,12 @@ TEST_CASE("data pointer", "[SignalView]") {
 
 TEST_CASE("Real/Imag pointer", "[SignalView]") {
 	using namespace std::complex_literals;
-	SignalCF signal = { 1.f + 2.if,
-						2.f + 3.if,
-						3.f + 6.if,
-						4.f + 7.if,
-						5.f + 8.if,
-						6.f + 9.if };
+	Signal<std::complex<float>> signal = { 1.f + 2.if,
+										   2.f + 3.if,
+										   3.f + 6.if,
+										   4.f + 7.if,
+										   5.f + 8.if,
+										   6.f + 9.if };
 
 	BasicSignalView<std::complex<float>, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(span.data()->real() == 3);
@@ -114,17 +115,17 @@ TEST_CASE("Real/Imag pointer", "[SignalView]") {
 
 
 TEST_CASE("Constant span", "[SignalView]") {
-	SignalF signal = { 1, 2, 3, 4, 5, 6 };
+	Signal<float> signal = { 1, 2, 3, 4, 5, 6 };
 
 	BasicSignalView<const float, TIME_DOMAIN> span{ signal.begin() + 2, signal.begin() + 4 };
 	REQUIRE(*span.data() == 3);
 
-	SignalCF csignal = { 1.f + 2.if,
-						 2.f + 3.if,
-						 3.f + 6.if,
-						 4.f + 7.if,
-						 5.f + 8.if,
-						 6.f + 9.if };
+	Signal<std::complex<float>> csignal = { 1.f + 2.if,
+											2.f + 3.if,
+											3.f + 6.if,
+											4.f + 7.if,
+											5.f + 8.if,
+											6.f + 9.if };
 
 	BasicSignalView<const std::complex<float>, TIME_DOMAIN> cspan{ csignal.begin() + 2, csignal.begin() + 4 };
 	REQUIRE(cspan.data()->real() == 3);

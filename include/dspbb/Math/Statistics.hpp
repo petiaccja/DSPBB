@@ -2,7 +2,7 @@
 
 #include "../Kernels/Math.hpp"
 #include "../Kernels/Numeric.hpp"
-#include "../Primitives/SignalTraits.hpp"
+#include "../Signal/Traits.hpp"
 
 #include <cassert>
 #include <cmath>

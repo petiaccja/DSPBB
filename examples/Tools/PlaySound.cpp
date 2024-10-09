@@ -2,6 +2,8 @@
 
 #include "../RtAudio/RtAudio.h"
 
+#include <dspbb/Signal/Signal.hpp>
+
 #include <stdexcept>
 #include <thread>
 

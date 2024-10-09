@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dspbb/Primitives/SignalView.hpp>
+#include <dspbb/Signal/SignalView.hpp>
 
 #include <functional>
 
