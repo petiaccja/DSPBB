@@ -179,8 +179,8 @@ void Decimate(SignalR&& output,
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Decimate(const SignalT& input, size_t rate) {
-	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
-	constexpr auto domain = signal_traits<SignalT>::domain;
+	using T = std::remove_const_t<scalar_type_t<SignalT>>;
+	constexpr auto domain = domain_v<SignalT>;
 	BasicSignal<T, domain> output((input.size() + rate - 1) / rate);
 	Decimate(output, input, rate);
 	return output;
@@ -207,8 +207,8 @@ void Expand(SignalR&& output,
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<SignalT>, int> = 0>
 auto Expand(const SignalT& input, size_t rate) {
-	using T = std::remove_const_t<typename signal_traits<SignalT>::type>;
-	constexpr auto domain = signal_traits<SignalT>::domain;
+	using T = std::remove_const_t<scalar_type_t<SignalT>>;
+	constexpr auto domain = domain_v<SignalT>;
 	BasicSignal<T, domain> output(input.size() * rate);
 	Expand(output, input, rate);
 	return output;
@@ -265,7 +265,7 @@ auto Interpolate(const SignalT& lrInput,
 				 const PolyphaseView<P, Domain>& polyphase,
 				 size_t hrOffset,
 				 size_t hrLength) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	using R = multiplies_result_t<T, P>;
 
 	BasicSignal<R, Domain> out(hrLength, R(0));
@@ -315,7 +315,7 @@ auto Resample(const SignalT& input,
 			  Rational<int64_t> sampleRates,
 			  Rational<int64_t> startPoint,
 			  size_t outputLength) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	using R = multiplies_result_t<T, P>;
 
 	BasicSignal<R, Domain> out(outputLength, R(0));

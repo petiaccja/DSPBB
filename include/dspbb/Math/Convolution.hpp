@@ -80,9 +80,9 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCe
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t length) {
-	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	using U = typename signal_traits<std::decay_t<SignalU>>::type;
+	constexpr eSignalDomain Domain = domain_v<std::decay_t<SignalT>>;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
+	using U = scalar_type_t<std::decay_t<SignalU>>;
 	using R = multiplies_result_t<T, U>;
 
 	BasicSignal<R, Domain> out(length, R(0));

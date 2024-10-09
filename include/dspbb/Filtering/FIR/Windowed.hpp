@@ -13,7 +13,7 @@ namespace dspbb::fir {
 template <class SignalR, class U, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && !is_signal_like_v<WindowFunc>, int> = 0>
 void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, WindowFunc windowFunc) {
 	assert(coefficients.size() % 2 == 1);
-	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
+	using T = remove_complex_t<scalar_type_t<std::decay_t<SignalR>>>;
 	const T offset = T(coefficients.size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.size();
@@ -34,7 +34,7 @@ void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, const SignalW& 
 	assert(coefficients.size() % 2 == 1);
 	assert(coefficients.size() == window.size());
 
-	using T = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
+	using T = remove_complex_t<scalar_type_t<std::decay_t<SignalR>>>;
 	const T offset = T(coefficients.size() / 2);
 	const T scale = T(cutoffNorm) * pi_v<T>;
 	const size_t size = coefficients.size();
@@ -55,7 +55,7 @@ void KernelWindowedLowpass(SignalR&& coefficients, U cutoffNorm, const SignalW& 
 template <class SignalR, class ResponseFunc, class WindowFunc, std::enable_if_t<is_mutable_signal_v<SignalR> && std::is_invocable_v<WindowFunc, BasicSignal<float, TIME_DOMAIN>>, int> = 0>
 void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, WindowFunc windowFunc) {
 	assert(out.size() % 2 == 1);
-	using R = typename signal_traits<SignalR>::type;
+	using R = scalar_type_t<SignalR>;
 	using ComplexR = std::complex<remove_complex_t<R>>;
 
 	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.size() / 2 + 1);
@@ -74,7 +74,7 @@ void KernelWindowedArbitrary(SignalR& out, const ResponseFunc& response, const S
 	assert(out.size() % 2 == 1);
 	assert(out.size() == window.size());
 
-	using R = typename signal_traits<SignalR>::type;
+	using R = scalar_type_t<SignalR>;
 	using ComplexR = std::complex<remove_complex_t<R>>;
 
 	BasicSignal<ComplexR, FREQUENCY_DOMAIN> discreteResponse(out.size() / 2 + 1);

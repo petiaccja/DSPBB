@@ -134,8 +134,8 @@ auto Subtract(SignalR&& r, const SignalT& a, const U& b)
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto operator*(const SignalT& a, const SignalU& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() * std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() * std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Multiply<BasicSignal<R, Domain>&, SignalT, SignalU>(r, a, b);
 	return r;
@@ -143,8 +143,8 @@ auto operator*(const SignalT& a, const SignalU& b) {
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto operator/(const SignalT& a, const SignalU& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() / std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() / std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Divide(r, a, b);
 	return r;
@@ -152,8 +152,8 @@ auto operator/(const SignalT& a, const SignalU& b) {
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto operator+(const SignalT& a, const SignalU& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() + std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() + std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Add(r, a, b);
 	return r;
@@ -161,8 +161,8 @@ auto operator+(const SignalT& a, const SignalU& b) {
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto operator-(const SignalT& a, const SignalU& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() - std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() - std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Subtract(r, a, b);
 	return r;
@@ -175,8 +175,8 @@ auto operator-(const SignalT& a, const SignalU& b) {
 
 template <class SignalT, class U, std::enable_if_t<is_signal_like_v<SignalT> && !is_signal_like_v<U>, int> = 0>
 auto operator*(const SignalT& a, const U& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() * std::declval<U>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() * std::declval<U>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Multiply(r, a, b);
 	return r;
@@ -184,8 +184,8 @@ auto operator*(const SignalT& a, const U& b) {
 
 template <class SignalT, class U, std::enable_if_t<is_signal_like_v<SignalT> && !is_signal_like_v<U>, int> = 0>
 auto operator/(const SignalT& a, const U& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() / std::declval<U>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() / std::declval<U>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Divide(r, a, b);
 	return r;
@@ -193,8 +193,8 @@ auto operator/(const SignalT& a, const U& b) {
 
 template <class SignalT, class U, std::enable_if_t<is_signal_like_v<SignalT> && !is_signal_like_v<U>, int> = 0>
 auto operator+(const SignalT& a, const U& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() + std::declval<U>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() + std::declval<U>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Add(r, a, b);
 	return r;
@@ -202,8 +202,8 @@ auto operator+(const SignalT& a, const U& b) {
 
 template <class SignalT, class U, std::enable_if_t<is_signal_like_v<SignalT> && !is_signal_like_v<U>, int> = 0>
 auto operator-(const SignalT& a, const U& b) {
-	using R = decltype(std::declval<typename signal_traits<SignalT>::type>() - std::declval<U>());
-	constexpr auto Domain = signal_traits<SignalT>::domain;
+	using R = decltype(std::declval<scalar_type_t<SignalT>>() - std::declval<U>());
+	constexpr auto Domain = domain_v<SignalT>;
 	BasicSignal<R, Domain> r(a.size());
 	Subtract(r, a, b);
 	return r;
@@ -212,8 +212,8 @@ auto operator-(const SignalT& a, const U& b) {
 
 template <class T, class SignalU, std::enable_if_t<!is_signal_like_v<T> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto operator*(const T& a, const SignalU& b) {
-	using R = decltype(std::declval<T>() * std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalU>::domain;
+	using R = decltype(std::declval<T>() * std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalU>;
 	BasicSignal<R, Domain> r(b.size());
 	Multiply(r, a, b);
 	return r;
@@ -221,8 +221,8 @@ auto operator*(const T& a, const SignalU& b) {
 
 template <class T, class SignalU, std::enable_if_t<!is_signal_like_v<T> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto operator/(const T& a, const SignalU& b) {
-	using R = decltype(std::declval<T>() / std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalU>::domain;
+	using R = decltype(std::declval<T>() / std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalU>;
 	BasicSignal<R, Domain> r(b.size());
 	Divide(r, a, b);
 	return r;
@@ -230,8 +230,8 @@ auto operator/(const T& a, const SignalU& b) {
 
 template <class T, class SignalU, std::enable_if_t<!is_signal_like_v<T> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto operator+(const T& a, const SignalU& b) {
-	using R = decltype(std::declval<T>() + std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalU>::domain;
+	using R = decltype(std::declval<T>() + std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalU>;
 	BasicSignal<R, Domain> r(b.size());
 	Add(r, a, b);
 	return r;
@@ -239,8 +239,8 @@ auto operator+(const T& a, const SignalU& b) {
 
 template <class T, class SignalU, std::enable_if_t<!is_signal_like_v<T> && is_signal_like_v<std::decay_t<SignalU>>, int> = 0>
 auto operator-(const T& a, const SignalU& b) {
-	using R = decltype(std::declval<T>() - std::declval<typename signal_traits<SignalU>::type>());
-	constexpr auto Domain = signal_traits<SignalU>::domain;
+	using R = decltype(std::declval<T>() - std::declval<scalar_type_t<SignalU>>());
+	constexpr auto Domain = domain_v<SignalU>;
 	BasicSignal<R, Domain> r(b.size());
 	Subtract(r, a, b);
 	return r;

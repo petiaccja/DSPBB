@@ -25,7 +25,7 @@ namespace impl {
 	}
 
 	template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-	using ProductSignalT = BasicSignal<multiplies_result_t<typename std::decay_t<SignalT>::value_type, typename std::decay_t<SignalU>::value_type>, signal_traits<std::decay_t<SignalT>>::domain>;
+	using ProductSignalT = BasicSignal<multiplies_result_t<typename std::decay_t<SignalT>::value_type, typename std::decay_t<SignalU>::value_type>, domain_v<std::decay_t<SignalT>>>;
 } // namespace impl
 
 

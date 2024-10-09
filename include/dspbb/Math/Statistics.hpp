@@ -15,21 +15,21 @@ namespace dspbb {
 //------------------------------------------------------------------------------
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Sum(const SignalT& signal) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	return kernels::Reduce(signal.begin(), signal.end(), T(0), [](const auto& a, const auto& b) { return a + b; });
 }
 
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto Mean(const SignalT& signal) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	return !signal.empty() ? Sum(signal) / T(signal.size()) : T(0);
 }
 
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto SumSquare(const SignalT& signal) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	return kernels::TransformReduce(
 		signal.begin(),
 		signal.end(),
@@ -41,7 +41,7 @@ auto SumSquare(const SignalT& signal) {
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto MeanSquare(const SignalT& signal) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	return !signal.empty() ? SumSquare(signal) / T(signal.size()) : T(0);
 }
 
@@ -76,7 +76,7 @@ auto Min(const SignalT& signal) {
 //------------------------------------------------------------------------------
 template <class SignalT, class U, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto CentralMoment(const SignalT& signal, size_t k, U mean) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	const auto add = [](const auto& a, const auto& b) { return a + b; };
 	const auto m2 = [](const auto& a, auto mean) { const auto d = a - mean; return d*d; };
 	const auto m3 = [](const auto& a, auto mean) { const auto d = a - mean; return d*d*d; };
@@ -102,7 +102,7 @@ auto CentralMoment(const SignalT& signal, size_t k, U mean) {
 
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
 auto CentralMoment(const SignalT& signal, size_t k) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	const T mean = Mean(signal);
 	return CentralMoment(signal, k, mean);
 }

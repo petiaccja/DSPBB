@@ -12,10 +12,10 @@ namespace dspbb {
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 auto LinSpace(SignalR&& output,
-			  remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type> start,
-			  remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type> end,
+			  remove_complex_t<scalar_type_t<std::decay_t<SignalR>>> start,
+			  remove_complex_t<scalar_type_t<std::decay_t<SignalR>>> end,
 			  bool inclusive = true) {
-	using R = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>;
+	using R = remove_complex_t<scalar_type_t<std::decay_t<SignalR>>>;
 	const auto count = output.size();
 	for (size_t i = 0; i < count; ++i) {
 		output[i] = R(i);
@@ -33,7 +33,7 @@ auto LinSpace(remove_complex_t<T> start, remove_complex_t<T> end, size_t count, 
 	return s;
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0, class R = remove_complex_t<typename signal_traits<std::decay_t<SignalR>>::type>>
+template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0, class R = remove_complex_t<scalar_type_t<std::decay_t<SignalR>>>>
 auto LogSpace(SignalR&& output,
 			  R start,
 			  R end,

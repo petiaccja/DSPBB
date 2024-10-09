@@ -14,8 +14,8 @@ namespace dspbb::fir {
 template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 void MirrorResponse(SignalR&& mirrored, const SignalT& filter) {
 	assert(mirrored.size() == filter.size());
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	T sign = T(1);
 	for (size_t i = 0; i < filter.size(); ++i, sign *= T(-1)) {
 		mirrored[i] = R(sign * filter[i]);
@@ -25,8 +25,8 @@ void MirrorResponse(SignalR&& mirrored, const SignalT& filter) {
 template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
 void ComplementaryResponse(SignalR&& complementary, const SignalT& filter) {
 	assert(filter.size() % 2 == 1);
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
 	Multiply(complementary, filter, T(-1));
 	complementary[complementary.size() / 2] += R(1);
 }
@@ -43,7 +43,7 @@ void ShiftResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency
 		moved[i] = c * filter[i];
 		moved[size - i - 1] = c * filter[size - i - 1];
 	}
-	moved *= typename signal_traits<SignalT>::type(2);
+	moved *= scalar_type_t<SignalT>(2);
 }
 
 
@@ -69,7 +69,7 @@ void HalfbandToHilbertOdd(SignalR& out, const SignalT& halfband) {
 	using impl::kernelSize;
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = typename std::decay_t<SignalT>::value_type;
-	constexpr auto Domain = signal_traits<std::decay_t<SignalR>>::domain;
+	constexpr auto Domain = domain_v<std::decay_t<SignalR>>;
 	constexpr size_t kernelCenter = kernelSize / 2 - 1;
 	constexpr size_t maxSizeSingleStep = kernelSize - 1;
 	const BasicSignalView<const T, Domain> kernel(impl::kernel<T>.begin(), impl::kernel<T>.end());
@@ -107,7 +107,7 @@ void HalfbandToHilbertEven(SignalR& out, const SignalT& halfband) {
 	using impl::kernelSize;
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = typename std::decay_t<SignalT>::value_type;
-	constexpr auto Domain = signal_traits<std::decay_t<SignalR>>::domain;
+	constexpr auto Domain = domain_v<std::decay_t<SignalR>>;
 	constexpr size_t kernelCenter = kernelSize / 2 - 1;
 	constexpr size_t maxSizeSingleStep = kernelSize - 1;
 

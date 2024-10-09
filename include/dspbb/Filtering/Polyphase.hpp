@@ -105,8 +105,8 @@ auto PolyphaseDecompose(SignalR&& output, const SignalT& filter, size_t numFilte
 	assert(output.size() == filter.size());
 	assert(output.data() != filter.data());
 
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
-	constexpr auto Domain = signal_traits<std::decay_t<SignalR>>::domain;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
+	constexpr auto Domain = domain_v<std::decay_t<SignalR>>;
 	PolyphaseView<R, Domain> view{ AsView(output), numFilters };
 
 	for (size_t phaseIdx = 0; phaseIdx < numFilters; ++phaseIdx) {
@@ -124,8 +124,8 @@ auto PolyphaseDecompose(SignalR&& output, const SignalT& filter, size_t numFilte
 
 template <class SignalT>
 auto PolyphaseDecompose(const SignalT& filter, size_t numFilters) {
-	using R = typename signal_traits<std::decay_t<SignalT>>::type;
-	constexpr auto Domain = signal_traits<std::decay_t<SignalT>>::domain;
+	using R = scalar_type_t<std::decay_t<SignalT>>;
+	constexpr auto Domain = domain_v<std::decay_t<SignalT>>;
 	PolyphaseFilter<R, Domain> polyphase{ filter.size(), numFilters };
 
 	PolyphaseDecompose(polyphase.Buffer(), filter, numFilters);

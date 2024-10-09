@@ -42,7 +42,7 @@ T EnergyGain(const BasicSignal<T, Domain>& window) {
 //------------------------------------------------------------------------------
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void HammingWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
@@ -53,7 +53,7 @@ void HammingWindow(SignalR&& out) {
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void FlatTopWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 
 	U c0 = U(0.21557895);
@@ -81,14 +81,14 @@ void FlatTopWindow(SignalR&& out) {
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void RectangularWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	std::fill(out.begin(), out.end(), R(U(1.0)));
 }
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void TriangularWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2), true);
 	out -= U(1);
@@ -99,7 +99,7 @@ void TriangularWindow(SignalR&& out) {
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void BlackmanWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
@@ -110,7 +110,7 @@ void BlackmanWindow(SignalR&& out) {
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void BlackmanHarrisWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
@@ -121,7 +121,7 @@ void BlackmanHarrisWindow(SignalR&& out) {
 
 template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void GaussianWindow(SignalR&& out, V sigma = 1.f) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	const auto N = U(out.size());
 	const auto M = (N - U(1)) / U(2);
@@ -134,7 +134,7 @@ void GaussianWindow(SignalR&& out, V sigma = 1.f) {
 
 template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void KaiserWindow(SignalR&& out, V alpha) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, -U(1), U(1), true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
@@ -147,7 +147,7 @@ void KaiserWindow(SignalR&& out, V alpha) {
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void LanczosWindow(SignalR&& out) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, -pi_v<U>, pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
@@ -199,7 +199,7 @@ template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR> 
 void DolphChebyshevWindow(SignalR&& out, V attenuation) {
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = remove_complex_t<R>;
-	constexpr auto domain = signal_traits<std::decay_t<SignalR>>::domain;
+	constexpr auto domain = domain_v<std::decay_t<SignalR>>;
 
 	BasicSignal<T, domain> outReal(out.size());
 	DolphChebyshevWindow(outReal, attenuation);

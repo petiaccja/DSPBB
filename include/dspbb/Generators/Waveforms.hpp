@@ -16,7 +16,7 @@ namespace impl {
 
 	template <class SignalR, class WaveFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 	void GenericWave(SignalR&& output, uint64_t sampleRate, double frequency, double phase, WaveFunc waveFunc) {
-		using R = typename signal_traits<std::decay_t<SignalR>>::type;
+		using R = scalar_type_t<std::decay_t<SignalR>>;
 		using T = remove_complex_t<R>;
 		size_t idx = 0;
 		for (auto& v : output) {
@@ -29,7 +29,7 @@ namespace impl {
 
 	template <class SignalR, class WaveFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 	void GenericChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, double endFrequency, double phase, WaveFunc waveFunc) {
-		using R = typename signal_traits<std::decay_t<SignalR>>::type;
+		using R = scalar_type_t<std::decay_t<SignalR>>;
 		using T = remove_complex_t<R>;
 		const double length = double(output.size()) / double(sampleRate);
 		size_t idx = 0;
@@ -106,7 +106,7 @@ BasicSignal<T, Domain> PwmWave(size_t length, uint64_t sampleRate, double freque
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void SquareWave(SignalR&& output, uint64_t sampleRate, double frequency, double phase = 0) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	impl::GenericWave(output, sampleRate, frequency, phase, [](const auto& arg) { return impl::Pwm(arg, 0.5f); });
 	output *= R(2.0);
 	output -= R(1.0);
@@ -165,7 +165,7 @@ BasicSignal<T, Domain> PwmChirp(size_t length, uint64_t sampleRate, double start
 
 template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
 void SquareChirp(SignalR&& output, uint64_t sampleRate, double startFrequency, double endFrequency, double phase = 0) {
-	using R = typename signal_traits<std::decay_t<SignalR>>::type;
+	using R = scalar_type_t<std::decay_t<SignalR>>;
 	impl::GenericChirp(output, sampleRate, startFrequency, endFrequency, phase, [](const auto& arg) { return impl::Pwm(arg, 0.5f); });
 	output *= R(2.0);
 	output -= R(1.0);

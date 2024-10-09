@@ -20,8 +20,8 @@ namespace dspbb {
 #define DSPBB_IMPL_FUNCTION_1_PARAM(NAME, FUNC)                                                  \
 	template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0> \
 	auto NAME(const SignalT& signal) {                                                           \
-		using R = decltype(std::FUNC(std::declval<typename signal_traits<SignalT>::type>()));    \
-		constexpr auto domain = signal_traits<SignalT>::domain;                                  \
+		using R = decltype(std::FUNC(std::declval<scalar_type_t<SignalT>>()));                   \
+		constexpr auto domain = domain_v<SignalT>;                                               \
 		BasicSignal<R, domain> r(signal.size());                                                 \
 		NAME(r, signal);                                                                         \
 		return r;                                                                                \
@@ -57,11 +57,11 @@ DSPBB_IMPL_FUNCTION(Exp, exp)
 
 
 template <class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalT> && is_same_domain_v<std::decay_t<SignalT>, std::decay_t<SignalU>>, int> = 0>
-auto Pow(SignalT&& out, const SignalU& in, typename signal_traits<std::decay_t<SignalU>>::type power) {
+auto Pow(SignalT&& out, const SignalU& in, scalar_type_t<std::decay_t<SignalU>> power) {
 	return kernels::Transform(in.begin(), in.end(), out.begin(), [power](const auto& v) { return kernels::math_functions::pow(v, static_cast<std::decay_t<decltype(v)>>(power)); });
 }
 template <class SignalT, std::enable_if_t<is_signal_like_v<std::decay_t<SignalT>>, int> = 0>
-auto Pow(const SignalT& signal, typename signal_traits<std::decay_t<SignalT>>::type power) {
+auto Pow(const SignalT& signal, scalar_type_t<std::decay_t<SignalT>> power) {
 	SignalT r(signal.size());
 	Pow(r, signal, power);
 	return r;

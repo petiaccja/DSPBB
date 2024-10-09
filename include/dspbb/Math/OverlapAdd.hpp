@@ -129,13 +129,13 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	const size_t fullLength = ConvolutionLength(u.size(), v.size(), CONV_FULL);
 	assert(offset + out.size() <= fullLength && "Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 	if (clearOut) {
-		using R = typename signal_traits<std::decay_t<SignalR>>::type;
+		using R = scalar_type_t<std::decay_t<SignalR>>;
 		std::fill(out.begin(), out.end(), R(remove_complex_t<R>(0)));
 	}
 
-	using T = std::remove_cv_t<typename signal_traits<std::decay_t<SignalT>>::type>;
-	using U = std::remove_cv_t<typename signal_traits<std::decay_t<SignalU>>::type>;
-	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
+	using T = std::remove_cv_t<scalar_type_t<std::decay_t<SignalT>>>;
+	using U = std::remove_cv_t<scalar_type_t<std::decay_t<SignalU>>>;
+	constexpr eSignalDomain Domain = domain_v<std::decay_t<SignalT>>;
 	constexpr auto is_complex_t = std::integral_constant<bool, is_complex_v<T>>{};
 	constexpr auto is_complex_u = std::integral_constant<bool, is_complex_v<U>>{};
 
@@ -185,10 +185,10 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCen
 
 template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
 auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length, size_t chunkSize = 0) {
-	using T = typename signal_traits<std::decay_t<SignalT>>::type;
-	using U = typename signal_traits<std::decay_t<SignalU>>::type;
+	using T = scalar_type_t<std::decay_t<SignalT>>;
+	using U = scalar_type_t<std::decay_t<SignalU>>;
 	using R = multiplies_result_t<T, U>;
-	constexpr eSignalDomain Domain = signal_traits<std::decay_t<SignalT>>::domain;
+	constexpr eSignalDomain Domain = domain_v<std::decay_t<SignalT>>;
 
 	BasicSignal<R, Domain> out(length, R(remove_complex_t<R>(0)));
 	OverlapAdd(out, u, v, offset, chunkSize, false);
