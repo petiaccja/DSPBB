@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../Math/Functions.hpp"
-#include "../PocketFFT/pocketfft_hdronly.h"
 #include "../Primitives/Signal.hpp"
 #include "../Primitives/SignalView.hpp"
 
 #include <algorithm>
+#include <pocketfft_hdronly.h>
 
 
 namespace dspbb {
@@ -26,10 +26,10 @@ namespace impl {
 		const size_t fullSize = in.size();
 		assert(out.size() == halfSize || out.size() == fullSize);
 
-		pocketfft_dspbb::shape_t shape = { in.size() };
-		pocketfft_dspbb::stride_t stride_in = { sizeof(T) };
-		pocketfft_dspbb::stride_t stride_out = { sizeof(std::complex<T>) };
-		pocketfft_dspbb::r2c(shape, stride_in, stride_out, 0, pocketfft_dspbb::FORWARD, in.data(), out.data(), T(1));
+		pocketfft::shape_t shape = { in.size() };
+		pocketfft::stride_t stride_in = { sizeof(T) };
+		pocketfft::stride_t stride_out = { sizeof(std::complex<T>) };
+		pocketfft::r2c(shape, stride_in, stride_out, 0, pocketfft::FORWARD, in.data(), out.data(), T(1));
 
 		if (out.size() == fullSize && fullSize > 2) {
 			auto first = out.begin() + 1;
@@ -45,10 +45,10 @@ namespace impl {
 	void Fft(SpectrumView<std::complex<T>> out, SignalView<const std::complex<T>> in) {
 		assert(out.size() == in.size());
 
-		pocketfft_dspbb::shape_t shape = { in.size() };
-		pocketfft_dspbb::stride_t stride = { sizeof(std::complex<T>) };
-		pocketfft_dspbb::shape_t axes = { 0 };
-		pocketfft_dspbb::c2c(shape, stride, stride, axes, pocketfft_dspbb::FORWARD, in.data(), out.data(), T(1));
+		pocketfft::shape_t shape = { in.size() };
+		pocketfft::stride_t stride = { sizeof(std::complex<T>) };
+		pocketfft::shape_t axes = { 0 };
+		pocketfft::c2c(shape, stride, stride, axes, pocketfft::FORWARD, in.data(), out.data(), T(1));
 	}
 
 	template <class T>
@@ -57,20 +57,20 @@ namespace impl {
 		const size_t fullSize = out.size();
 		assert(in.size() == halfSize || in.size() == fullSize);
 
-		pocketfft_dspbb::shape_t shape = { out.size() };
-		pocketfft_dspbb::stride_t stride_in = { sizeof(std::complex<T>) };
-		pocketfft_dspbb::stride_t stride_out = { sizeof(T) };
-		pocketfft_dspbb::c2r<T>(shape, stride_in, stride_out, 0, pocketfft_dspbb::BACKWARD, in.data(), out.data(), T(1.0 / double(out.size())));
+		pocketfft::shape_t shape = { out.size() };
+		pocketfft::stride_t stride_in = { sizeof(std::complex<T>) };
+		pocketfft::stride_t stride_out = { sizeof(T) };
+		pocketfft::c2r<T>(shape, stride_in, stride_out, 0, pocketfft::BACKWARD, in.data(), out.data(), T(1.0 / double(out.size())));
 	}
 
 	template <class T>
 	void Ifft(SignalView<std::complex<T>> out, SpectrumView<const std::complex<T>> in) {
 		assert(out.size() == in.size());
 
-		pocketfft_dspbb::shape_t shape = { out.size() };
-		pocketfft_dspbb::stride_t stride = { sizeof(std::complex<T>) };
-		pocketfft_dspbb::shape_t axes = { 0 };
-		pocketfft_dspbb::c2c(shape, stride, stride, axes, pocketfft_dspbb::BACKWARD, in.data(), out.data(), T(1.0 / double(out.size())));
+		pocketfft::shape_t shape = { out.size() };
+		pocketfft::stride_t stride = { sizeof(std::complex<T>) };
+		pocketfft::shape_t axes = { 0 };
+		pocketfft::c2c(shape, stride, stride, axes, pocketfft::BACKWARD, in.data(), out.data(), T(1.0 / double(out.size())));
 	}
 
 

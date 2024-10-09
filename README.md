@@ -1,13 +1,13 @@
 ﻿Digital Signal Processing Building Blocks
 ---
 
-![Language](https://img.shields.io/badge/Language-C++17-blue)
+![Language](https://img.shields.io/badge/Language-C++20-blue)
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
 [![Build & test](https://github.com/petiaccja/DSPBB/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/petiaccja/DSPBB/actions/workflows/build_and_test.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=petiaccja_DSPBB&metric=alert_status)](https://sonarcloud.io/dashboard?id=petiaccja_DSPBB)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=petiaccja_DSPBB&metric=coverage)](https://sonarcloud.io/dashboard?id=petiaccja_DSPBB)
 
-DSPBB is a modern C++17/20 library for digital signal processing. DSPBB is not geared towards any specific signal processing domain such as audio processing or seismology, it only aims to provide the building blocks that can help build any signal processing application.
+DSPBB is a modern C++20 library for digital signal processing. DSPBB is not geared towards any specific signal processing domain such as audio processing or seismology, it only aims to provide the building blocks that can help build any signal processing application.
 
 ### Key features
 - Signal and system classes
