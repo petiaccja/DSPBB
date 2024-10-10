@@ -9,125 +9,130 @@
 
 namespace dspbb {
 
+
+enum class eFilterMethod {
+	/// <summary> Apply FIR filter using convolution. </summary>
+	CONVOLUTION,
+
+	/// <summary> Apply FIR filter using the ovarlap-add method via FFTs. </summary>
+	OVERLAP_ADD,
+};
+
+
+inline constexpr auto FILTER_CONV = std::integral_constant<eFilterMethod, eFilterMethod::CONVOLUTION>{};
+inline constexpr auto FILTER_OLA = std::integral_constant<eFilterMethod, eFilterMethod::OVERLAP_ADD>{};
+
+
 namespace impl {
-	struct FilterConv {};
-	struct FilterOla {};
-	constexpr FilterConv FILTER_CONV;
-	constexpr FilterOla FILTER_OLA;
 
-
-	template <class SignalS, class SignalU>
-	void ShiftFilterState(SignalS& state, const SignalU& signal) {
+	template <mutable_signal_or_view_r SignalS, same_domain_as_r<SignalS> SignalU>
+	void ShiftFilterState(SignalS&& state, const SignalU& signal) {
 		if (signal.size() < state.size()) {
 			std::move(state.begin() + signal.size(), state.end(), state.begin());
 		}
 		std::copy(signal.rbegin(), signal.rbegin() + std::min(signal.size(), state.size()), state.rbegin());
 	}
 
-	template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+	template <signal_or_view SignalT, same_domain_as<SignalT> SignalU>
 	using ProductSignalT = BasicSignal<multiplies_result_t<typename std::decay_t<SignalT>::value_type, typename std::decay_t<SignalU>::value_type>, domain_v<std::decay_t<SignalT>>>;
+
 } // namespace impl
 
 
-using impl::FILTER_CONV;
-using impl::FILTER_OLA;
-
-
-template <class SignalR, class SignalU, class SignalV, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU, SignalV>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize = 0) {
-	OverlapAdd(out, signal, filter, CONV_CENTRAL, chunkSize);
+/// <summary> Apply an FIR filter to a signal. </summary>
+/// <param name="out"> Output buffer for the filtered signal. </param>
+/// <param name="signal"> The signal to filter. </param>
+/// <param name="filter"> The filter to apply. </param>
+/// <param name="chunkSize"> The FFT's size if the overlap-add method is used. </param>
+template <mutable_signal_or_view_r SignalR,
+		  same_domain_as_r<SignalR> SignalU,
+		  same_domain_as_r<SignalR> SignalV,
+		  eConvolutionMethod ConvMethod,
+		  eFilterMethod FilterMethod>
+void Filter(SignalR&& out,
+			const SignalU& signal,
+			const SignalV& filter,
+			std::integral_constant<eConvolutionMethod, ConvMethod> convMethod,
+			std::integral_constant<eFilterMethod, FilterMethod>,
+			[[maybe_unused]] size_t chunkSize = 0) {
+	if constexpr (FilterMethod == eFilterMethod::CONVOLUTION) {
+		Convolution(out, signal, filter, convMethod);
+	}
+	else {
+		OverlapAdd(out, signal, filter, convMethod, chunkSize);
+	}
 }
 
-template <class SignalR, class SignalU, class SignalV, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU, SignalV>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterConv) {
-	Convolution(out, signal, filter, CONV_CENTRAL);
-}
 
-template <class SignalR, class SignalU, class SignalV, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU, SignalV>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize = 0) {
-	OverlapAdd(out, signal, filter, CONV_FULL, chunkSize);
-}
-
-template <class SignalR, class SignalU, class SignalV, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalU, SignalV>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterConv) {
-	Convolution(out, signal, filter, CONV_FULL);
-}
-
-template <class SignalR,
-		  class SignalU,
-		  class SignalV,
-		  class SignalS,
-		  std::enable_if_t<is_mutable_signal_v<SignalR> && is_mutable_signal_v<SignalS> && is_same_domain_v<SignalR, SignalU, SignalV, SignalS>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS& state, impl::FilterOla, size_t chunkSize = 0) {
+/// <summary> Apply an FIR filter to a chunk of a signal, saving state for the next chunk. </summary>
+/// <param name="out"> Output buffer for the filtered signal. </param>
+/// <param name="signal"> The signal to filter. </param>
+/// <param name="filter"> The filter to apply. </param>
+/// <param name="state"> State carried over to the next filter call when processing in batches. </param>
+/// <param name="chunkSize"> The FFT's size if the overlap-add method is used. </param>
+template <mutable_signal_or_view_r SignalR,
+		  same_domain_as_r<SignalR> SignalU,
+		  same_domain_as_r<SignalR> SignalV,
+		  mutable_signal_or_view_r SignalS,
+		  eFilterMethod FilterMethod>
+void Filter(SignalR&& out,
+			const SignalU& signal,
+			const SignalV& filter,
+			SignalS& state,
+			std::integral_constant<eFilterMethod, FilterMethod>,
+			size_t chunkSize = 0) {
 	assert(state.size() == filter.size() - 1);
 	assert(out.size() == signal.size());
 
 	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
-	OverlapAdd(AsView(out).subsignal(0, std::min(out.size(), state.size())), state, filter, filter.size() - 1, chunkSize, false);
-	OverlapAdd(out, signal, filter, 0, chunkSize, false);
+	const auto outHead = AsView(out).subsignal(0, std::min(out.size(), state.size()));
+	if constexpr (FilterMethod == eFilterMethod::CONVOLUTION) {
+		Convolution(outHead, state, filter, filter.size() - 1, false);
+		Convolution(out, signal, filter, 0, false);
+	}
+	else {
+		OverlapAdd(outHead, state, filter, filter.size() - 1, chunkSize, false);
+		OverlapAdd(out, signal, filter, 0, chunkSize, false);
+	}
 	impl::ShiftFilterState(state, signal);
 }
 
-template <class SignalR,
-		  class SignalU,
-		  class SignalV,
-		  class SignalS,
-		  std::enable_if_t<is_mutable_signal_v<SignalR> && is_mutable_signal_v<SignalS> && is_same_domain_v<SignalR, SignalU, SignalV, SignalS>, int> = 0>
-auto Filter(SignalR&& out, const SignalU& signal, const SignalV& filter, SignalS& state, impl::FilterConv) {
-	assert(state.size() == filter.size() - 1);
-	assert(out.size() == signal.size());
 
-	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
-	Convolution(AsView(out).subsignal(0, std::min(out.size(), state.size())), state, filter, filter.size() - 1, false);
-	Convolution(out, signal, filter, 0, false);
-	impl::ShiftFilterState(state, signal);
-}
-
-template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterOla, size_t chunkSize = 0) {
-	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.size(), filter.size(), CONV_CENTRAL));
-	Filter(out, signal, filter, CONV_CENTRAL, FILTER_OLA, chunkSize);
+/// <summary> Apply an FIR filter to a signal. </summary>
+/// <param name="signal"> The signal to filter. </param>
+/// <param name="filter"> The filter to apply. </param>
+/// <param name="chunkSize"> The FFT's size if the overlap-add method is used. </param>
+template <signal_or_view SignalU,
+		  same_domain_as<SignalU> SignalV,
+		  eConvolutionMethod ConvMethod,
+		  eFilterMethod FilterMethod>
+auto Filter(const SignalU& signal,
+			const SignalV& filter,
+			std::integral_constant<eConvolutionMethod, ConvMethod> convMethod,
+			std::integral_constant<eFilterMethod, FilterMethod> filterMethod,
+			size_t chunkSize = 0) {
+	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.size(), filter.size(), ConvMethod));
+	Filter(out, signal, filter, convMethod, filterMethod, chunkSize);
 	return out;
 }
 
-template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvCentral, impl::FilterConv) {
-	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.size(), filter.size(), CONV_CENTRAL));
-	Filter(out, signal, filter, CONV_CENTRAL, FILTER_CONV);
-	return out;
-}
 
-template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterOla, size_t chunkSize = 0) {
-	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.size(), filter.size(), CONV_FULL));
-	Filter(out, signal, filter, CONV_FULL, FILTER_OLA, chunkSize);
-	return out;
-}
-
-template <class SignalU, class SignalV, std::enable_if_t<is_same_domain_v<SignalU, SignalV>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, impl::ConvFull, impl::FilterConv) {
-	impl::ProductSignalT<SignalU, SignalV> out(ConvolutionLength(signal.size(), filter.size(), CONV_FULL));
-	Filter(out, signal, filter, CONV_FULL, FILTER_CONV);
-	return out;
-}
-
-template <class SignalU,
-		  class SignalV,
-		  class SignalS,
-		  std::enable_if_t<is_mutable_signal_v<SignalS> && is_same_domain_v<SignalU, SignalV, SignalS>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, SignalS&& state, impl::FilterOla, size_t chunkSize = 0) {
+/// <summary> Apply an FIR filter to a chunk of a signal, saving state for the next chunk. </summary>
+/// <param name="signal"> The signal to filter. </param>
+/// <param name="filter"> The filter to apply. </param>
+/// <param name="state"> State carried over to the next filter call when processing in batches. </param>
+/// <param name="chunkSize"> The FFT's size if the overlap-add method is used. </param>
+template <signal_or_view SignalU,
+		  same_domain_as<SignalU> SignalV,
+		  mutable_signal_or_view_r SignalS,
+		  eFilterMethod FilterMethod>
+auto Filter(const SignalU& signal,
+			const SignalV& filter,
+			SignalS&& state,
+			std::integral_constant<eFilterMethod, FilterMethod> filterMethod,
+			size_t chunkSize = 0) {
 	impl::ProductSignalT<SignalU, SignalV> out(signal.size());
-	Filter(out, signal, filter, state, FILTER_OLA, chunkSize);
-	return out;
-}
-
-template <class SignalU,
-		  class SignalV,
-		  class SignalS,
-		  std::enable_if_t<is_mutable_signal_v<SignalS> && is_same_domain_v<SignalU, SignalV, SignalS>, int> = 0>
-auto Filter(const SignalU& signal, const SignalV& filter, SignalS&& state, impl::FilterConv) {
-	impl::ProductSignalT<SignalU, SignalV> out(signal.size());
-	Filter(out, signal, filter, state, FILTER_CONV);
+	Filter(out, signal, filter, state, filterMethod, chunkSize);
 	return out;
 }
 

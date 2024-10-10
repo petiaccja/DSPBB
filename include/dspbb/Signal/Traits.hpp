@@ -95,7 +95,7 @@ inline constexpr bool is_mutable_v = is_mutable<T>::value;
 
 
 template <class T>
-concept mutable_signal_or_view = signal_or_view<T> && is_mutable_v<T>;
+concept mutable_signal_or_view = signal_or_view<std::remove_cv_t<T>> && is_mutable_v<std::remove_cv_t<T>>;
 
 
 template <class T, class U>
@@ -107,7 +107,7 @@ concept mutable_signal_or_view_r = mutable_signal_or_view<std::remove_reference_
 
 
 template <class T, class U>
-concept same_domain_as_r = same_domain_as<std::remove_reference_t<T>, std::remove_reference_t<U>>;
+concept same_domain_as_r = same_domain_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
 
 template <class T>

@@ -102,6 +102,10 @@ const auto tff = TransferFunction{ sysf };
 const auto cascadef = CascadedBiquad{ sysf };
 
 TEST_CASE("Direct form I feed float/double", "[IIR realizations]") {
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4244)
+#endif
 	constexpr float inputf = 1.0f;
 	DirectFormI<float> df1{ sys.order() };
 	DirectFormII<float> df2{ sys.order() };
@@ -113,6 +117,9 @@ TEST_CASE("Direct form I feed float/double", "[IIR realizations]") {
 	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out1)>>);
 	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out2)>>);
 	REQUIRE(std::is_same_v<float, std::decay_t<decltype(out3)>>);
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 }
 
 TEST_CASE("Direct form I feed complex<float>/float", "[IIR realizations]") {

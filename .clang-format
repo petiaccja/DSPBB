@@ -66,6 +66,7 @@ IndentCaseLabels: 'true'
 IndentExternBlock: 'false'
 IndentGotoLabels: 'true'
 IndentPPDirectives: 'BeforeHash'
+IndentRequiresClause: 'true'
 IndentWidth: '4'
 IndentWrappedFunctionNames: 'false'
 KeepEmptyLinesAtTheStartOfBlocks: 'false'
@@ -73,6 +74,7 @@ Language: Cpp
 MaxEmptyLinesToKeep: '3'
 NamespaceIndentation: Inner
 PointerAlignment: Left
+RequiresClausePosition: 'WithPreceding'
 SortIncludes: 'true'
 SortUsingDeclarations: 'false'
 SpaceAfterCStyleCast: 'false'

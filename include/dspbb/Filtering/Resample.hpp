@@ -26,15 +26,12 @@ struct ResampleSuspensionPoint {
 };
 
 
-template <class ConvType>
 constexpr size_t InterpolLength(size_t inputSize,
 								size_t filterSize,
 								size_t numPhases,
-								const ConvType&) {
-	static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
-
+								eConvolutionMethod convMethod) {
 	const ptrdiff_t hrInputSize = inputSize * numPhases;
-	return ConvolutionLength(hrInputSize, filterSize, ConvType{});
+	return ConvolutionLength(hrInputSize, filterSize, convMethod);
 }
 
 
@@ -43,17 +40,29 @@ constexpr double InterpolFilterCutoff(size_t numPhases) {
 }
 
 
-template <class ConvType>
 constexpr Rational<int64_t> ResampleLength(size_t inputSize,
 										   size_t filterSize,
 										   size_t numPhases,
 										   Rational<int64_t> sampleRates,
-										   const ConvType&) {
-	static_assert(std::is_same_v<ConvType, impl::ConvFull> || std::is_same_v<ConvType, impl::ConvCentral>);
+										   eConvolutionMethod convMethod) {
 	const int64_t interpolatedSize = int64_t(numPhases) * inputSize;
-	const int64_t filteredInterpolatedSize = ConvolutionLength(interpolatedSize, filterSize, ConvType{});
+	const int64_t filteredInterpolatedSize = ConvolutionLength(interpolatedSize, filterSize, convMethod);
 
 	return filteredInterpolatedSize / sampleRates / int64_t(numPhases);
+}
+
+
+constexpr Rational<int64_t> ResampleOffset(size_t inputSize,
+										   size_t filterSize,
+										   size_t numPhases,
+										   Rational<int64_t> sampleRates,
+										   eConvolutionMethod convMethod) {
+	const Rational<int64_t> startPointIn = {
+		int64_t(std::min(filterSize, inputSize * numPhases) - 1),
+		int64_t(numPhases)
+	};
+
+	return convMethod == eConvolutionMethod::CENTRAL ? startPointIn / sampleRates : Rational<int64_t>{ 0 };
 }
 
 
@@ -324,34 +333,17 @@ auto Resample(const SignalT& input,
 }
 
 
-template <class SignalT,
+template <signal_or_view SignalT,
 		  class P,
 		  eSignalDomain Domain,
-		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
+		  eConvolutionMethod ConvMethod>
 auto Resample(const SignalT& input,
 			  const PolyphaseView<P, Domain>& polyphase,
 			  Rational<int64_t> sampleRates,
-			  impl::ConvCentral) {
-	const Rational<int64_t> startPointIn = {
-		int64_t(std::min(polyphase.size_original(), input.size() * polyphase.num_phases()) - 1),
-		int64_t(polyphase.num_phases())
-	};
-	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, CONV_CENTRAL));
-	return Resample(input, polyphase, sampleRates, startPointIn / sampleRates, outputLength);
+			  std::integral_constant<eConvolutionMethod, ConvMethod> convMethod) {
+	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, convMethod));
+	const auto offset = ResampleOffset(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, convMethod);
+	return Resample(input, polyphase, sampleRates, offset, outputLength);
 }
-
-
-template <class SignalT,
-		  class P,
-		  eSignalDomain Domain,
-		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
-auto Resample(const SignalT& input,
-			  const PolyphaseView<P, Domain>& polyphase,
-			  Rational<int64_t> sampleRates,
-			  impl::ConvFull) {
-	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, CONV_FULL));
-	return Resample(input, polyphase, sampleRates, Rational<int64_t>{ 0 }, outputLength);
-}
-
 
 } // namespace dspbb

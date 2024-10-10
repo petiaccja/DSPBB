@@ -117,7 +117,16 @@ namespace impl {
 } // namespace impl
 
 
-template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
+/// <summary> Convolve the two signals using FFTs. </summary>
+/// <param name="out"> The convolved signal is written here. </param>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="offset"> Controls the starting point of the output. </param>
+/// <param name="chunkSize"> The size of the FFT to use. </param>
+/// <param name="clearOut"> Set to false if the output buffer is already zeroed. </param>
+/// <remarks> The subset of the full convolution given by [offset, offset + out.size()).
+///		is written into out. </remarks>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT, same_domain_as_r<SignalR> SignalU>
 void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, size_t chunkSize = 0, bool clearOut = true) {
 	if (u.size() < v.size()) {
 		return OverlapAdd(out, v, u, offset, chunkSize, clearOut);
@@ -166,46 +175,53 @@ void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset
 	}
 }
 
-template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize = 0, bool clearOut = true) {
-	const size_t fullLength = ConvolutionLength(u.size(), v.size(), CONV_FULL);
-	assert(out.size() == fullLength && "Use ConvolutionLength to calculate output size properly.");
-	size_t offset = 0;
+
+/// <summary> Convolve the two signals using FFTs. </summary>
+/// <param name="out"> The convolved signal is written here. </param>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="chunkSize"> The size of the FFT to use. </param>
+/// <param name="clearOut"> Set to false if the output buffer is already zeroed. </param>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT, same_domain_as_r<SignalR> SignalU, eConvolutionMethod Method>
+auto OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, std::integral_constant<eConvolutionMethod, Method> method, size_t chunkSize = 0, bool clearOut = true) {
+	const auto length = ConvolutionLength(u.size(), v.size(), method);
+	const size_t offset = ConvolutionOffset(u.size(), v.size(), method);
+
+	assert(out.size() == length && "Use ConvolutionLength to calculate output size properly.");
+
 	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
 }
 
-template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-void OverlapAdd(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize = 0, bool clearOut = true) {
-	const size_t centralLength = ConvolutionLength(u.size(), v.size(), CONV_CENTRAL);
-	assert(out.size() == centralLength && "Use ConvolutionLength to calculate output size properly.");
-	size_t offset = std::min(u.size() - 1, v.size() - 1);
-	OverlapAdd(out, u, v, offset, chunkSize, clearOut);
-}
 
-
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+/// <summary> Convolve the two signals using FFTs. </summary>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="offset"> Controls the starting point of the output. </param>
+/// <param name="length"> Controls the length of the output. </param>
+/// <param name="chunkSize"> The size of the FFT to use. </param>
+/// <returns> The subset of the full convolution given by [offset, offset + length). </returns>
+template <signal_or_view SignalT, same_domain_as<SignalT> SignalU>
 auto OverlapAdd(const SignalT& u, const SignalU& v, size_t offset, size_t length, size_t chunkSize = 0) {
+	constexpr eSignalDomain Domain = domain_v<std::decay_t<SignalT>>;
 	using T = scalar_type_t<std::decay_t<SignalT>>;
 	using U = scalar_type_t<std::decay_t<SignalU>>;
 	using R = multiplies_result_t<T, U>;
-	constexpr eSignalDomain Domain = domain_v<std::decay_t<SignalT>>;
 
 	BasicSignal<R, Domain> out(length, R(remove_complex_t<R>(0)));
 	OverlapAdd(out, u, v, offset, chunkSize, false);
 	return out;
 }
 
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& u, const SignalU& v, impl::ConvFull, size_t chunkSize = 0) {
-	const size_t length = ConvolutionLength(u.size(), v.size(), CONV_FULL);
-	size_t offset = 0;
-	return OverlapAdd(u, v, offset, length, chunkSize);
-}
 
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto OverlapAdd(const SignalT& u, const SignalU& v, impl::ConvCentral, size_t chunkSize = 0) {
-	const size_t length = ConvolutionLength(u.size(), v.size(), CONV_CENTRAL);
-	size_t offset = std::min(u.size() - 1, v.size() - 1);
+/// <summary> Convolve the two signals using FFTs. </summary>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="chunkSize"> The size of the FFT to use. </param>
+/// <returns> The full or central convolution. </returns>
+template <signal_or_view SignalT, same_domain_as<SignalT> SignalU, eConvolutionMethod Method>
+auto OverlapAdd(const SignalT& u, const SignalU& v, std::integral_constant<eConvolutionMethod, Method> method, size_t chunkSize = 0) {
+	const size_t length = ConvolutionLength(u.size(), v.size(), method);
+	const size_t offset = ConvolutionOffset(u.size(), v.size(), method);
 	return OverlapAdd(u, v, offset, length, chunkSize);
 }
 

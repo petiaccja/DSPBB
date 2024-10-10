@@ -7,52 +7,59 @@
 #include "../Signal/SignalView.hpp"
 #include "../Utility/TypeTraits.hpp"
 
-#include <complex>
 
 namespace dspbb {
 
-namespace impl {
-	class ConvCentral {};
-	class ConvFull {};
-	constexpr ConvCentral CONV_CENTRAL;
-	constexpr ConvFull CONV_FULL;
-} // namespace impl
 
-using impl::CONV_CENTRAL;
-using impl::CONV_FULL;
+enum class eConvolutionMethod {
+	/// <summary> Computes only the central part of the convolution, such that the signals don't need to be padded. </summary>
+	CENTRAL,
+	/// <summary> Computes the full convolution, padding the signals with virtual zeros to both sides. </summary>
+	FULL,
+};
 
-/// <summary> Calculates the length of the result of the convolution U*V. </summary>
-/// <param name="lengthU"> size of U. </param>
-/// <param name="lengthV"> size of V. </param>
-constexpr size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvCentral) {
-	if (lengthU == 0 || lengthV == 0) {
-		return 0;
-	}
-	const auto& mm = std::minmax(lengthU, lengthV);
-	const auto& shorter = mm.first;
-	const auto& longer = mm.second;
-	return longer - shorter + 1;
-}
+
+inline constexpr auto CONV_CENTRAL = std::integral_constant<eConvolutionMethod, eConvolutionMethod::CENTRAL>{};
+inline constexpr auto CONV_FULL = std::integral_constant<eConvolutionMethod, eConvolutionMethod::FULL>{};
+
 
 /// <summary> Calculates the length of the result of the convolution U*V. </summary>
 /// <param name="lengthU"> size of U. </param>
 /// <param name="lengthV"> size of V. </param>
-constexpr size_t ConvolutionLength(size_t lengthU, size_t lengthV, impl::ConvFull) {
+constexpr size_t ConvolutionLength(size_t lengthU, size_t lengthV, eConvolutionMethod method) {
 	if (lengthU == 0 || lengthV == 0) {
 		return 0;
 	}
-	const auto& mm = std::minmax(lengthU, lengthV);
-	const auto& shorter = mm.first;
-	const auto& longer = mm.second;
-	return longer + shorter - 1;
+	const auto& [shorter, longer] = std::minmax(lengthU, lengthV);
+	return method == eConvolutionMethod::CENTRAL ? longer - shorter + 1 : longer + shorter - 1;
 }
 
-template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, bool clearOut = true) {
+
+/// <summary> Calculates the offset to compute central or full convolution. </summary>
+/// <param name="lengthU"> size of U. </param>
+/// <param name="lengthV"> size of V. </param>
+constexpr size_t ConvolutionOffset(size_t lengthU, size_t lengthV, eConvolutionMethod method) {
+	if (lengthU == 0 || lengthV == 0) {
+		return 0;
+	}
+	return method == eConvolutionMethod::FULL ? size_t(0) : std::min(lengthU - 1, lengthV - 1);
+}
+
+
+/// <summary> Convolve the two signals. </summary>
+/// <param name="out"> The convolved signal is written here. </param>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="offset"> Controls the starting point of the output. </param>
+/// <param name="clearOut"> Set to false if the output buffer is already zeroed. </param>
+/// <remarks> The subset of the full convolution given by [offset, offset + out.size()).
+///		is written into out. </remarks>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT, same_domain_as_r<SignalR> SignalU>
+void Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offset, bool clearOut = true) {
 	const size_t fullLength = ConvolutionLength(u.size(), v.size(), CONV_FULL);
 	assert(offset + out.size() <= fullLength && "Result is outside of full convolution, thus contains some true zeros. I mean, it's ok, but you are probably doing it wrong.");
 
-	// Slided is faster, but it's accuracy degrades for large input and a compensated reduction is better.
+	// Slided is faster, but its accuracy degrades for large input and a compensated reduction is better.
 	const size_t shorterSize = std::min(u.size(), v.size());
 	if (shorterSize <= 32) {
 		kernels::ConvolutionSlide(u.begin(), u.end(), v.begin(), v.end(), out.begin(), out.end(), offset, !clearOut);
@@ -62,45 +69,50 @@ auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, size_t offse
 	}
 }
 
-template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvFull, bool clearOut = true) {
-	const size_t fullLength = ConvolutionLength(u.size(), v.size(), CONV_FULL);
-	assert(out.size() == fullLength && "Use ConvolutionLength to calculate output size properly.");
-	const size_t offset = 0;
+
+/// <summary> Convolve the two signals. </summary>
+/// <param name="out"> The convolved signal is written here. </param>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="clearOut"> Set to false if the output buffer is already zeroed. </param>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT, same_domain_as_r<SignalR> SignalU, eConvolutionMethod Method>
+void Convolution(SignalR&& out, const SignalT& u, const SignalU& v, std::integral_constant<eConvolutionMethod, Method> method, bool clearOut = true) {
+	const auto length = ConvolutionLength(u.size(), v.size(), method);
+	const size_t offset = ConvolutionOffset(u.size(), v.size(), method);
+
+	assert(out.size() == length && "Use ConvolutionLength to calculate output size properly.");
+
 	Convolution(out, u, v, offset, clearOut);
 }
 
-template <class SignalR, class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalR, SignalT, SignalU>, int> = 0>
-auto Convolution(SignalR&& out, const SignalT& u, const SignalU& v, impl::ConvCentral, bool clearOut = true) {
-	const size_t centralLength = ConvolutionLength(u.size(), v.size(), CONV_CENTRAL);
-	assert(out.size() == centralLength && "Use ConvolutionLength to calculate output size properly.");
-	const size_t offset = std::min(u.size() - 1, v.size() - 1);
-	Convolution(out, u, v, offset, clearOut);
-}
 
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
+/// <summary> Convolve the two signals. </summary>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <param name="offset"> Controls the starting point of the output. </param>
+/// <param name="length"> Controls the length of the output. </param>
+/// <returns> The subset of the full convolution given by [offset, offset + length). </returns>
+template <signal_or_view SignalT, same_domain_as<SignalT> SignalU>
 auto Convolution(const SignalT& u, const SignalU& v, size_t offset, size_t length) {
 	constexpr eSignalDomain Domain = domain_v<std::decay_t<SignalT>>;
 	using T = scalar_type_t<std::decay_t<SignalT>>;
 	using U = scalar_type_t<std::decay_t<SignalU>>;
 	using R = multiplies_result_t<T, U>;
 
-	BasicSignal<R, Domain> out(length, R(0));
+	BasicSignal<R, Domain> out(length, R(remove_complex_t<R>(0)));
 	Convolution(out, u, v, offset, false);
 	return out;
 }
 
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto Convolution(const SignalT& u, const SignalU& v, impl::ConvFull) {
-	const size_t length = ConvolutionLength(u.size(), v.size(), CONV_FULL);
-	const size_t offset = 0;
-	return Convolution(u, v, offset, length);
-}
 
-template <class SignalT, class SignalU, std::enable_if_t<is_same_domain_v<SignalT, SignalU>, int> = 0>
-auto Convolution(const SignalT& u, const SignalU& v, impl::ConvCentral) {
-	const size_t length = ConvolutionLength(u.size(), v.size(), CONV_CENTRAL);
-	const size_t offset = std::min(u.size() - 1, v.size() - 1);
+/// <summary> Convolve the two signals. </summary>
+/// <param name="u"> The first argument to the convolution. </param>
+/// <param name="v"> The second argument to the convolution. </param>
+/// <returns> The full or central convolution. </returns>
+template <signal_or_view SignalT, same_domain_as<SignalT> SignalU, eConvolutionMethod Method>
+auto Convolution(const SignalT& u, const SignalU& v, std::integral_constant<eConvolutionMethod, Method> method) {
+	const size_t length = ConvolutionLength(u.size(), v.size(), method);
+	const size_t offset = ConvolutionOffset(u.size(), v.size(), method);
 	return Convolution(u, v, offset, length);
 }
 
