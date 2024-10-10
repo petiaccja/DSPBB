@@ -30,17 +30,8 @@ struct is_signal_view<BasicSignalView<T, Domain>> : std::true_type {};
 template <class T>
 constexpr bool is_signal_view_v = is_signal_view<T>::value;
 
-
 template <class T>
-struct is_signal_like {
-	static constexpr bool value = is_signal<T>::value || is_signal_view<T>::value;
-};
-
-template <class T>
-inline constexpr bool is_signal_like_v = is_signal_like<T>::value;
-
-template <class T>
-concept signal_like = is_signal_like_v<T>;
+concept signal_or_view = is_signal<T>::value || is_signal_view<T>::value;
 
 
 //------------------------------------------------------------------------------
@@ -90,17 +81,43 @@ struct is_mutable<BasicSignal<T, Domain>> {
 };
 
 template <class T, eSignalDomain Domain>
+struct is_mutable<const BasicSignal<T, Domain>> {
+	static constexpr bool value = false;
+};
+
+template <class T, eSignalDomain Domain>
 struct is_mutable<BasicSignalView<T, Domain>> {
 	static constexpr bool value = !std::is_const_v<T>;
 };
 
 template <class T>
-inline constexpr eSignalDomain is_mutable_v = is_mutable<T>::value;
+inline constexpr bool is_mutable_v = is_mutable<T>::value;
+
+
+template <class T>
+concept mutable_signal_or_view = signal_or_view<T> && is_mutable_v<T>;
+
+
+template <class T, class U>
+concept same_domain_as = signal_or_view<T> && signal_or_view<U> && domain_v<T> == domain_v<U>;
+
+
+template <class T>
+concept mutable_signal_or_view_r = mutable_signal_or_view<std::remove_reference_t<T>>;
+
+
+template <class T, class U>
+concept same_domain_as_r = same_domain_as<std::remove_reference_t<T>, std::remove_reference_t<U>>;
+
 
 
 //------------------------------------------------------------------------------
 // Old stuff.
 //------------------------------------------------------------------------------
+
+
+template <class T>
+inline constexpr bool is_signal_like_v = signal_or_view<T>;
 
 
 template <class... Signals>
@@ -112,7 +129,7 @@ struct is_same_domain {
 	static constexpr bool compare() {
 		return domain_v<H1> == domain_v<H2> && compare<H2, Tail...>();
 	}
-	template <class... Signals_, std::enable_if_t<std::conjunction_v<is_signal_like<Signals_>...>, int> = 0>
+	template <class... Signals_, std::enable_if_t<(... && signal_or_view<Signals_>), int> = 0>
 	static constexpr bool test(int) {
 		return compare<Signals_...>();
 	}

@@ -77,6 +77,14 @@ private:
 
 
 template <class T, eSignalDomain Domain>
+BasicSignalView(const BasicSignal<T, Domain>&) -> BasicSignalView<T, Domain>;
+
+
+template <class T, eSignalDomain Domain>
+BasicSignalView(const BasicSignalView<T, Domain>&) -> BasicSignalView<T, Domain>;
+
+
+template <class T, eSignalDomain Domain>
 auto BasicSignalView<T, Domain>::front() const -> reference {
 	return m_container.back();
 }
@@ -149,6 +157,65 @@ auto BasicSignalView<T, Domain>::rbegin() const -> reverse_iterator {
 template <class T, eSignalDomain Domain>
 auto BasicSignalView<T, Domain>::rend() const -> reverse_iterator {
 	return m_container.rend();
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsAliasing(const BasicSignalView<T, Domain1>& lhs, const BasicSignalView<T, Domain2>& rhs) {
+	if (lhs.empty() || rhs.empty()) {
+		return false;
+	}
+	auto [pFrontLhs, pBackLhs] = std::tuple(std::addressof(lhs.front()), std::addressof(lhs.back()));
+	auto [pFrontRhs, pBackRhs] = std::tuple(std::addressof(rhs.front()), std::addressof(rhs.back()));
+	return (pFrontLhs <= pFrontRhs && pFrontRhs <= pBackLhs)
+		   || (pFrontRhs <= pFrontLhs && pFrontLhs <= pBackRhs);
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsFullyAliasing(const BasicSignalView<T, Domain1>& lhs, const BasicSignalView<T, Domain2>& rhs) {
+	if (lhs.empty() || rhs.empty()) {
+		return false;
+	}
+	auto [pFrontLhs, pBackLhs] = std::tuple(std::addressof(lhs.front()), std::addressof(lhs.back()));
+	auto [pFrontRhs, pBackRhs] = std::tuple(std::addressof(rhs.front()), std::addressof(rhs.back()));
+	return pFrontLhs == pFrontRhs && pBackLhs && pBackRhs;
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsAliasing(const BasicSignal<T, Domain1>& lhs, const BasicSignalView<T, Domain2>& rhs) {
+	return IsAliasing(BasicSignalView(lhs), rhs);
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsFullyAliasing(const BasicSignal<T, Domain1>& lhs, const BasicSignalView<T, Domain2>& rhs) {
+	return IsFullyAliasing(BasicSignalView(lhs), rhs);
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsAliasing(const BasicSignalView<T, Domain1>& lhs, const BasicSignal<T, Domain2>& rhs) {
+	return IsAliasing(lhs, BasicSignalView(rhs));
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsFullyAliasing(const BasicSignalView<T, Domain1>& lhs, const BasicSignal<T, Domain2>& rhs) {
+	return IsFullyAliasing(lhs, BasicSignalView(rhs));
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsAliasing(const BasicSignal<T, Domain1>& lhs, const BasicSignal<T, Domain2>& rhs) {
+	return false;
+}
+
+
+template <class T, eSignalDomain Domain1, eSignalDomain Domain2>
+bool IsFullyAliasing(const BasicSignal<T, Domain1>& lhs, const BasicSignal<T, Domain2>& rhs) {
+	return false;
 }
 
 

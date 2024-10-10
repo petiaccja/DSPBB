@@ -1,49 +1,96 @@
 #pragma once
 
+#include "../../Signal/Signal.hpp"
+#include "../../Signal/SignalView.hpp"
 #include "../../Signal/Traits.hpp"
-#include "../../Utility/Numbers.hpp"
 
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <numbers>
 
 
 namespace dspbb::fir {
 
 
-template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+/// <summary> Mirror the frequency response of a FIR filter. </summary>
+/// <param name="mirrored"> The mirrored filter is written here. </param>
+/// <param name="filter"> The filter who's response to mirror. </param>
+/// <remarks> For example, a low-pass filter at cutoff of 0.6 is turned into a
+///		high-pass filter as cutoff 0.4. </remarks>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT>
 void MirrorResponse(SignalR&& mirrored, const SignalT& filter) {
+	assert(!IsAliasing(mirrored, filter) || IsFullyAliasing(mirrored, filter));
 	assert(mirrored.size() == filter.size());
+
 	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using T = scalar_type_t<std::decay_t<SignalT>>;
+
 	T sign = T(1);
 	for (size_t i = 0; i < filter.size(); ++i, sign *= T(-1)) {
 		mirrored[i] = R(sign * filter[i]);
 	}
 }
 
-template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
+
+/// <summary> Mirror the frequency response of a FIR filter in-place. </summary>
+template <mutable_signal_or_view_r SignalR>
+void MirrorResponse(SignalR&& filter) {
+	MirrorResponse(filter, filter);
+}
+
+
+/// <summary> Find the complement of a FIR filter. </summary>
+/// <param name="complementary"> The complementary filter is written here. </param>
+/// <param name="filter"> The filter who's complement to find. </param>
+/// <remarks> The complementary, when added to the original filter, will
+///		form an all-pass filter. </remarks>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT>
 void ComplementaryResponse(SignalR&& complementary, const SignalT& filter) {
+	assert(!IsAliasing(complementary, filter) || IsFullyAliasing(complementary, filter));
 	assert(filter.size() % 2 == 1);
+
 	using R = scalar_type_t<std::decay_t<SignalR>>;
 	using T = scalar_type_t<std::decay_t<SignalT>>;
+
 	Multiply(complementary, filter, T(-1));
 	complementary[complementary.size() / 2] += R(1);
 }
 
-template <class SignalR, class SignalT, class U, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
-void ShiftResponse(SignalR&& moved, const SignalT& filter, U normalizedFrequency) {
-	assert(moved.size() == filter.size());
+
+/// <summary> Find the complement of a FIR filter in-place. </summary>
+template <mutable_signal_or_view_r SignalR>
+void ComplementaryResponse(SignalR&& filter) {
+	ComplementaryResponse(filter, filter);
+}
+
+
+/// <summary> Shift the response of a filter by a given frequency. </summary>
+/// <param name="shifted"> The shifted filter is written here. </param>
+/// <param name="filter"> The filter who's response to shift. </param>
+/// <param name="normalizedFrequency"> The amount of shift in normalized frequency [-1, 1]. </param>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT, class U>
+void ShiftResponse(SignalR&& shifted, const SignalT& filter, U normalizedFrequency) {
+	assert(!IsAliasing(shifted, filter) || IsFullyAliasing(shifted, filter));
+	assert(shifted.size() == shifted.size());
+
 	const auto offset = static_cast<U>(filter.size() / 2);
-	const U scale = pi_v<U> * normalizedFrequency;
+	const U scale = std::numbers::pi_v<U> * normalizedFrequency;
 	const size_t size = filter.size();
 	for (size_t i = 0; i < size / 2; ++i) {
 		const U x = (U(i) - offset) * scale;
 		const U c = std::cos(x);
-		moved[i] = c * filter[i];
-		moved[size - i - 1] = c * filter[size - i - 1];
+		shifted[i] = c * filter[i];
+		shifted[size - i - 1] = c * filter[size - i - 1];
 	}
-	moved *= scalar_type_t<SignalT>(2);
+	shifted *= scalar_type_t<SignalT>(2);
+}
+
+
+/// <summary> Shift the response of a filter by a given frequency in-place. </summary>
+template <mutable_signal_or_view_r SignalR, class U>
+void ShiftResponse(SignalR&& filter, U normalizedFrequency) {
+	ShiftResponse(filter, filter, normalizedFrequency);
 }
 
 
@@ -58,11 +105,16 @@ namespace impl {
 		2, 0, -2, 0, 2, 0, -2, 0,
 		2, 0, -2, 0, 2, 0, -2, 0
 	};
+
 } // namespace impl
 
 
-template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR> && is_same_domain_v<SignalR, SignalT>, int> = 0>
-void HalfbandToHilbertOdd(SignalR& out, const SignalT& halfband) {
+/// <summary> Convert a halfband (low-pass with cutoff at 0.5) filter to a hilbert filter. </summary>
+/// <param name="out"> The hilbert filter is written here. </param>
+/// <param name="halfband"> The halfband filter, which must have an odd number of coefficients. </param>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT>
+void HalfbandToHilbertOdd(SignalR&& out, const SignalT& halfband) {
+	assert(!IsAliasing(out, halfband) || IsFullyAliasing(out, halfband));
 	assert(halfband.size() % 2 == 1);
 	assert(out.size() == halfband.size());
 
@@ -99,8 +151,20 @@ void HalfbandToHilbertOdd(SignalR& out, const SignalT& halfband) {
 	}
 }
 
-template <class SignalR, class SignalT, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HalfbandToHilbertEven(SignalR& out, const SignalT& halfband) {
+
+/// <summary> Convert a halfband (low-pass with cutoff at 0.5) filter to a hilbert filter in-place. </summary>
+template <mutable_signal_or_view_r SignalR>
+void HalfbandToHilbertOdd(SignalR&& filter) {
+	HalfbandToHilbertOdd(filter, filter);
+}
+
+
+/// <summary> Convert a halfband (low-pass with cutoff at 0.5) filter to a hilbert filter. </summary>
+/// <param name="out"> The hilbert filter is written here. The size must be len(halfband + 1) / 2. </param>
+/// <param name="halfband"> The halfband filter, which must have an odd number of coefficients. </param>
+template <mutable_signal_or_view_r SignalR, same_domain_as_r<SignalR> SignalT>
+void HalfbandToHilbertEven(SignalR&& out, const SignalT& halfband) {
+	assert(!IsAliasing(out, halfband));
 	assert(out.size() % 2 == 0);
 	assert(out.size() * 2 - 1 == halfband.size());
 

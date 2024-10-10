@@ -402,9 +402,9 @@ auto InnerProduct(Iter1 first1, Iter1 last1, Iter2 first2, Init init, ReduceOp r
 	using T2 = typename std::iterator_traits<Iter2>::value_type;
 
 	const auto count = std::distance(first1, last1);
-	const T1* pfirst1 = std::addressof(*first1);
+	const T1* pfirst1 = count != 0 ? std::addressof(*first1) : nullptr;
 	const T1* plast1 = pfirst1 + count;
-	const T2* pfirst2 = std::addressof(*first2);
+	const T2* pfirst2 = count != 0 ? std::addressof(*first2) : nullptr;
 
 	if constexpr (is_inner_product_vectorized<Init, T1, T2, ProductOp, ReduceOp>::value) {
 		using V1 = xsimd::simd_type<T1>;
