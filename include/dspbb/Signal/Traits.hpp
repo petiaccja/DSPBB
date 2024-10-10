@@ -110,6 +110,14 @@ template <class T, class U>
 concept same_domain_as_r = same_domain_as<std::remove_reference_t<T>, std::remove_reference_t<U>>;
 
 
+template <class T>
+concept windows_function_factory = requires(const T& windowFunction, BasicSignal<float, eSignalDomain::TIME>& output, size_t length) {
+	windowFunction(output);
+	{
+		windowFunction.template operator()<float, eSignalDomain::TIME>(length)
+	} -> signal_or_view;
+};
+
 
 //------------------------------------------------------------------------------
 // Old stuff.

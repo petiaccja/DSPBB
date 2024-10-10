@@ -40,7 +40,7 @@ namespace impl {
 			}
 
 			/// <summary> Set the window used for the window method when creating the filter as a generator function. </summary>
-			template <std::invocable<BasicSignal<float, TIME_DOMAIN>&> NewWindowType>
+			template <windows_function_factory NewWindowType>
 			[[nodiscard]] auto Window(NewWindowType windowNew) const {
 				return Desc<ParamType, NewWindowType>{ { cutoff, std::move(windowNew) } };
 			}
@@ -76,7 +76,7 @@ namespace impl {
 			}
 
 			/// <summary> Set the window used for the window method when creating the filter as a generator function. </summary>
-			template <std::invocable<BasicSignal<float, TIME_DOMAIN>&> NewWindowType>
+			template <windows_function_factory NewWindowType>
 			[[nodiscard]] auto Window(NewWindowType windowNew) const {
 				return Desc<ParamType, NewWindowType>{ { lower, upper, std::move(windowNew) } };
 			}
@@ -100,13 +100,13 @@ namespace impl {
 			ResponseFunc responseFunc{};
 			WindowType window;
 
-			template <class NewResponseFunc, std::enable_if_t<std::is_invocable_v<NewResponseFunc, float>, int> = 0>
+			template <std::invocable<float> NewResponseFunc>
 			[[nodiscard]] auto Response(NewResponseFunc responseFuncNew) const {
 				return ArbitraryDesc<NewResponseFunc, WindowType>{ std::move(responseFuncNew), window };
 			}
 
 			/// <summary> Set the window used for the window method when creating the filter as a generator function. </summary>
-			template <std::invocable<BasicSignal<float, TIME_DOMAIN>&> NewWindowType>
+			template <windows_function_factory NewWindowType>
 			[[nodiscard]] auto Window(NewWindowType windowNew) const {
 				return ArbitraryDesc<ResponseFunc, NewWindowType>{ responseFunc, std::move(windowNew) };
 			}
@@ -123,7 +123,7 @@ namespace impl {
 			WindowType window;
 
 			/// <summary> Set the window used for the window method when creating the filter as a generator function. </summary>
-			template <std::invocable<BasicSignal<float, TIME_DOMAIN>&> NewWindowType>
+			template <windows_function_factory NewWindowType>
 			[[nodiscard]] auto Window(NewWindowType windowNew) const {
 				return HilbertDesc<NewWindowType>{ std::move(windowNew) };
 			}

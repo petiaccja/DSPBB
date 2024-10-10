@@ -1,7 +1,8 @@
 #pragma once
 
+#include "../../Signal/Signal.hpp"
+#include "../../Signal/SignalView.hpp"
 #include "../../Signal/Traits.hpp"
-#include "../../Utility/Numbers.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/QR>
@@ -67,7 +68,13 @@ namespace impl {
 } // namespace impl
 
 
-template <class SignalR, class ResponseFunc, class WeightFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Generate a least-squares filter of arbitrary response. </summary>
+/// <param name="coefficients"> The generated FIR least-squares filter. </param>
+/// <param name="responseFunc">	The continuous response of the filter. </param>
+/// <param name="weightFunc"> The continuous weight of the filter. </param>
+/// <param name="gridSize"> The size of the discretization grid, leave as zero for automatic. </param>
+template <mutable_signal_or_view_r SignalR, class ResponseFunc, class WeightFunc>
 void KernelLeastSquares(SignalR&& coefficients, ResponseFunc responseFunc, WeightFunc weightFunc, size_t gridSize = 0) {
 	using R = typename std::decay_t<SignalR>::value_type;
 	using T = remove_complex_t<R>;
