@@ -13,19 +13,32 @@ namespace dspbb {
 // Direct form I
 //------------------------------------------------------------------------------
 
+/// <summary> The direct form I realization of an IIR filter. </summary>
+/// <remarks> Used to store the internal state of the filter. </remarks>
 template <class T>
 class DirectFormI {
 public:
 	DirectFormI() = default;
 	explicit DirectFormI(size_t order);
 
+	/// <summary> Set the order of the filter this realization is used for. </summary>
 	void order(size_t order);
+
+	/// <summary> Fills the state with all zeros. </summary>
 	void reset();
+
+	/// <summary> Get the order of the filter this realization is used for. </summary>
 	size_t order() const;
 
+	/// <summary> Pass unfiltered data through the filter. </summary>
+	/// <returns> Filtered data. </returns>
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	T feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
+	/// <summary> Pass unfiltered data through the filter. </summary>
+	/// <param name="first"> Iterator to the first sample of the unfiltered input. </param>
+	/// <param name="last"> Iterator to the past-the-last sample of the unfiltered input. </param>
+	/// <param name="outFirst"> Iterator where the filtered signal is written. </param>
 	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	void feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
 
@@ -102,19 +115,32 @@ void DirectFormI<T>::feed(InIter first, InIter last, OutIter outFirst, const Dis
 // Direct form II
 //------------------------------------------------------------------------------
 
+/// <summary> The direct form II realization of an IIR filter. </summary>
+/// <remarks> Used to store the internal state of the filter. </remarks>
 template <class T>
 class DirectFormII {
 public:
 	DirectFormII() = default;
 	explicit DirectFormII(size_t order);
 
+	/// <summary> Set the order of the filter this realization is used for. </summary>
 	void order(size_t order);
+
+	/// <summary> Fills the state with all zeros. </summary>
 	void reset();
+
+	/// <summary> Get the order of the filter this realization is used for. </summary>
 	size_t order() const;
 
+	/// <summary> Pass unfiltered data through the filter. </summary>
+	/// <returns> Filtered data. </returns>
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	T feed(const InputT& input, const DiscreteTransferFunction<SystemT>& sys);
 
+	/// <summary> Pass unfiltered data through the filter. </summary>
+	/// <param name="first"> Iterator to the first sample of the unfiltered input. </param>
+	/// <param name="last"> Iterator to the past-the-last sample of the unfiltered input. </param>
+	/// <param name="outFirst"> Iterator where the filtered signal is written. </param>
 	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	void feed(InIter first, InIter last, OutIter outFirst, const DiscreteTransferFunction<SystemT>& sys);
 
@@ -179,19 +205,34 @@ void DirectFormII<T>::feed(InIter first, InIter last, OutIter outFirst, const Di
 // Cascaded form
 //------------------------------------------------------------------------------
 
+/// <summary> The cascaded biquad realization of an IIR filter. </summary>
+/// <remarks> Used to store the internal state of the filter.
+///		This is much more accurate than the direct forms, so try to
+///		use this whenever possible. </remarks>
 template <class T>
 class CascadedForm {
 public:
 	CascadedForm() = default;
 	explicit CascadedForm(size_t order);
 
+	/// <summary> Set the order of the filter this realization is used for. </summary>
 	void order(size_t order);
+
+	/// <summary> Fills the state with all zeros. </summary>
 	void reset();
+
+	/// <summary> Get the order of the filter this realization is used for. </summary>
 	size_t order() const;
 
+	/// <summary> Pass unfiltered data through the filter. </summary>
+	/// <returns> Filtered data. </returns>
 	template <class InputT, class SystemT, std::enable_if_t<std::is_convertible_v<InputT, T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	T feed(const InputT& input, const CascadedBiquad<SystemT>& sys);
 
+	/// <summary> Pass unfiltered data through the filter. </summary>
+	/// <param name="first"> Iterator to the first sample of the unfiltered input. </param>
+	/// <param name="last"> Iterator to the past-the-last sample of the unfiltered input. </param>
+	/// <param name="outFirst"> Iterator where the filtered signal is written. </param>
 	template <class InIter, class OutIter, class SystemT, std::enable_if_t<std::is_convertible_v<decltype(*std::declval<InIter>()), T> && std::is_convertible_v<SystemT, T>, int> = 0>
 	void feed(InIter first, InIter last, OutIter outFirst, const CascadedBiquad<SystemT>& sys);
 

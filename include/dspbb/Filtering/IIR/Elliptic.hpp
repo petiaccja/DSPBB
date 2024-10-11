@@ -49,6 +49,10 @@ namespace impl {
 } // namespace impl
 
 
+/// <summary> Create a continuous elliptic (Cauer) low-pass filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="passbandRipple"> The magnitude of the fitler's equi-ripples in the passband. </param>
+/// <param name="stopbandRipple"> The magnitude of the fitler's equi-ripples in the stopband. </param>
 template <class T>
 ZeroPoleGain<T, eDiscretization::CONTINUOUS> Elliptic(size_t order, T passbandRipple, T stopbandRipple) {
 	const auto [k, kp, K, Kp, k1, k1p, K1, K1p, epsilon] = impl::EllipticOrderRipples(order, passbandRipple, stopbandRipple);

@@ -7,6 +7,8 @@
 
 namespace dspbb {
 
+/// <summary> Create a continuous Butterworth low-pass filter. </summary>
+/// <param name="order"> The order of the filter. </param>
 template <class T>
 ZeroPoleGain<T, eDiscretization::CONTINUOUS> Butterworth(size_t order) {
 	FactoredPolynomial<T> poles;
@@ -21,6 +23,5 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Butterworth(size_t order) {
 
 	return { T(1), {}, std::move(poles) };
 }
-
 
 } // namespace dspbb

@@ -5,6 +5,8 @@
 #include "../../Utility/Numbers.hpp"
 
 #include <complex>
+#include <concepts>
+
 
 namespace dspbb {
 
@@ -88,9 +90,14 @@ namespace impl {
 
 } // namespace impl
 
+
+/// <summary> Convert a halfband filter into a low-pass filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="cutoffFreqNorm"> The cutoff frequency of the low-pass filter, normalized frequency.. </param>
+/// <returns> The low-pass filter. </returns>
 template <class T>
-DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, T to) {
-	const T w = to * pi_v<T>;
+DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, T cutoffFreqNorm) {
+	const T w = cutoffFreqNorm * pi_v<T>;
 
 	const T s = T(1);
 	const T a1 = 1;
@@ -99,9 +106,14 @@ DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, 
 	return impl::MapZDomain(system, s, a0, a1);
 }
 
+
+/// <summary> Convert a halfband filter into a high-pass filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="cutoffFreqNorm"> The cutoff frequency of the high-pass filter, normalized frequency.. </param>
+/// <returns> The high-pass filter. </returns>
 template <class T>
-DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system, T to) {
-	const T w = to * pi_v<T>;
+DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system, T cutoffFreqNorm) {
+	const T w = cutoffFreqNorm * pi_v<T>;
 
 	const T s = -T(1);
 	const T a1 = std::cos(w) / (-1 + std::sin(w));
@@ -110,10 +122,16 @@ DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system,
 	return impl::MapZDomain(system, s, a0, a1);
 }
 
+
+/// <summary> Convert a halfband filter into a band-pass filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="bandBeginNorm"> The beginning of the pass-band, normalized frequency. </param>
+/// <param name="bandEndNorm"> The end of the pass-band, normalized frequency. </param>
+/// <returns> The band-pass filter. </returns>
 template <class T>
-DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system, T to1, T to2) {
-	const T w1 = to1 * pi_v<T>;
-	const T w2 = to2 * pi_v<T>;
+DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system, T bandBeginNorm, T bandEndNorm) {
+	const T w1 = bandBeginNorm * pi_v<T>;
+	const T w2 = bandEndNorm * pi_v<T>;
 
 	const T s = -T(1);
 	const T a2 = -1 + 2 / (1 + std::tan((w1 - w2) / 2));
@@ -123,10 +141,16 @@ DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system,
 	return impl::MapZDomain(system, s, a0, a1, a2);
 }
 
+
+/// <summary> Convert a halfband filter into a band-stop filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="bandBeginNorm"> The beginning of the stop-band, normalized frequency. </param>
+/// <param name="bandEndNorm"> The end of the stop-band, normalized frequency. </param>
+/// <returns> The band-stop filter. </returns>
 template <class T>
-DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system, T to1, T to2) {
-	const T w1 = to1 * pi_v<T>;
-	const T w2 = to2 * pi_v<T>;
+DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system, T bandBeginNorm, T bandEndNorm) {
+	const T w1 = bandBeginNorm * pi_v<T>;
+	const T w2 = bandEndNorm * pi_v<T>;
 
 	const T s = T(1);
 	const T a2 = 1;
@@ -136,24 +160,46 @@ DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system,
 	return impl::MapZDomain(system, s, a0, a1, a2);
 }
 
-template <class T, class T2, std::enable_if_t<std::is_convertible_v<T2, T>, int> = 0>
-DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, T2 to) {
-	return Halfband2Lowpass(system, static_cast<T>(to));
+
+/// <summary> Convert a halfband filter into a low-pass filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="cutoffFreqNorm"> The cutoff frequency of the low-pass filter, normalized frequency.. </param>
+/// <returns> The low-pass filter. </returns>
+template <class T, std::convertible_to<T> T2>
+DiscreteZeroPoleGain<T> Halfband2Lowpass(const DiscreteZeroPoleGain<T>& system, T2 cutoffFreqNorm) {
+	return Halfband2Lowpass(system, static_cast<T>(cutoffFreqNorm));
 }
 
-template <class T, class T2, std::enable_if_t<std::is_convertible_v<T2, T>, int> = 0>
-DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system, T2 to) {
-	return Halfband2Highpass(system, static_cast<T>(to));
+
+/// <summary> Convert a halfband filter into a high-pass filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="cutoffFreqNorm"> The cutoff frequency of the high-pass filter, normalized frequency.. </param>
+/// <returns> The high-pass filter. </returns>
+template <class T, std::convertible_to<T> T2>
+DiscreteZeroPoleGain<T> Halfband2Highpass(const DiscreteZeroPoleGain<T>& system, T2 cutoffFreqNorm) {
+	return Halfband2Highpass(system, static_cast<T>(cutoffFreqNorm));
 }
 
-template <class T, class T2, class T3, std::enable_if_t<std::is_convertible_v<T2, T> && std::is_convertible_v<T3, T>, int> = 0>
-DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system, T2 to1, T3 to2) {
-	return Halfband2Bandpass(system, static_cast<T>(to1), static_cast<T>(to2));
+
+/// <summary> Convert a halfband filter into a band-pass filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="bandBeginNorm"> The beginning of the pass-band, normalized frequency. </param>
+/// <param name="bandEndNorm"> The end of the pass-band, normalized frequency. </param>
+/// <returns> The band-pass filter. </returns>
+template <class T, std::convertible_to<T> T2, std::convertible_to<T> T3>
+DiscreteZeroPoleGain<T> Halfband2Bandpass(const DiscreteZeroPoleGain<T>& system, T2 bandBeginNorm, T3 bandEndNorm) {
+	return Halfband2Bandpass(system, static_cast<T>(bandBeginNorm), static_cast<T>(bandEndNorm));
 }
 
-template <class T, class T2, class T3, std::enable_if_t<std::is_convertible_v<T2, T> && std::is_convertible_v<T3, T>, int> = 0>
-DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system, T2 to1, T3 to2) {
-	return Halfband2Bandstop(system, static_cast<T>(to1), static_cast<T>(to2));
+
+/// <summary> Convert a halfband filter into a band-stop filter. </summary>
+/// <param name="system"> The halfband filter. </param>
+/// <param name="bandBeginNorm"> The beginning of the stop-band, normalized frequency. </param>
+/// <param name="bandEndNorm"> The end of the stop-band, normalized frequency. </param>
+/// <returns> The band-stop filter. </returns>
+template <class T, std::convertible_to<T> T2, std::convertible_to<T> T3>
+DiscreteZeroPoleGain<T> Halfband2Bandstop(const DiscreteZeroPoleGain<T>& system, T2 bandBeginNorm, T3 bandEndNorm) {
+	return Halfband2Bandstop(system, static_cast<T>(bandBeginNorm), static_cast<T>(bandEndNorm));
 }
 
 } // namespace dspbb

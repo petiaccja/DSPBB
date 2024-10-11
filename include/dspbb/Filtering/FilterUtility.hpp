@@ -5,6 +5,10 @@
 
 namespace dspbb {
 
+/// <summary> Change a real frequency into a normalized frequency. </summary>
+/// <param name="frequency"> The real frequency, for example, 440 Hz. </param>
+/// <param name="sampleRate"> The working sample rate, for example, 44100 Hz. </param>
+/// <returns> The normalized frequency, for example, ~0.02. </returns>
 template <class T, class U>
 T NormalizedFrequency(T frequency, U sampleRate) {
 	return T(2) * frequency / T(sampleRate);

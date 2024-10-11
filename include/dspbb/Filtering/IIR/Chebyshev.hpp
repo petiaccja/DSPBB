@@ -31,6 +31,10 @@ namespace impl {
 
 } // namespace impl
 
+
+/// <summary> Create a continuous Chebyshev type I low-pass filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="ripple"> The magnitude of the fitler's equi-ripples. </param>
 template <class T>
 ZeroPoleGain<T, eDiscretization::CONTINUOUS> Chebyshev1(size_t order, T ripple) {
 	const T epsilon = std::sqrt(T(1) / std::pow(T(1) - ripple, T(2)) - 1);
@@ -52,6 +56,9 @@ ZeroPoleGain<T, eDiscretization::CONTINUOUS> Chebyshev1(size_t order, T ripple) 
 }
 
 
+/// <summary> Create a continuous Chebyshev type II low-pass filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="ripple"> The magnitude of the fitler's equi-ripples. </param>
 template <class T>
 ZeroPoleGain<T, eDiscretization::CONTINUOUS> Chebyshev2(size_t order, T ripple) {
 	const T epsilon = ripple / std::sqrt(T(1) - ripple * ripple);
