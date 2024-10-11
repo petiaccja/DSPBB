@@ -53,6 +53,10 @@ namespace impl {
 // Butterworth method
 //------------------------------------------------------------------------------
 
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::butterworth::LowpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeButterworth<T>(order);
@@ -60,6 +64,11 @@ auto DesignFilter(size_t order, const impl::butterworth::LowpassDesc<ParamType>&
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::butterworth::HighpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeButterworth<T>(order);
@@ -67,6 +76,11 @@ auto DesignFilter(size_t order, const impl::butterworth::HighpassDesc<ParamType>
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::butterworth::BandpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -75,6 +89,11 @@ auto DesignFilter(size_t order, const impl::butterworth::BandpassDesc<ParamType>
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::butterworth::BandstopDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -87,6 +106,10 @@ auto DesignFilter(size_t order, const impl::butterworth::BandstopDesc<ParamType>
 // Chebyshev 1 method
 //------------------------------------------------------------------------------
 
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev1::LowpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeChebyshev1<T>(order, desc.passbandRipple);
@@ -94,6 +117,11 @@ auto DesignFilter(size_t order, const impl::chebyshev1::LowpassDesc<ParamType>& 
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev1::HighpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeChebyshev1<T>(order, desc.passbandRipple);
@@ -101,6 +129,11 @@ auto DesignFilter(size_t order, const impl::chebyshev1::HighpassDesc<ParamType>&
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev1::BandpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -109,6 +142,11 @@ auto DesignFilter(size_t order, const impl::chebyshev1::BandpassDesc<ParamType>&
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev1::BandstopDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -121,6 +159,11 @@ auto DesignFilter(size_t order, const impl::chebyshev1::BandstopDesc<ParamType>&
 // Chebyshev 2 method
 //------------------------------------------------------------------------------
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev2::LowpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeChebyshev2<T>(order, desc.stopbandRipple);
@@ -128,6 +171,11 @@ auto DesignFilter(size_t order, const impl::chebyshev2::LowpassDesc<ParamType>& 
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev2::HighpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeChebyshev2<T>(order, desc.stopbandRipple);
@@ -135,6 +183,11 @@ auto DesignFilter(size_t order, const impl::chebyshev2::HighpassDesc<ParamType>&
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev2::BandpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -143,6 +196,11 @@ auto DesignFilter(size_t order, const impl::chebyshev2::BandpassDesc<ParamType>&
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::chebyshev2::BandstopDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -155,6 +213,10 @@ auto DesignFilter(size_t order, const impl::chebyshev2::BandstopDesc<ParamType>&
 // Elliptic method
 //------------------------------------------------------------------------------
 
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::elliptic::LowpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeElliptic<T>(order, desc.passbandRipple, desc.stopbandRipple);
@@ -162,6 +224,11 @@ auto DesignFilter(size_t order, const impl::elliptic::LowpassDesc<ParamType>& de
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::elliptic::HighpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	const auto halfband = impl::PrototypeElliptic<T>(order, desc.passbandRipple, desc.stopbandRipple);
@@ -169,6 +236,11 @@ auto DesignFilter(size_t order, const impl::elliptic::HighpassDesc<ParamType>& d
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::elliptic::BandpassDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);
@@ -177,6 +249,11 @@ auto DesignFilter(size_t order, const impl::elliptic::BandpassDesc<ParamType>& d
 	return filter;
 }
 
+
+/// <summary> Design an IIR filter. </summary>
+/// <param name="order"> The order of the filter. </param>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The designed filter as an LTI system. </returns>
 template <class T, class ParamType>
 auto DesignFilter(size_t order, const impl::elliptic::BandstopDesc<ParamType>& desc) -> DiscreteZeroPoleGain<T> {
 	assert(order % 2 == 0);

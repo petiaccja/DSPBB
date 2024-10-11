@@ -16,21 +16,29 @@ namespace dspbb {
 // Window method
 //------------------------------------------------------------------------------
 
-// Lowpass
-template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType, class WindowType>
 void DesignFilter(SignalR&& out, const impl::windowed::LowpassDesc<ParamType, WindowType>& desc) {
 	fir::KernelWindowedLowpass(out, desc.cutoff, desc.window);
 }
 
-// Highpass
-template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType, class WindowType>
 void DesignFilter(SignalR&& out, const impl::windowed::HighpassDesc<ParamType, WindowType>& desc) {
 	DesignFilter(out, Fir.Lowpass.Windowed.Cutoff(desc.cutoff).Window(desc.window));
 	fir::ComplementaryResponse(out, out);
 }
 
-// Bandpass
-template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType, class WindowType>
 void DesignFilter(SignalR&& out, const impl::windowed::BandpassDesc<ParamType, WindowType>& desc) {
 	const ParamType bandWidth = desc.upper - desc.lower;
 	const ParamType bandCenter = (desc.upper + desc.lower) / ParamType(2);
@@ -38,15 +46,21 @@ void DesignFilter(SignalR&& out, const impl::windowed::BandpassDesc<ParamType, W
 	fir::ShiftResponse(out, out, bandCenter);
 }
 
-// Bandstop
-template <class SignalR, class ParamType, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType, class WindowType>
 void DesignFilter(SignalR&& out, const impl::windowed::BandstopDesc<ParamType, WindowType>& desc) {
 	DesignFilter(out, Fir.Bandpass.Windowed.Band(desc.lower, desc.upper).Window(desc.window));
 	fir::ComplementaryResponse(out, out);
 }
 
-// Arbitrary
-template <class SignalR, class ResponseFunc, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ResponseFunc, class WindowType>
 void DesignFilter(SignalR&& out, const impl::windowed::ArbitraryDesc<ResponseFunc, WindowType>& desc) {
 	fir::KernelWindowedArbitrary(out, desc.responseFunc, desc.window);
 }
@@ -97,7 +111,11 @@ namespace impl {
 	}
 } // namespace impl
 
-template <class SignalR, class ParamType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType>
 auto DesignFilter(SignalR&& out, const impl::least_squares::LowpassDesc<ParamType>& desc) {
 	const auto response = [desc](auto f) {
 		using F = std::decay_t<decltype(f)>;
@@ -109,7 +127,11 @@ auto DesignFilter(SignalR&& out, const impl::least_squares::LowpassDesc<ParamTyp
 	fir::KernelLeastSquares(out, response, weight, desc.grid);
 }
 
-template <class SignalR, class ParamType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType>
 auto DesignFilter(SignalR&& out, const impl::least_squares::HighpassDesc<ParamType>& desc) {
 	const auto response = [desc](auto f) {
 		using F = std::decay_t<decltype(f)>;
@@ -121,7 +143,11 @@ auto DesignFilter(SignalR&& out, const impl::least_squares::HighpassDesc<ParamTy
 	fir::KernelLeastSquares(out, response, weight, desc.grid);
 }
 
-template <class SignalR, class ParamType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType>
 auto DesignFilter(SignalR&& out, const impl::least_squares::BandpassDesc<ParamType>& desc) {
 	const ParamType fmid = (desc.lowerEnd + desc.upperBegin) / ParamType(2);
 	const auto response = [desc, fmid](auto f) {
@@ -135,7 +161,11 @@ auto DesignFilter(SignalR&& out, const impl::least_squares::BandpassDesc<ParamTy
 	fir::KernelLeastSquares(out, response, weight, desc.grid);
 }
 
-template <class SignalR, class ParamType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType>
 auto DesignFilter(SignalR&& out, const impl::least_squares::BandstopDesc<ParamType>& desc) {
 	const ParamType fmid = (desc.lowerEnd + desc.upperBegin) / ParamType(2);
 	const auto response = [desc, fmid](auto f) {
@@ -149,7 +179,11 @@ auto DesignFilter(SignalR&& out, const impl::least_squares::BandstopDesc<ParamTy
 	fir::KernelLeastSquares(out, response, weight, desc.grid);
 }
 
-template <class SignalR, class ResponseFunc, class WeightFunc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ResponseFunc, class WeightFunc>
 auto DesignFilter(SignalR&& out, const impl::least_squares::ArbitraryDesc<ResponseFunc, WeightFunc>& desc) {
 	const auto& response = desc.responseFunc;
 	const auto& weight = desc.weightFunc;
@@ -163,7 +197,7 @@ auto DesignFilter(SignalR&& out, const impl::least_squares::ArbitraryDesc<Respon
 
 namespace impl {
 
-	template <class SignalR, class HalfbandDesc, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+	template <mutable_signal_or_view_r SignalR, class HalfbandDesc>
 	void FirFilterHilbert(SignalR&& out, const HalfbandDesc& halfbandDesc) {
 		if (out.size() % 2 == 0) {
 			const size_t halfbandSize = out.size() * 2 - 1;
@@ -179,13 +213,21 @@ namespace impl {
 
 } // namespace impl
 
-template <class SignalR, class WindowType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class WindowType>
 auto DesignFilter(SignalR&& out, const impl::windowed::HilbertDesc<WindowType>& desc) {
 	const auto halfband = Fir.Lowpass.Windowed.Cutoff(0.5f).Window(desc.window);
 	impl::FirFilterHilbert(out, halfband);
 }
 
-template <class SignalR, class ParamType, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
+
+/// <summary> Design an FIR filter. </summary>
+/// <param name="out"> Output buffer for the filter coefficients. </param>
+/// <param name="desc"> The description of the filter. </param>
+template <mutable_signal_or_view_r SignalR, class ParamType>
 auto DesignFilter(SignalR&& out, const impl::least_squares::HilbertDesc<ParamType>& desc) {
 	const ParamType transitionBand = desc.transitionWidth;
 	const auto halfband = Fir.Lowpass.LeastSquares.Cutoff(ParamType(0.5) - transitionBand, ParamType(0.5) + transitionBand).Weight(1, desc.transitionWeight, 1);
@@ -197,6 +239,9 @@ auto DesignFilter(SignalR&& out, const impl::least_squares::HilbertDesc<ParamTyp
 // Out-of-place wrapper.
 //------------------------------------------------------------------------------
 
+/// <summary> Design an FIR filter. </summary>
+/// <param name="desc"> The description of the filter. </param>
+/// <returns> The filter coefficients. </returns>
 template <class T, eSignalDomain Domain, class ResponseDesc>
 auto DesignFilter(size_t taps, ResponseDesc responseDesc) {
 	BasicSignal<T, Domain> out(taps);
