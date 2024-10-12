@@ -45,7 +45,7 @@ TEST_CASE("Interpolation full", "[Interpolation]") {
 	for (const int filterSize : { 31, 33, 2047 }) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / interpRate));
-		const auto polyphase = PolyphaseDecompose(filter, interpRate);
+		const auto polyphase = PolyphaseReorder(filter, interpRate);
 
 		const auto length = ConvolutionLength(signal.size() * interpRate, filter.size(), CONV_FULL);
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, 0, length);
@@ -64,7 +64,7 @@ TEST_CASE("Interpolation central", "[Interpolation]") {
 	for (const int filterSize : { 31, 33, 2047 }) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / interpRate));
-		const auto polyphase = PolyphaseDecompose(filter, interpRate);
+		const auto polyphase = PolyphaseReorder(filter, interpRate);
 
 		const auto length = ConvolutionLength(signal.size() * interpRate, filter.size(), CONV_CENTRAL);
 		const auto reference = InterpolateRefImpl(signal, filter, interpRate, filterSize - 1, length);
@@ -256,7 +256,7 @@ TEST_CASE("Resampling spectrum invariance - upsample mild", "[Interpolation]") {
 	for (const int filterSize : { 513, 2047 }) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
+		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
 
 		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
@@ -277,7 +277,7 @@ TEST_CASE("Resampling spectrum invariance - upsample strong", "[Interpolation]")
 	for (const int filterSize : { 1023, 4047 }) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
+		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
 
 		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
@@ -298,7 +298,7 @@ TEST_CASE("Resampling spectrum invariance - downsample mild", "[Interpolation]")
 	for (const int filterSize : { 4095, 20001 }) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
+		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
 
 		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
@@ -319,7 +319,7 @@ TEST_CASE("Resampling spectrum invariance - downsample strong", "[Interpolation]
 	for (const int filterSize : { 4095, 20001 }) {
 		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseDecompose(filter, supersamplingRate);
+		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
 
 		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
@@ -361,7 +361,7 @@ TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
 		auto signal = Signal<float>(signalSize);
 		std::iota(signal.begin(), signal.end(), 0.0f);
 		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, supersamplingRate));
+		const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, supersamplingRate));
 
 		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
 		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
@@ -458,7 +458,7 @@ TEST_CASE("Interpolation continuation output", "[Interpolation]") {
 	constexpr float filterCutoff = float(InterpolFilterCutoff(numPhases));
 
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
-	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
+	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, numPhases));
 
 	// This creates a linearly increasing ramp-like function
 	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
@@ -508,7 +508,7 @@ TEST_CASE("Resampling continuation output", "[Interpolation]") {
 	constexpr float filterCutoff = float(ResampleFilterCutoff(sampleRates, numPhases));
 
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
-	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
+	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, numPhases));
 
 	// This creates a linearly increasing ramp-like function
 	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
@@ -559,7 +559,7 @@ TEST_CASE("Resampling central/full", "[Interpolation]") {
 	constexpr float filterCutoff = float(ResampleFilterCutoff(sampleRates, numPhases));
 
 	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
-	const auto polyphase = PolyphaseNormalized(PolyphaseDecompose(filter, numPhases));
+	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, numPhases));
 
 	const auto signal = TriangularWindow<float, TIME_DOMAIN>(2000);
 

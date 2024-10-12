@@ -224,14 +224,12 @@ auto Expand(const SignalT& input, size_t rate) {
 }
 
 
-template <class SignalR,
-		  class SignalT,
-		  class P,
-		  eSignalDomain D,
-		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
+template <mutable_signal_or_view_r SignalR,
+		  same_domain_as_r<SignalR> SignalT,
+		  polyphase_or_view PolyphaseTy>
 InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
 									const SignalT& lrInput,
-									const PolyphaseView<P, D>& polyphase,
+									const PolyphaseTy& polyphase,
 									size_t hrOffset) {
 	const ptrdiff_t rate = polyphase.num_phases();
 	const ptrdiff_t hrFilterSize = polyphase.size_original();
@@ -269,13 +267,15 @@ InterpolSuspensionPoint Interpolate(SignalR&& hrOutput,
 }
 
 
-template <class SignalT, class P, eSignalDomain Domain, std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
-auto Interpolate(const SignalT& lrInput,
-				 const PolyphaseView<P, Domain>& polyphase,
+template <signal_or_view SignalTy, polyphase_or_view PolyphaseTy>
+auto Interpolate(const SignalTy& lrInput,
+				 const PolyphaseTy& polyphase,
 				 size_t hrOffset,
 				 size_t hrLength) {
-	using T = scalar_type_t<std::decay_t<SignalT>>;
-	using R = multiplies_result_t<T, P>;
+	using T = typename SignalTy::value_type;
+	using U = typename PolyphaseTy::container::value_type;
+	using R = multiplies_result_t<T, U>;
+	constexpr auto Domain = domain_v<SignalTy>;
 
 	BasicSignal<R, Domain> out(hrLength, R(0));
 	Interpolate(out, lrInput, polyphase, hrOffset);
@@ -283,14 +283,12 @@ auto Interpolate(const SignalT& lrInput,
 }
 
 
-template <class SignalR,
-		  class SignalT,
-		  class P,
-		  eSignalDomain D,
-		  std::enable_if_t<is_same_domain_v<SignalR, SignalT, BasicSignal<P, D>> && is_mutable_signal_v<SignalR>, int> = 0>
+template <mutable_signal_or_view_r SignalR,
+		  same_domain_as_r<SignalR> SignalT,
+		  polyphase_or_view PolyphaseTy>
 ResampleSuspensionPoint Resample(SignalR&& output,
 								 const SignalT& input,
-								 const PolyphaseView<P, D>& polyphase,
+								 const PolyphaseTy& polyphase,
 								 Rational<int64_t> sampleRates,
 								 Rational<int64_t> startPoint = { 0, 1 }) {
 	assert(sampleRates >= 0ll);
@@ -315,17 +313,17 @@ ResampleSuspensionPoint Resample(SignalR&& output,
 }
 
 
-template <class SignalT,
-		  class P,
-		  eSignalDomain Domain,
-		  std::enable_if_t<is_same_domain_v<SignalT, BasicSignal<P, Domain>>, int> = 0>
+template <signal_or_view SignalT,
+		  polyphase_or_view PolyphaseTy>
 auto Resample(const SignalT& input,
-			  const PolyphaseView<P, Domain>& polyphase,
+			  const PolyphaseTy& polyphase,
 			  Rational<int64_t> sampleRates,
 			  Rational<int64_t> startPoint,
 			  size_t outputLength) {
-	using T = scalar_type_t<std::decay_t<SignalT>>;
-	using R = multiplies_result_t<T, P>;
+	using T = typename SignalT::value_type;
+	using U = typename PolyphaseTy::container::value_type;
+	using R = multiplies_result_t<T, U>;
+	constexpr auto Domain = domain_v<SignalT>;
 
 	BasicSignal<R, Domain> out(outputLength, R(0));
 	Resample(out, input, polyphase, sampleRates, startPoint);
@@ -334,11 +332,10 @@ auto Resample(const SignalT& input,
 
 
 template <signal_or_view SignalT,
-		  class P,
-		  eSignalDomain Domain,
+		  polyphase_or_view PolyphaseTy,
 		  eConvolutionMethod ConvMethod>
 auto Resample(const SignalT& input,
-			  const PolyphaseView<P, Domain>& polyphase,
+			  const PolyphaseTy& polyphase,
 			  Rational<int64_t> sampleRates,
 			  std::integral_constant<eConvolutionMethod, ConvMethod> convMethod) {
 	const size_t outputLength = floor(ResampleLength(input.size(), polyphase.size_original(), polyphase.num_phases(), sampleRates, convMethod));

@@ -74,7 +74,7 @@ Language: Cpp
 MaxEmptyLinesToKeep: '3'
 NamespaceIndentation: Inner
 PointerAlignment: Left
-RequiresClausePosition: 'WithPreceding'
+RequiresClausePosition: OwnLine
 SortIncludes: 'true'
 SortUsingDeclarations: 'false'
 SpaceAfterCStyleCast: 'false'
@@ -97,7 +97,7 @@ SpacesInConditionalStatement: 'false'
 SpacesInContainerLiterals: 'true'
 SpacesInParentheses: 'false'
 SpacesInSquareBrackets: 'false'
-Standard: c++17
+Standard: c++20
 TabWidth: '4'
 UseCRLF: 'false'
 UseTab: Always
