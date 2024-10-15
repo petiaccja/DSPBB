@@ -16,33 +16,28 @@ namespace dspbb {
 //------------------------------------------------------------------------------
 // Assess properties of windows.
 //------------------------------------------------------------------------------
-template <class T, eSignalDomain Domain>
-T CoherentGain(BasicSignalView<T, Domain> window) {
-	return Sum(window) / remove_complex_t<T>(window.size());
+
+template <signal_or_view SignalTy>
+auto CoherentGain(const SignalTy& window) {
+	using Scalar = remove_complex_t<typename SignalTy::value_type>;
+	return Sum(window) / Scalar(window.size());
 }
 
-template <class T, eSignalDomain Domain>
-T CoherentGain(const BasicSignal<T, Domain>& window) {
-	return CoherentGain(AsConstView(window));
-}
 
-template <class T, eSignalDomain Domain>
-T EnergyGain(BasicSignalView<T, Domain> window) {
-	return SumSquare(window) / T(window.size());
-}
-
-template <class T, eSignalDomain Domain>
-T EnergyGain(const BasicSignal<T, Domain>& window) {
-	return EnergyGain(AsConstView(window));
+template <signal_or_view SignalTy>
+auto EnergyGain(const SignalTy& window) {
+	using Scalar = remove_complex_t<typename SignalTy::value_type>;
+	return SumSquare(window) / Scalar(window.size());
 }
 
 
 //------------------------------------------------------------------------------
 // List of window functions.
 //------------------------------------------------------------------------------
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void HammingWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
+
+template <mutable_signal_or_view_r SignalOut>
+void HammingWindow(SignalOut&& out) {
+	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
@@ -51,9 +46,9 @@ void HammingWindow(SignalR&& out) {
 	out += U(0.54);
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void FlatTopWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
+template <mutable_signal_or_view_r SignalOut>
+void FlatTopWindow(SignalOut&& out) {
+	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 
 	U c0 = U(0.21557895);
@@ -79,16 +74,16 @@ void FlatTopWindow(SignalR&& out) {
 	});
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void RectangularWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
+template <mutable_signal_or_view_r SignalOut>
+void RectangularWindow(SignalOut&& out) {
+	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 	std::fill(out.begin(), out.end(), R(U(1.0)));
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void TriangularWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
+template <mutable_signal_or_view_r SignalOut>
+void TriangularWindow(SignalOut&& out) {
+	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2), true);
 	out -= U(1);
@@ -97,9 +92,9 @@ void TriangularWindow(SignalR&& out) {
 	out += U(1);
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void BlackmanWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
+template <mutable_signal_or_view_r SignalOut>
+void BlackmanWindow(SignalOut&& out) {
+	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
@@ -108,9 +103,9 @@ void BlackmanWindow(SignalR&& out) {
 	});
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void BlackmanHarrisWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
+template <mutable_signal_or_view_r SignalOut>
+void BlackmanHarrisWindow(SignalOut&& out) {
+	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 	LinSpace(out, U(0), U(2) * pi_v<U>, true);
 	std::for_each(out.begin(), out.end(), [&](R& k) {
@@ -119,44 +114,45 @@ void BlackmanHarrisWindow(SignalR&& out) {
 	});
 }
 
-template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void GaussianWindow(SignalR&& out, V sigma = 1.f) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
-	using U = remove_complex_t<R>;
-	const auto N = U(out.size());
-	const auto M = (N - U(1)) / U(2);
+template <mutable_signal_or_view_r SignalOut, class Number>
+void GaussianWindow(SignalOut&& out, Number sigma = 1.f) {
+	using Scalar = scalar_type_t<std::decay_t<SignalOut>>;
+	using Real = remove_complex_t<Scalar>;
+	const auto N = Real(out.size());
+	const auto M = (N - Real(1)) / Real(2);
 	LinSpace(out, -M, M, true);
-	out *= U(1) / (U(sigma) * M);
+	out *= Real(1) / (Real(sigma) * M);
 	Multiply(out, out, out);
-	out *= U(-0.5);
+	out *= Real(-0.5);
 	Exp(out, out);
 }
 
-template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void KaiserWindow(SignalR&& out, V alpha) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
-	using U = remove_complex_t<R>;
-	LinSpace(out, -U(1), U(1), true);
-	std::for_each(out.begin(), out.end(), [&](R& k) {
-		const U kreal = std::real(k);
-		const U piAlpha = pi_v<U> * U(alpha);
-		const U arg = std::sqrt(std::max(U(0), U(1) - kreal * kreal));
-		k = U(std::cyl_bessel_i(U(0), piAlpha * arg)) / U(std::cyl_bessel_i(U(0), U(piAlpha)));
+template <mutable_signal_or_view_r SignalOut, class Number>
+void KaiserWindow(SignalOut&& out, Number alpha) {
+	using Scalar = scalar_type_t<std::decay_t<SignalOut>>;
+	using Real = remove_complex_t<Scalar>;
+	LinSpace(out, -Real(1), Real(1), true);
+	std::for_each(out.begin(), out.end(), [&](Scalar& k) {
+		const Real kreal = std::real(k);
+		const Real piAlpha = pi_v<Real> * Real(alpha);
+		const Real arg = std::sqrt(std::max(Real(0), Real(1) - kreal * kreal));
+		k = Real(std::cyl_bessel_i(Real(0), piAlpha * arg)) / Real(std::cyl_bessel_i(Real(0), Real(piAlpha)));
 	});
 }
 
-template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-void LanczosWindow(SignalR&& out) {
-	using R = scalar_type_t<std::decay_t<SignalR>>;
-	using U = remove_complex_t<R>;
-	LinSpace(out, -pi_v<U>, pi_v<U>, true);
-	std::for_each(out.begin(), out.end(), [&](R& k) {
-		const U kreal = std::real(k);
-		k = kreal != U(0) ? std::sin(kreal) / kreal : U(1);
+template <mutable_signal_or_view_r SignalOut>
+void LanczosWindow(SignalOut&& out) {
+	using Scalar = scalar_type_t<std::decay_t<SignalOut>>;
+	using Real = remove_complex_t<Scalar>;
+	LinSpace(out, -pi_v<Real>, pi_v<Real>, true);
+	std::for_each(out.begin(), out.end(), [&](Scalar& k) {
+		const Real kreal = std::real(k);
+		k = kreal != Real(0) ? std::sin(kreal) / kreal : Real(1);
 	});
 }
 
 namespace impl {
+
 	template <class T>
 	auto ChebyshevPoly(size_t n, const T& x) {
 		const T tn = static_cast<T>(n);
@@ -168,38 +164,41 @@ namespace impl {
 			return std::cos(tn * std::acos(x));
 		}
 		return std::cosh(tn * std::acosh(x));
-	};
+	}
+
 } // namespace impl
 
-template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR> && !is_complex_v<typename std::decay_t<SignalR>::value_type>, int> = 0>
-void DolphChebyshevWindow(SignalR&& out, V attenuation) {
-	using T = typename std::decay_t<SignalR>::value_type;
+template <mutable_signal_or_view_r SignalOut, class Number>
+	requires(!is_complex_v<typename std::decay_t<SignalOut>::value_type>)
+void DolphChebyshevWindow(SignalOut&& out, Number attenuation) {
+	using Scalar = typename std::decay_t<SignalOut>::value_type;
+	using Real = remove_complex_t<Scalar>;
 
 	const size_t M = out.size() - 1;
-	const T beta = std::cosh(T(1) / M * std::acosh(T(1) / T(attenuation)));
-	Spectrum<std::complex<T>> spectrum(out.size() / 2 + 1);
-	LinSpace(spectrum, T(0), pi_v<T> * (T(spectrum.size() - 1) / T(out.size())), true);
+	const Real beta = std::cosh(Real(1) / M * std::acosh(Real(1) / Real(attenuation)));
+	Spectrum<std::complex<Real>> spectrum(out.size() / 2 + 1);
+	LinSpace(spectrum, Real(0), pi_v<Real> * (Real(spectrum.size() - 1) / Real(out.size())), true);
 	std::for_each(spectrum.begin(), spectrum.end(), [M, beta](auto& k) {
-		const auto i = std::complex<T>(0, 1);
-		const auto phase = std::exp(i * k * T(M % 2));
+		const auto i = std::complex<Real>(0, 1);
+		const auto phase = std::exp(i * k * Real(M % 2));
 		const auto amplitude = impl::ChebyshevPoly(M, beta * std::cos(std::real(k)));
 		k = phase * amplitude;
 	});
 
 	Ifft(out, spectrum);
 	FftShift(out, out);
-	const T normalization = kernels::TransformReduce(
-		out.begin(), out.end(), T(0),
+	const Real normalization = kernels::TransformReduce(
+		out.begin(), out.end(), Real(0),
 		[](const auto& acc, const auto& v) { return kernels::math_functions::max(acc, v); },
 		[](const auto& v) { return kernels::math_functions::abs(v); });
-	out *= T(1) / normalization;
+	out *= Real(1) / normalization;
 }
 
-template <class SignalR, class V, std::enable_if_t<is_mutable_signal_v<SignalR> && is_complex_v<typename std::decay_t<SignalR>::value_type>, int> = 0>
-void DolphChebyshevWindow(SignalR&& out, V attenuation) {
-	using R = typename std::decay_t<SignalR>::value_type;
+template <mutable_signal_or_view_r SignalOut, class Number>
+void DolphChebyshevWindow(SignalOut&& out, Number attenuation) {
+	using R = typename std::decay_t<SignalOut>::value_type;
 	using T = remove_complex_t<R>;
-	constexpr auto domain = domain_v<std::decay_t<SignalR>>;
+	constexpr auto domain = domain_v<std::decay_t<SignalOut>>;
 
 	BasicSignal<T, domain> outReal(out.size());
 	DolphChebyshevWindow(outReal, attenuation);
@@ -276,79 +275,80 @@ BasicSignal<T, Domain> DolphChebyshevWindow(size_t length, T attenuation) {
 	return window;
 }
 
-//------------------------------------------------------------------------------
-// Helper for when you have to pass a window function as an argument.
-//------------------------------------------------------------------------------
+
+/// <summary> The windows functions as functors. </summary>
+/// <remarks> These functors can be passed to some functions, like filter descriptors,
+///		to make windowing simpler. </remarks>
 namespace windows {
 	struct Hamming {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return HammingWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return HammingWindow<T, Domain>(length);
 		}
-	} const hamming;
+	} inline constexpr hamming;
 
 	struct Rectangular {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return RectangularWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return RectangularWindow<T, Domain>(length);
 		}
-	} const rectangular;
+	} inline constexpr rectangular;
 
 	struct Flattop {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return FlatTopWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return FlatTopWindow<T, Domain>(length);
 		}
-	} const flattop;
+	} inline constexpr flattop;
 
 	struct Triangular {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return TriangularWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return TriangularWindow<T, Domain>(length);
 		}
-	} const triangular;
+	} inline constexpr triangular;
 
 	struct Blackman {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return BlackmanWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return BlackmanWindow<T, Domain>(length);
 		}
-	} const blackman;
+	} inline constexpr blackman;
 
 	struct BlackmanHarris {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return BlackmanHarrisWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return BlackmanHarrisWindow<T, Domain>(length);
 		}
-	} const blackmanHarris;
+	} inline constexpr blackmanHarris;
 
 	struct Gaussian {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return GaussianWindow(out, m_sigma);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
@@ -362,11 +362,11 @@ namespace windows {
 			return copy;
 		}
 		double m_sigma = 1;
-	} const gaussian;
+	} inline constexpr gaussian;
 
 	struct Kaiser {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return KaiserWindow(out, m_alpha);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
@@ -380,22 +380,22 @@ namespace windows {
 			return copy;
 		}
 		double m_alpha = 1;
-	} const kaiser;
+	} inline constexpr kaiser;
 
 	struct Lanczos {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return LanczosWindow(out);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
 		auto operator()(size_t length) const {
 			return LanczosWindow<T, Domain>(length);
 		}
-	} const lanczos;
+	} inline constexpr lanczos;
 
 	struct DolphChebyshev {
-		template <class SignalR, std::enable_if_t<is_mutable_signal_v<SignalR>, int> = 0>
-		auto operator()(SignalR&& out) const {
+		template <mutable_signal_or_view_r SignalOut>
+		auto operator()(SignalOut&& out) const {
 			return DolphChebyshevWindow(out, m_attenuation);
 		}
 		template <class T, eSignalDomain Domain = eSignalDomain::TIME>
@@ -409,7 +409,7 @@ namespace windows {
 			return copy;
 		}
 		double m_attenuation = 1;
-	} const dolphChebyshev;
+	} inline constexpr dolphChebyshev;
 
 } // namespace windows
 
