@@ -12,212 +12,58 @@ using namespace dspbb;
 using Catch::Approx;
 
 
-template <class SignalT>
-SignalT InterpolateRefImpl(const SignalT& signal, const SignalT& filter, size_t rate, size_t offset, size_t length) {
+template <signal_or_view SignalT>
+auto InterpolateRefImpl(const SignalT& signal, const SignalT& filter, size_t rate, size_t offset, size_t length) {
 	return Convolution(Expand(signal, rate), filter, offset, length) * rate;
 }
 
 
-TEST_CASE("Decimate", "[Interpolation]") {
-	const Signal<float> s = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-	const Signal<float> d = Decimate(s, 3);
-	REQUIRE(d.size() == 4);
-	REQUIRE(d[0] == 1);
-	REQUIRE(d[1] == 4);
-	REQUIRE(d[2] == 7);
-	REQUIRE(d[3] == 10);
+template <class T>
+auto SmoothTestSignal(size_t length, T center, T scale) {
+	const auto func = [&](size_t idx) {
+		const auto signedIdx = double(idx) - double(center);
+		const auto x = double(signedIdx) * 6.0 / scale;
+		return static_cast<T>(2.0 * x * std::exp(-x * x));
+	};
+	Signal<T> signal(length);
+	for (size_t i = 0; i < signal.size(); ++i) {
+		signal[i] = func(i);
+	}
+	return signal / Max(signal);
 }
 
 
-TEST_CASE("Expand", "[Interpolation]") {
-	const Signal<float> s = { 1, 2, 3 };
-	const Signal<float> e = Expand(s, 3);
-	const Signal<float> exp = { 1, 0, 0, 2, 0, 0, 3, 0, 0 };
+template <signal_or_view SignalT>
+double SmoothTestSignalCenter(const SignalT& signal) {
+	const auto minIt = std::ranges::min_element(signal);
+	const auto maxIt = std::ranges::max_element(signal);
 
-	REQUIRE(e.size() == 9);
-	REQUIRE(Max(Abs(e - exp)) == Approx(0.0f));
-}
+	const auto roi = SignalView<const scalar_type_t<SignalT>>(minIt, maxIt);
+	const auto it = std::ranges::adjacent_find(roi, [](const auto& lhs, const auto& rhs) {
+		return lhs * rhs <= 0;
+	});
 
-TEST_CASE("Interpolation full", "[Interpolation]") {
-	constexpr int interpRate = 5;
-	constexpr int signalSize = 1024;
-
-	for (const int filterSize : { 31, 33, 2047 }) {
-		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / interpRate));
-		const auto polyphase = PolyphaseReorder(filter, interpRate);
-
-		const auto length = ConvolutionLength(signal.size() * interpRate, filter.size(), CONV_FULL);
-		const auto reference = InterpolateRefImpl(signal, filter, interpRate, 0, length);
-		const auto answer = Interpolate(signal, polyphase, 0, length);
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(reference.size() == answer.size());
-		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
+	if (it == roi.end()) {
+		return -1.0;
 	}
-}
 
-TEST_CASE("Interpolation central", "[Interpolation]") {
-	constexpr int interpRate = 5;
-	constexpr int signalSize = 1024;
-
-	for (const int filterSize : { 31, 33, 2047 }) {
-		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / interpRate));
-		const auto polyphase = PolyphaseReorder(filter, interpRate);
-
-		const auto length = ConvolutionLength(signal.size() * interpRate, filter.size(), CONV_CENTRAL);
-		const auto reference = InterpolateRefImpl(signal, filter, interpRate, filterSize - 1, length);
-		const auto answer = Interpolate(signal, polyphase, filterSize - 1, length);
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(reference.size() == answer.size());
-		REQUIRE(Max(Abs(reference - answer)) < 1e-6f);
-	}
+	const auto lhs = double(*it);
+	const auto rhs = double(*(it + 1));
+	const auto frac = std::abs(lhs) / (std::abs(lhs) + std::abs(rhs));
+	const auto whole = double(it - roi.begin() + minIt - signal.begin());
+	return whole + frac;
 }
 
 
-TEST_CASE("Resampling length full", "[Interpolation]") {
-	SECTION("Upsample exact") {
-		constexpr Rational<int64_t> sampleRates = { 2, 3 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
+//------------------------------------------------------------------------------
+// Public utilities
+//------------------------------------------------------------------------------
 
-		constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		REQUIRE(double(size) == Approx(16500.0 / 5).margin(0.01));
-	}
-	SECTION("Upsample inexact") {
-		constexpr Rational<int64_t> sampleRates = { 3, 5 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		REQUIRE(double(size) == Approx(18333.333 / 5).margin(0.01));
-	}
-	SECTION("Downsample exact") {
-		constexpr Rational<int64_t> sampleRates = { 11000, 3500 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		const auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
-	}
-	SECTION("Downsample inexact") {
-		constexpr Rational<int64_t> sampleRates = { 22000, 7001 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
-		REQUIRE(double(size) == Approx(3500.5 / 5).margin(0.01));
-	}
+TEST_CASE("Interpolation filter cutoff", "[Interpolation]") {
+	REQUIRE(InterpolFilterCutoff(4) == Approx(0.25));
+	REQUIRE(InterpolFilterCutoff(9) == Approx(0.1111111111));
 }
 
-TEST_CASE("Resampling length central", "[Interpolation]") {
-	SECTION("Upsample exact") {
-		constexpr Rational<int64_t> sampleRates = { 9000, 14000 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		REQUIRE(double(size) == Approx(14000.0 / 5).margin(0.01));
-	}
-	SECTION("Upsample inexact") {
-		constexpr Rational<int64_t> sampleRates = { 27000, 14000 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		REQUIRE(double(size) == Approx(4666.667 / 5).margin(0.01));
-	}
-	SECTION("Downsample exact") {
-		constexpr Rational<int64_t> sampleRates = { 9000, 3500 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		const auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
-	}
-	SECTION("Downsample inexact") {
-		constexpr Rational<int64_t> sampleRates = { 18000, 7001 };
-		constexpr size_t signalSize = 2000;
-		constexpr size_t filterSize = 1001;
-		constexpr size_t numPhases = 5;
-
-		constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
-		REQUIRE(double(size) == Approx(3500.5 / 5).margin(0.01));
-	}
-}
-
-TEST_CASE("Resampling change sample rate", "[Interpolation]") {
-	constexpr int inputRate = 7;
-	constexpr int outputRate = 17;
-
-	constexpr Rational<int64_t> originalSample = { 28, 42 };
-
-	SECTION("Regular") {
-		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
-
-		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
-
-		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
-	}
-	SECTION("Simplify") {
-		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
-
-		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
-
-		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
-	}
-}
-
-TEST_CASE("Resampling input index 2 samples", "[Interpolation]") {
-	SECTION("Zero weight") {
-		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 43, 7 }, 7);
-		REQUIRE(firstSample.inputIndex == 6);
-		REQUIRE(firstSample.phaseIndex == 1);
-		REQUIRE(firstSample.weight == 1);
-
-		REQUIRE(secondSample.inputIndex == 6);
-		REQUIRE(secondSample.phaseIndex == 2);
-		REQUIRE(secondSample.weight == 0);
-	}
-	SECTION("Split weight") {
-		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 87, 14 }, 5);
-		REQUIRE(firstSample.inputIndex == 6);
-		REQUIRE(firstSample.phaseIndex == 1);
-		REQUIRE(firstSample.weight == 13);
-
-		REQUIRE(secondSample.inputIndex == 6);
-		REQUIRE(secondSample.phaseIndex == 2);
-		REQUIRE(secondSample.weight == 1);
-	}
-	SECTION("Rollover") {
-		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 27, 14 }, 5);
-		REQUIRE(firstSample.inputIndex == 1);
-		REQUIRE(firstSample.phaseIndex == 4);
-		REQUIRE(firstSample.weight == 5);
-
-		REQUIRE(secondSample.inputIndex == 2);
-		REQUIRE(secondSample.phaseIndex == 0);
-		REQUIRE(secondSample.weight == 9);
-	}
-}
-
-TEST_CASE("Resampling dot product sample", "[Interpolation]") {
-	const Signal<int> signal = { 1, 2, 3, 6, 5, 7 };
-	const Signal<int> filter = { -1, 3, -2 }; // Convolution: -2, 3, -1
-	REQUIRE(-2 == impl::DotProductSample(signal, filter, 0));
-	REQUIRE(-1 == impl::DotProductSample(signal, filter, 2));
-	REQUIRE(-5 == impl::DotProductSample(signal, filter, 5));
-	REQUIRE(-7 == impl::DotProductSample(signal, filter, 7));
-}
 
 TEST_CASE("Resampling filter cutoff", "[Interpolation]") {
 	REQUIRE(ResampleFilterCutoff({ 4, 6 }, 5) == Approx(0.2));
@@ -227,157 +73,212 @@ TEST_CASE("Resampling filter cutoff", "[Interpolation]") {
 }
 
 
-template <class SignalT, class SignalU>
-auto ResampledSimilarity(std::pair<uint64_t, uint64_t> sampleRates, SignalT original, SignalU resampled) {
-	const size_t rescale = std::max(original.size() / sampleRates.first, resampled.size() / sampleRates.second) + 1;
-	original.resize(rescale * sampleRates.first);
-	resampled.resize(rescale * sampleRates.second);
+TEST_CASE("Interpolation length", "[Interpolation]") {
+	SECTION("Full") {
+		constexpr size_t signalSize = 2000;
+		constexpr size_t filterSize = 1001;
+		constexpr size_t factor = 5;
 
-	const auto fftSignal = Abs(Fft(original, FFT_HALF));
-	const auto fftResampled = Abs(Fft(resampled, FFT_HALF));
-
-	const size_t fftCompareSize = std::min(fftSignal.size(), fftResampled.size());
-	const auto fftSignalCompare = AsView(fftSignal).subsignal(0, fftCompareSize);
-	const auto fftResampledCompare = AsView(fftResampled).subsignal(0, fftCompareSize);
-
-	const auto similarity = DotProduct(fftSignalCompare, fftResampledCompare) / Norm(fftSignalCompare) / Norm(fftResampledCompare);
-
-	return similarity;
-}
-
-
-TEST_CASE("Resampling spectrum invariance - upsample mild", "[Interpolation]") {
-	constexpr int inputRate = 7;
-	constexpr int outputRate = 11;
-	constexpr int supersamplingRate = 16;
-	constexpr int signalSize = 1024;
-	constexpr auto filterCutoff = ResampleFilterCutoff({ inputRate, outputRate }, supersamplingRate);
-
-	for (const int filterSize : { 513, 2047 }) {
-		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
-
-		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
-		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(similarity > 0.98f);
+		const auto size = InterpolLength(signalSize, filterSize, factor, CONV_FULL);
+		REQUIRE(size == 11000);
 	}
-}
+	SECTION("Central") {
+		constexpr size_t signalSize = 2000;
+		constexpr size_t filterSize = 1001;
+		constexpr size_t factor = 5;
 
-TEST_CASE("Resampling spectrum invariance - upsample strong", "[Interpolation]") {
-	constexpr int inputRate = 9;
-	constexpr int outputRate = 210;
-	constexpr int supersamplingRate = 32;
-	constexpr int signalSize = 2048;
-	constexpr auto filterCutoff = ResampleFilterCutoff({ inputRate, outputRate }, supersamplingRate);
-
-	for (const int filterSize : { 1023, 4047 }) {
-		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
-
-		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
-		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(similarity > 0.98f);
-	}
-}
-
-TEST_CASE("Resampling spectrum invariance - downsample mild", "[Interpolation]") {
-	constexpr int inputRate = 11;
-	constexpr int outputRate = 7;
-	constexpr int supersamplingRate = 16;
-	constexpr int signalSize = 16384;
-	constexpr auto filterCutoff = ResampleFilterCutoff({ inputRate, outputRate }, supersamplingRate);
-
-	for (const int filterSize : { 4095, 20001 }) {
-		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
-
-		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
-		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(similarity > 0.98f);
-	}
-}
-
-TEST_CASE("Resampling spectrum invariance - downsample strong", "[Interpolation]") {
-	constexpr int inputRate = 210;
-	constexpr int outputRate = 9;
-	constexpr int supersamplingRate = 16;
-	constexpr int signalSize = 16384;
-	constexpr auto filterCutoff = ResampleFilterCutoff({ inputRate, outputRate }, supersamplingRate);
-
-	for (const int filterSize : { 4095, 20001 }) {
-		const auto signal = RandomSignal<float, TIME_DOMAIN>(signalSize);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseReorder(filter, supersamplingRate);
-
-		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
-		const auto similarity = ResampledSimilarity({ inputRate, outputRate }, signal, resampled);
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(similarity > 0.98f);
+		const auto size = InterpolLength(signalSize, filterSize, factor, CONV_CENTRAL);
+		REQUIRE(size == 9000);
 	}
 }
 
 
-template <class SignalT>
-double FindCrossing(const SignalT& signal, double value) {
-	const auto it = std::adjacent_find(signal.begin(), signal.end(), [&value](auto left, auto right) {
-		return left <= value && value < right;
-	});
-	if (it != signal.end()) {
-		const size_t firstIndex = it - signal.begin();
-		const auto difference = it[1] - it[0];
-		const auto t = (value - it[0]) / difference;
-		return double(firstIndex) + double(t);
+TEST_CASE("Resampling length", "[Interpolation]") {
+	SECTION("Full") {
+		SECTION("Upsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 2, 3 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(size) == Approx(16500.0 / 5).margin(0.01));
+		}
+		SECTION("Upsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 3, 5 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(size) == Approx(18333.333 / 5).margin(0.01));
+		}
+		SECTION("Downsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 11000, 3500 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			const auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
+		}
+		SECTION("Downsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 22000, 7001 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(size) == Approx(3500.5 / 5).margin(0.01));
+		}
 	}
-	return -1.0;
+	SECTION("Central") {
+		SECTION("Upsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 9000, 14000 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(size) == Approx(14000.0 / 5).margin(0.01));
+		}
+		SECTION("Upsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 27000, 14000 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(size) == Approx(4666.667 / 5).margin(0.01));
+		}
+		SECTION("Downsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 9000, 3500 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			const auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(size) == Approx(3500.0 / 5).margin(0.01));
+		}
+		SECTION("Downsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 18000, 7001 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto size = ResampleLength(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(size) == Approx(3500.5 / 5).margin(0.01));
+		}
+	}
 }
 
 
-TEST_CASE("Resampling delay - upsample mild", "[Interpolation]") {
-	// Resample a ramp function.
-	// The exact crossing (i.e. f(x) = 10, x = ?) can be easily found by linear interpolation.
-	// The exact crossing can be used to correlate delays on the input and output signals.
+TEST_CASE("Interpolation offset", "[Interpolation]") {
+	SECTION("Full") {
+		constexpr size_t signalSize = 2000;
+		constexpr size_t filterSize = 1001;
+		constexpr size_t factor = 5;
 
-	constexpr int inputRate = 7;
-	constexpr int outputRate = 11;
-	constexpr int supersamplingRate = 16;
-	constexpr int signalSize = 1024;
-	constexpr auto filterCutoff = ResampleFilterCutoff({ inputRate, outputRate }, supersamplingRate);
+		const auto offset = InterpolOffset(signalSize, filterSize, factor, CONV_FULL);
+		REQUIRE(offset == 0);
+	}
+	SECTION("Central") {
+		constexpr size_t signalSize = 2000;
+		constexpr size_t filterSize = 1001;
+		constexpr size_t factor = 5;
 
-	for (const int filterSize : { 513, 2047 }) {
-		auto signal = Signal<float>(signalSize);
-		std::iota(signal.begin(), signal.end(), 0.0f);
-		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(filterCutoff));
-		const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, supersamplingRate));
-
-		const auto length = ResampleLength(signalSize, filterSize, supersamplingRate, { inputRate, outputRate }, CONV_FULL);
-		const auto resampled = Resample(signal, polyphase, { inputRate, outputRate }, { 0, 1 }, floor(length));
-
-		const double crossingSignal = FindCrossing(signal, 500.0);
-		const double crossingResampled = FindCrossing(resampled, 500.0);
-		const auto resamplingDelay = ResampleDelay(filterSize, supersamplingRate, { inputRate, outputRate });
-		const double crossingExpected = double(resamplingDelay) + crossingSignal * outputRate / inputRate;
-
-		INFO("filterSize=" << filterSize);
-		REQUIRE(crossingExpected == Approx(crossingResampled));
+		const auto offset = InterpolOffset(signalSize, filterSize, factor, CONV_CENTRAL);
+		REQUIRE(offset == 1000);
 	}
 }
 
 
-TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
+
+TEST_CASE("Resampling offset", "[Interpolation]") {
+	SECTION("Full") {
+		SECTION("Upsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 2, 3 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(offset) == 0.0);
+		}
+		SECTION("Upsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 3, 5 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(offset) == 0.0);
+		}
+		SECTION("Downsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 11000, 3500 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			const auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(offset) == 0.0);
+		}
+		SECTION("Downsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 22000, 7001 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_FULL);
+			REQUIRE(double(offset) == 0.0);
+		}
+	}
+	SECTION("Central") {
+		SECTION("Upsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 9000, 14000 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(offset) == Approx(14000.0 / (9000.0 * 5) * 1000.0).margin(0.01));
+		}
+		SECTION("Upsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 27000, 14000 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(offset) == Approx(14000.0 / (27000.0 * 5) * 1000.0).margin(0.01));
+		}
+		SECTION("Downsample exact") {
+			constexpr Rational<int64_t> sampleRates = { 9000, 3500 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			const auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(offset) == Approx(3500.0 / (9000 * 5) * 1000.0).margin(0.01));
+		}
+		SECTION("Downsample inexact") {
+			constexpr Rational<int64_t> sampleRates = { 18000, 7001 };
+			constexpr size_t signalSize = 2000;
+			constexpr size_t filterSize = 1001;
+			constexpr size_t numPhases = 5;
+
+			constexpr auto offset = ResampleOffset(signalSize, filterSize, numPhases, sampleRates, CONV_CENTRAL);
+			REQUIRE(double(offset) == Approx(7001.0 / (18000.0 * 5) * 1000.0).margin(0.01));
+		}
+	}
+}
+
+
+//------------------------------------------------------------------------------
+// Internal utilities
+//------------------------------------------------------------------------------
+
+TEST_CASE("Find interpolation suspension point", "[Interpolation]") {
 	constexpr size_t numPhases = 6;
 	constexpr size_t filterSize = 31;
 
@@ -412,7 +313,7 @@ TEST_CASE("Interplation continuation calculation", "[Interpolation]") {
 }
 
 
-TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
+TEST_CASE("Find resampling suspension point", "[Interpolation]") {
 	constexpr size_t numPhases = 6;
 	constexpr size_t filterSize = 31;
 	constexpr Rational<int64_t> sampleRates = { 4, 7 };
@@ -452,127 +353,274 @@ TEST_CASE("Resampling continuation calculation", "[Interpolation]") {
 }
 
 
-TEST_CASE("Interpolation continuation output", "[Interpolation]") {
-	constexpr size_t numPhases = 6;
-	constexpr size_t filterSize = 511;
-	constexpr float filterCutoff = float(InterpolFilterCutoff(numPhases));
 
-	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
-	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, numPhases));
+TEST_CASE("Resampling: Change sample rate", "[Interpolation]") {
+	constexpr int inputRate = 7;
+	constexpr int outputRate = 17;
 
-	// This creates a linearly increasing ramp-like function
-	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
+	constexpr Rational<int64_t> originalSample = { 28, 42 };
 
-	const size_t maxLength = InterpolLength(signal.size(), filterSize, numPhases, CONV_FULL);
+	SECTION("Regular") {
+		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
 
-	auto output = Signal<float>(maxLength, 0.0f);
+		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
 
-	size_t chunkSize = 1;
-	size_t outputWritten = 0;
-	size_t firstInputSample = 0;
-	size_t startPoint{ 0 };
-	while (outputWritten < output.size() / 2) {
-		const auto [newFirstInputSample, newStartPoint] = Interpolate(AsView(output).subsignal(outputWritten, chunkSize),
-																	  AsView(signal).subsignal(firstInputSample),
-																	  polyphase,
-																	  startPoint);
-
-		startPoint = newStartPoint;
-		firstInputSample += newFirstInputSample;
-		outputWritten += chunkSize;
-		chunkSize *= 2;
+		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
 	}
+	SECTION("Simplify") {
+		constexpr auto newSample = impl::ChangeSampleRate(inputRate, outputRate, originalSample);
 
-	// Find the linear part of the output
-	const auto first = std::find_if(output.begin(), output.end(), [](float v) { return v >= 3.0f; });
-	const auto last = std::max_element(output.begin(), output.end());
+		const double inputIndexRealExpected = double(originalSample) / double(inputRate) * double(outputRate);
 
-	REQUIRE(first != last);
-	REQUIRE(first != output.end());
-	REQUIRE(last != output.end());
-	REQUIRE(first - output.begin() < ptrdiff_t(output.size()) / 30 + filterSize - 1);
-	REQUIRE(last - output.begin() >= ptrdiff_t(output.size()) / 2);
-
-	// Check if increments between adjacent elements of the output ramp are roughly equal
-	SignalView<float> left{ first, last - 1 };
-	SignalView<float> right{ first + 1, last };
-	REQUIRE(Max(right - left) == Approx(Min(right - left)).epsilon(0.02));
+		REQUIRE(double(newSample) == Approx(inputIndexRealExpected));
+	}
 }
 
 
+TEST_CASE("Resampling: Input index 2 samples", "[Interpolation]") {
+	SECTION("Zero weight") {
+		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 43, 7 }, 7);
+		REQUIRE(firstSample.inputIndex == 6);
+		REQUIRE(firstSample.phaseIndex == 1);
+		REQUIRE(firstSample.weight == 1);
 
-TEST_CASE("Resampling continuation output", "[Interpolation]") {
-	constexpr size_t numPhases = 6;
-	constexpr size_t filterSize = 511;
-	constexpr Rational<int64_t> sampleRates = { 4, 7 };
-	constexpr float filterCutoff = float(ResampleFilterCutoff(sampleRates, numPhases));
-
-	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
-	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, numPhases));
-
-	// This creates a linearly increasing ramp-like function
-	const auto signal = LinSpace<float, TIME_DOMAIN>(0.0f, 100.f, 2500);
-
-	const Rational maxLength = ResampleLength(signal.size(), filterSize, numPhases, sampleRates, CONV_FULL);
-
-	auto output = Signal<float>(floor(maxLength), 0.0f);
-
-	size_t chunkSize = 1;
-	size_t outputWritten = 0;
-	size_t firstInputSample = 0;
-	Rational<int64_t> startPoint{ 0 };
-	while (outputWritten < output.size() / 2) {
-		const auto [newFirstInputSample, newStartPoint] = Resample(AsView(output).subsignal(outputWritten, chunkSize),
-																   AsView(signal).subsignal(firstInputSample),
-																   polyphase,
-																   sampleRates,
-																   startPoint);
-
-		startPoint = newStartPoint;
-		firstInputSample += newFirstInputSample;
-		outputWritten += chunkSize;
-		chunkSize *= 2;
+		REQUIRE(secondSample.inputIndex == 6);
+		REQUIRE(secondSample.phaseIndex == 2);
+		REQUIRE(secondSample.weight == 0);
 	}
+	SECTION("Split weight") {
+		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 87, 14 }, 5);
+		REQUIRE(firstSample.inputIndex == 6);
+		REQUIRE(firstSample.phaseIndex == 1);
+		REQUIRE(firstSample.weight == 13);
 
-	// Find the linear part of the output
-	const auto first = std::find_if(output.begin(), output.end(), [](float v) { return v >= 3.0f; });
-	const auto last = std::max_element(output.begin(), output.end());
+		REQUIRE(secondSample.inputIndex == 6);
+		REQUIRE(secondSample.phaseIndex == 2);
+		REQUIRE(secondSample.weight == 1);
+	}
+	SECTION("Rollover") {
+		const auto [firstSample, secondSample] = impl::InputIndex2Sample({ 27, 14 }, 5);
+		REQUIRE(firstSample.inputIndex == 1);
+		REQUIRE(firstSample.phaseIndex == 4);
+		REQUIRE(firstSample.weight == 5);
 
-	REQUIRE(first != last);
-	REQUIRE(first != output.end());
-	REQUIRE(last != output.end());
-	REQUIRE(first - output.begin() < ptrdiff_t(output.size()) / 30 + ceil(ResampleDelay(filterSize, numPhases, sampleRates)));
-	REQUIRE(last - output.begin() >= ptrdiff_t(output.size()) / 2);
-
-	// Check if increments between adjacent elements of the output ramp are roughly equal
-	SignalView<float> left{ first, last - 1 };
-	SignalView<float> right{ first + 1, last };
-	REQUIRE(Max(right - left) == Approx(Min(right - left)).epsilon(0.02));
+		REQUIRE(secondSample.inputIndex == 2);
+		REQUIRE(secondSample.phaseIndex == 0);
+		REQUIRE(secondSample.weight == 9);
+	}
 }
 
 
+TEST_CASE("Resampling: Dot product sample", "[Interpolation]") {
+	const Signal<int> signal = { 1, 2, 3, 6, 5, 7 };
+	const Signal<int> filter = { -1, 3, -2 }; // Convolution: -2, 3, -1
+	REQUIRE(-2 == impl::DotProductSample(signal, filter, 0));
+	REQUIRE(-1 == impl::DotProductSample(signal, filter, 2));
+	REQUIRE(-5 == impl::DotProductSample(signal, filter, 5));
+	REQUIRE(-7 == impl::DotProductSample(signal, filter, 7));
+}
 
-TEST_CASE("Resampling central/full", "[Interpolation]") {
-	constexpr size_t numPhases = 6;
+
+//------------------------------------------------------------------------------
+// Resampling functions
+//------------------------------------------------------------------------------
+
+TEST_CASE("Decimate", "[Interpolation]") {
+	SECTION("Out-of-place") {
+		const Signal<float> input = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+		const Signal<float> result = Decimate(input, 3);
+		const Signal<float> expected = { 1, 4, 7, 10 };
+		REQUIRE(result == expected);
+	}
+	SECTION("In-place") {
+		Signal<float> data = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+		Decimate(data, data, 3);
+		const Signal<float> expected = { 1, 4, 7, 10 };
+		REQUIRE(SignalView(data).subsignal(0, 4) == expected);
+	}
+}
+
+
+TEST_CASE("Expand", "[Interpolation]") {
+	SECTION("Out-of-place") {
+		const Signal<float> input = { 1, 2, 3 };
+		const Signal<float> result = Expand(input, 3);
+		const Signal<float> expected = { 1, 0, 0, 2, 0, 0, 3, 0, 0 };
+		REQUIRE(result == expected);
+	}
+	SECTION("In-place") {
+		Signal<float> data = { 1, 2, 3, 0, 0, 0, 0, 0, 0 };
+		Expand(data, data, 3);
+		const Signal<float> expected = { 1, 0, 0, 2, 0, 0, 3, 0, 0 };
+		REQUIRE(data == expected);
+	}
+}
+
+
+TEST_CASE("Interpolation full & central", "[Interpolation]") {
+	constexpr int factor = 5;
+	constexpr int inputSize = 1024;
+
+	for (const int filterSize : { 31, 33, 2047 }) {
+		const auto center = inputSize / 2;
+		const auto input = SmoothTestSignal<float>(inputSize, center, 0.3 * float(inputSize));
+		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(1.0f / factor));
+		const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, factor));
+
+		SECTION("Full") {
+			const auto expectedLength = InterpolLength(inputSize, filterSize, factor, CONV_FULL);
+			const auto expectedCenter = InterpolDelay(filterSize) + center * factor;
+			const auto expected = SmoothTestSignal<float>(expectedLength, expectedCenter, 0.3 * float(inputSize * factor));
+			const auto result = Interpolate(input, polyphase, CONV_FULL).first;
+			REQUIRE(expected.size() == result.size());
+			REQUIRE(Max(Abs(expected - result)) < 1e-4f);
+		}
+		SECTION("Central") {
+			const auto expectedLength = InterpolLength(inputSize, filterSize, factor, CONV_CENTRAL);
+			const auto expectedCenter = InterpolDelay(filterSize) + center * factor - filterSize + 1;
+			const auto expected = SmoothTestSignal<float>(expectedLength, expectedCenter, 0.3 * float(inputSize * factor));
+			const auto result = Interpolate(input, polyphase, CONV_CENTRAL).first;
+			REQUIRE(expected.size() == result.size());
+			REQUIRE(Max(Abs(expected - result)) < 1e-4f);
+		}
+	}
+}
+
+
+TEST_CASE("Resampling full & central", "[Interpolation]") {
+	constexpr int superSampling = 16;
+	constexpr int inputSize = 1536;
+	constexpr Rational<int64_t> sampleRates(7, 11);
+
+
+	for (const int filterSize : { 127, 2047 }) {
+		const auto center = inputSize / 2;
+		const auto input = SmoothTestSignal<float>(inputSize, center, 0.3 * float(inputSize));
+		const auto cutoff = ResampleFilterCutoff(sampleRates, superSampling);
+		const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(cutoff));
+		const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, superSampling));
+
+		SECTION("Full") {
+			const auto expectedLength = ResampleLength(inputSize, filterSize, superSampling, sampleRates, CONV_FULL);
+			const auto expectedCenter = ResampleDelay(filterSize, superSampling, sampleRates) + int64_t(center) / sampleRates;
+			const auto expected = SmoothTestSignal<float>(floor(expectedLength), float(expectedCenter), 0.3 * float(inputSize) / float(sampleRates));
+			const auto result = Resample(input, polyphase, sampleRates, CONV_FULL).first;
+			REQUIRE(expected.size() == result.size());
+			REQUIRE(Max(Abs(expected - result)) < 1e-4f);
+		}
+		SECTION("Central") {
+			const auto expectedLength = ResampleLength(inputSize, filterSize, superSampling, sampleRates, CONV_CENTRAL);
+			const auto expectedCenter = ResampleDelay(filterSize, superSampling, sampleRates) + int64_t(center) / sampleRates - Rational<int64_t>(filterSize - 1, superSampling) / sampleRates;
+			const auto expected = SmoothTestSignal<float>(floor(expectedLength), float(expectedCenter), 0.3 * float(inputSize) / float(sampleRates));
+			const auto result = Resample(input, polyphase, sampleRates, CONV_CENTRAL).first;
+			REQUIRE(expected.size() == result.size());
+			REQUIRE(Max(Abs(expected - result)) < 1e-4f);
+		}
+	}
+}
+
+
+TEST_CASE("Resampling various sample rates", "[Interpolation]") {
+	constexpr int inputSize = 3072;
+
+	constexpr std::array scenarios = {
+		std::tuple{ Rational<int64_t>(7, 11), 16, std::array{ 255, 6143 } },
+		std::tuple{ Rational<int64_t>(7, 191), 32, std::array{ 511, 8143 } },
+		std::tuple{ Rational<int64_t>(191, 17), 8, std::array{ 2047, 16383 } },
+		std::tuple{ Rational<int64_t>(11, 7), 16, std::array{ 255, 4095 } },
+	};
+
+
+	for (const auto [sampleRates, superSampling, filterSizes] : scenarios) {
+		const auto center = inputSize / 2;
+		const auto input = SmoothTestSignal<float>(inputSize, center, 0.5 * float(inputSize));
+
+		for (const int filterSize : filterSizes) {
+			const auto cutoff = ResampleFilterCutoff(sampleRates, superSampling);
+			const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(0.85f * cutoff).Window(windows::flattop));
+			const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, superSampling));
+
+			INFO("Sample rates: " << sampleRates.Numerator() << "->" << sampleRates.Denominator()
+								  << ", SS: " << superSampling << "x"
+								  << ", filter: " << filterSize);
+			const auto expectedLength = ResampleLength(inputSize, filterSize, superSampling, sampleRates, CONV_FULL);
+			const auto expectedCenter = ResampleDelay(filterSize, superSampling, sampleRates) + int64_t(center) / sampleRates;
+			const auto expected = SmoothTestSignal<float>(floor(expectedLength), float(expectedCenter), 0.5 * float(inputSize) / float(sampleRates));
+			const auto result = Resample(input, polyphase, sampleRates, CONV_FULL).first;
+			const auto error = expected - result;
+			REQUIRE(expected.size() == result.size());
+			REQUIRE(Max(Abs(expected - result)) < 3e-4f);
+		}
+	}
+}
+
+
+TEST_CASE("Interpolation: sequential chunks", "[Interpolation]") {
+	constexpr size_t inputSize = 3072;
 	constexpr size_t filterSize = 511;
-	constexpr Rational<int64_t> sampleRates = { 4, 7 };
-	constexpr float filterCutoff = float(ResampleFilterCutoff(sampleRates, numPhases));
+	constexpr size_t factor = 16;
 
-	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.LeastSquares.Cutoff(0.90f * filterCutoff, filterCutoff));
-	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, numPhases));
+	const auto center = inputSize / 2;
+	const auto input = SmoothTestSignal<float>(inputSize, center, 0.5 * float(inputSize));
+	const auto cutoff = InterpolFilterCutoff(factor);
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(0.85f * cutoff).Window(windows::flattop));
+	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, factor));
 
-	const auto signal = TriangularWindow<float, TIME_DOMAIN>(2000);
+	const auto expectedLength = InterpolLength(inputSize, filterSize, factor, CONV_FULL);
+	const auto expectedCenter = InterpolDelay(filterSize) + center * factor;
+	const auto expected = SmoothTestSignal<float>(expectedLength, expectedCenter, 0.5 * float(inputSize * factor));
 
-	SECTION("central") {
-		const auto result = Resample(signal, polyphase, sampleRates, CONV_CENTRAL);
-		const auto reversed = Signal<float>(result.rbegin(), result.rend());
-		REQUIRE(result[0] > 20 / 2000.f);
-		REQUIRE(Max(result - reversed) < 2 / 2000.f);
+	Signal<float> result(floor(expectedLength));
+	InterpolSuspensionPoint sp = { .firstInputSample = 0, .outputOffset = 0 };
+	constexpr size_t chunkSize = 256;
+	auto outputIt = result.begin();
+	auto inputIt = input.begin();
+	while (outputIt != result.end()) {
+		const auto truncatedChunkSize = std::min(chunkSize, size_t(result.end() - outputIt));
+		const auto outputChunk = SignalView<float>(outputIt, truncatedChunkSize);
+		const auto inputChunk = SignalView<const float>(inputIt, input.end());
+		sp = Interpolate(outputChunk, inputChunk, polyphase, sp.outputOffset);
+		outputIt += truncatedChunkSize;
+		inputIt += sp.firstInputSample;
 	}
-	SECTION("full") {
-		const auto result = Resample(signal, polyphase, sampleRates, CONV_FULL);
-		const auto reversed = Signal<float>(result.rbegin(), result.rend());
-		REQUIRE(std::abs(result[0]) < 1e-4f);
-		REQUIRE(Max(result - reversed) < 2 / 2000.f);
+
+	const auto error = expected - result;
+	REQUIRE(expected.size() == result.size());
+	REQUIRE(Max(Abs(expected - result)) < 3e-4f);
+}
+
+
+TEST_CASE("Resampling: sequential chunks", "[Interpolation]") {
+	constexpr size_t inputSize = 3072;
+	constexpr size_t filterSize = 511;
+	constexpr size_t superSampling = 16;
+	constexpr Rational<int64_t> sampleRates = { 7, 11 };
+
+	const auto center = inputSize / 2;
+	const auto input = SmoothTestSignal<float>(inputSize, center, 0.5 * float(inputSize));
+	const auto cutoff = ResampleFilterCutoff(sampleRates, superSampling);
+	const auto filter = DesignFilter<float, TIME_DOMAIN>(filterSize, Fir.Lowpass.Windowed.Cutoff(0.85f * cutoff).Window(windows::flattop));
+	const auto polyphase = PolyphaseNormalized(PolyphaseReorder(filter, superSampling));
+
+	const auto expectedLength = ResampleLength(inputSize, filterSize, superSampling, sampleRates, CONV_FULL);
+	const auto expectedCenter = ResampleDelay(filterSize, superSampling, sampleRates) + int64_t(center) / sampleRates;
+	const auto expected = SmoothTestSignal<float>(floor(expectedLength), float(expectedCenter), 0.5 * float(inputSize) / float(sampleRates));
+
+	Signal<float> result(floor(expectedLength));
+	ResampleSuspensionPoint sp = { .firstInputSample = 0, .outputOffset{ int64_t(0) } };
+	constexpr size_t chunkSize = 256;
+	auto outputIt = result.begin();
+	auto inputIt = input.begin();
+	while (outputIt != result.end()) {
+		const auto truncatedChunkSize = std::min(chunkSize, size_t(result.end() - outputIt));
+		const auto outputChunk = SignalView<float>(outputIt, truncatedChunkSize);
+		const auto inputChunk = SignalView<const float>(inputIt, input.end());
+		sp = Resample(outputChunk, inputChunk, polyphase, sampleRates, sp.outputOffset);
+		outputIt += truncatedChunkSize;
+		inputIt += sp.firstInputSample;
 	}
+
+	const auto error = expected - result;
+	REQUIRE(expected.size() == result.size());
+	REQUIRE(Max(Abs(expected - result)) < 3e-4f);
 }

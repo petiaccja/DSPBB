@@ -225,13 +225,13 @@ bool IsFullyAliasing(const BasicSignalView<T1, Domain1>& lhs, const BasicSignal<
 
 template <class T1, eSignalDomain Domain1, class T2, eSignalDomain Domain2>
 bool IsAliasing(const BasicSignal<T1, Domain1>& lhs, const BasicSignal<T2, Domain2>& rhs) {
-	return false;
+	return IsAliasing(BasicSignalView(lhs), BasicSignalView(rhs));
 }
 
 
 template <class T1, eSignalDomain Domain1, class T2, eSignalDomain Domain2>
 bool IsFullyAliasing(const BasicSignal<T1, Domain1>& lhs, const BasicSignal<T2, Domain2>& rhs) {
-	return false;
+	return IsFullyAliasing(BasicSignalView(lhs), BasicSignalView(rhs));
 }
 
 

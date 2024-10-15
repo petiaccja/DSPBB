@@ -4,6 +4,7 @@
 #include "../Kernels/Numeric.hpp"
 #include "Traits.hpp"
 
+#include <algorithm>
 #include <functional>
 
 
@@ -312,5 +313,22 @@ auto operator-=(SignalT&& a, const U& b)
 	return a;
 }
 
+
+//--------------------------------------
+// Comparison
+//--------------------------------------
+
+template <signal_or_view SignalT, same_domain_as<SignalT> SignalU>
+	requires std::invocable<std::equal_to<>, scalar_type_t<SignalT>, scalar_type_t<SignalU>>
+auto operator==(const SignalT& lhs, const SignalU& rhs) {
+	return std::ranges::equal(lhs, rhs);
+}
+
+
+template <signal_or_view SignalT, same_domain_as<SignalT> SignalU>
+	requires std::invocable<std::compare_three_way, scalar_type_t<SignalT>, scalar_type_t<SignalU>>
+auto operator<=>(const SignalT& lhs, const SignalU& rhs) {
+	return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
 
 } // namespace dspbb

@@ -39,6 +39,14 @@ namespace impl {
 } // namespace impl
 
 
+
+/// <summary> Calculate the size of the state required for chunk-based FFT filtering. </summary>
+/// <param name="filterSize"> The size of the FIR filter. </param>
+constexpr size_t FilterStateSize(size_t filterSize) {
+	return filterSize - 1;
+}
+
+
 /// <summary> Apply an FIR filter to a signal. </summary>
 /// <param name="out"> Output buffer for the filtered signal. </param>
 /// <param name="signal"> The signal to filter. </param>
@@ -78,10 +86,10 @@ template <mutable_signal_or_view_r SignalR,
 void Filter(SignalR&& out,
 			const SignalU& signal,
 			const SignalV& filter,
-			SignalS& state,
+			SignalS&& state,
 			std::integral_constant<eFilterMethod, FilterMethod>,
 			size_t chunkSize = 0) {
-	assert(state.size() == filter.size() - 1);
+	assert(state.size() == FilterStateSize(filter.size()));
 	assert(out.size() == signal.size());
 
 	std::fill(out.begin(), out.end(), remove_complex_t<typename std::decay_t<SignalR>::value_type>(0));
