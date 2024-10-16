@@ -37,7 +37,7 @@ int main() {
 
 	// Most DSPBB functions come in two flavors:
 	// 1) set an existing memory region, "signal", to contain a square wave,
-	SquareWave(signal, 1024, 10.0);
+	SquareWave(signal, 1024.0f, 10.0f);
 	// 2) return the requested signal in a brand-new memory region.
 	const auto window = BlackmanHarrisWindow<float, TIME_DOMAIN>(signal.size());
 	// Use the first method when you want to avoid allocation for safety or performance

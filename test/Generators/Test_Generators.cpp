@@ -44,49 +44,49 @@ TEST_CASE("Logspace", "[Generators]") {
 
 
 TEST_CASE("Sine wave", "[Generators]") {
-	const auto s = SineWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.5f);
+	const auto s = SineWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.5f);
 	REQUIRE(s[0] == Approx(std::sin(0.5f)));
 	REQUIRE(s[size_t(cycle)] == Approx(s[0]).margin(0.02f));
-	REQUIRE(s[size_t(cycle * (2.f * pi_v<float> - 0.5f) / 2.f / pi_v<float>)] == Approx(0.0f).margin(0.02f));
-	REQUIRE(s[size_t(cycle * (2.5f * pi_v<float> - 0.5f) / 2.f / pi_v<float>)] == Approx(1.0f).margin(0.02f));
+	REQUIRE(s[size_t(cycle * (2.f * std::numbers::pi_v<float> - 0.5f) / 2.f / std::numbers::pi_v<float>)] == Approx(0.0f).margin(0.02f));
+	REQUIRE(s[size_t(cycle * (2.5f * std::numbers::pi_v<float> - 0.5f) / 2.f / std::numbers::pi_v<float>)] == Approx(1.0f).margin(0.02f));
 }
 
 
 TEST_CASE("Sawtooth wave fw", "[Generators]") {
-	const auto s = SawtoothWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f, 1.0f);
+	const auto s = SawtoothWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f, 1.0f);
 	REQUIRE(s[0] == Approx(-1.0f));
 	REQUIRE(s[size_t(cycle * 0.5f)] == Approx(0.0f).margin(0.02f));
 	REQUIRE(s[size_t(cycle)] == Approx(1.0f).margin(0.02f));
 }
 
 TEST_CASE("Sawtooth wave bw", "[Generators]") {
-	const auto s = SawtoothWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f, 0.0f);
+	const auto s = SawtoothWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f, 0.0f);
 	REQUIRE(s[0] == Approx(1.0f));
 	REQUIRE(s[size_t(cycle * 0.5f)] == Approx(0.0f).margin(0.02f));
 	REQUIRE(s[size_t(cycle)] == Approx(-1.0f).margin(0.02f));
 }
 
 TEST_CASE("Sawtooth wave triangle", "[Generators]") {
-	const auto s = SawtoothWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f, 0.6f);
+	const auto s = SawtoothWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f, 0.6f);
 	REQUIRE(s[0] == Approx(-1.0f));
 	REQUIRE(s[size_t(cycle * 0.6f)] == Approx(1.0f).margin(0.02f));
 	REQUIRE(s[size_t(cycle) + 1] == Approx(-1.0f).margin(0.02f));
 }
 
 TEST_CASE("PWM wave empty", "[Generators]") {
-	const auto s = PwmWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f, 0.0f);
+	const auto s = PwmWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f, 0.0f);
 	REQUIRE(Max(s) == Approx(0));
 	REQUIRE(Min(s) == Approx(0));
 }
 
 TEST_CASE("PWM wave full", "[Generators]") {
-	const auto s = PwmWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f, 1.0f);
+	const auto s = PwmWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f, 1.0f);
 	REQUIRE(Max(s) == Approx(1));
 	REQUIRE(Min(s) == Approx(1));
 }
 
 TEST_CASE("Sawtooth wave frac", "[Generators]") {
-	const auto s = PwmWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f, 0.6f);
+	const auto s = PwmWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f, 0.6f);
 	REQUIRE(Max(s) == Approx(1));
 	REQUIRE(Min(s) == Approx(0));
 	REQUIRE(s[0] == Approx(1.0f));
@@ -97,7 +97,7 @@ TEST_CASE("Sawtooth wave frac", "[Generators]") {
 }
 
 TEST_CASE("Square wave", "[Generators]") {
-	const auto s = SquareWave<float, TIME_DOMAIN>(4410, 44100, frequency, 0.0f);
+	const auto s = SquareWave<float, TIME_DOMAIN>(4410, 44100.f, frequency, 0.0f);
 	REQUIRE(Max(s) == Approx(1));
 	REQUIRE(Min(s) == Approx(-1));
 
@@ -111,18 +111,18 @@ TEST_CASE("Square wave", "[Generators]") {
 // Enough to test the base chirp phase function.
 TEST_CASE("Chirp phase", "[Generators]") {
 	Signal<float> s(512);
-	const double phase = 1.55;
-	const double startFrequency = 1150.;
-	const double endFrequency = 2320.;
-	impl::GenericChirp(s, sampleRate, startFrequency, endFrequency, phase, [](const auto& passThrough) { return passThrough; });
+	const float phase = 1.55f;
+	const float startFrequency = 1150.f;
+	const float endFrequency = 2320.f;
+	impl::GenericChirp(s, float(sampleRate), startFrequency, endFrequency, phase, [](const auto& passThrough) { return passThrough; });
 	REQUIRE(s[0] == Approx(phase));
-	REQUIRE(*(s.begin() + 1) - *(s.begin()) == Approx(2 * pi_v<double> * startFrequency / sampleRate).epsilon(0.01f));
-	REQUIRE(*(s.end() - 1) - *(s.end() - 2) == Approx(2 * pi_v<double> * endFrequency / sampleRate).epsilon(0.01f));
+	REQUIRE(*(s.begin() + 1) - *(s.begin()) == Approx(2.0f * std::numbers::pi_v<float> * startFrequency / sampleRate).epsilon(0.01f));
+	REQUIRE(*(s.end() - 1) - *(s.end() - 2) == Approx(2.0f * std::numbers::pi_v<float> * endFrequency / sampleRate).epsilon(0.01f));
 	REQUIRE(Max(SignalView<float>(s.begin(), s.end() - 1) - SignalView<float>(s.begin() + 1, s.end())) < 0.0f);
 }
 
 TEST_CASE("Square chirp", "[Generators]") {
-	const auto s = SquareChirp<float, TIME_DOMAIN>(4410, 44100, 2 * frequency, frequency, 0.0f);
+	const auto s = SquareChirp<float, TIME_DOMAIN>(4410, 44100.f, 2.0f * frequency, frequency, 0.0f);
 	REQUIRE(Max(s) == Approx(1));
 	REQUIRE(Min(s) == Approx(-1));
 	REQUIRE(s[0] == Approx(1.0f));

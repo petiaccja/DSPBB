@@ -23,7 +23,7 @@ constexpr size_t fftSize = 1024;
 
 
 TEST_CASE("FFT - Real spectral peak", "[FFT]") {
-	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
+	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, float(sampleRate), frequency);
 
 	Spectrum<std::complex<float>> complexSpectrum = Fft(signal, FFT_FULL);
 	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
@@ -37,7 +37,7 @@ TEST_CASE("FFT - Real spectral peak", "[FFT]") {
 
 
 TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
-	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, sampleRate, frequency);
+	const auto signal = SineWave<std::complex<float>, TIME_DOMAIN>(fftSize, float(sampleRate), frequency);
 
 	Spectrum<std::complex<float>> complexSpectrum = Fft(signal);
 	Spectrum<float> powerSpectrum = Abs(complexSpectrum);
@@ -51,7 +51,7 @@ TEST_CASE("FFT - Complex spectral peak", "[FFT]") {
 
 
 TEST_CASE("IFFT - Real identity", "[FFT]") {
-	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, sampleRate, frequency);
+	const auto signal = SineWave<float, TIME_DOMAIN>(fftSize, float(sampleRate), frequency);
 	Spectrum<std::complex<float>> spectrum = Fft(signal, FFT_HALF);
 	const auto repro = Ifft(spectrum, FFT_HALF, signal.size() % 2 == 0);
 

@@ -75,8 +75,8 @@ Signal<float> DialTone(char character) {
 
 	// The dialed tone is simply the sum of sine waves of the frequencies
 	// that encode the requested character.
-	return SineWave<float, TIME_DOMAIN>(3000, sampleRate, frequency1)
-		   + SineWave<float, TIME_DOMAIN>(3000, sampleRate, frequency2);
+	return SineWave<float, TIME_DOMAIN>(3000, float(sampleRate), frequency1)
+		   + SineWave<float, TIME_DOMAIN>(3000, float(sampleRate), frequency2);
 }
 
 // We will need a filter bank, with one narrow bandpass filter tuned to
