@@ -1,4 +1,7 @@
-TrainGeneratorConfig.json
+build/
+**/CMakeUserPresets.json
+**/compile_commands.json
+.cache/
 
 ##------------------------------------------------------------------------------
 ## Ignore CLion files
@@ -190,7 +193,7 @@ BundleArtifacts/
 # files ending in .cache can be ignored
 *.[Cc]ache
 # but keep track of directories ending in .cache
-!*.[Cc]ache/
+# !*.[Cc]ache/
 
 # Others
 ClientBin/
@@ -252,7 +255,3 @@ _Pvt_Extensions
 ParameterExtraction/training/saved_networks/
 
 *.asv
-
-build/
-
-CMakeUserPresets.json

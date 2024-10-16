@@ -9,6 +9,7 @@
 #include "../Utility/TypeTraits.hpp"
 
 #include <cmath>
+#include <numbers>
 
 
 namespace dspbb {
@@ -40,7 +41,7 @@ void HammingWindow(SignalOut&& out) {
 	using R = scalar_type_t<std::decay_t<SignalOut>>;
 	using U = remove_complex_t<R>;
 
-	LinSpace(out, U(0), U(2) * pi_v<U>, true);
+	LinSpace(out, U(0), U(2) * std::numbers::pi_v<U>, true);
 	Cos(out, out);
 	out *= U(-0.46);
 	out += U(0.54);
